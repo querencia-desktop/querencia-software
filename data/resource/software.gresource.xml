@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Eingebettete Ressourcen. Neu erzeugen: werkzeug/ressourcen.sh -->
+<gresources>
+  <gresource prefix="/org/querencia/Software">
+    <file>icons/scalable/apps/org.querencia.Software-fenster.svg</file>
+  </gresource>
+</gresources>

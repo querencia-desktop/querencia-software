@@ -1,0 +1,24 @@
+[package]
+name = "querencia-software"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.92"
+description = "Querencia Software: grafischer Software-Installer für Querencia Desktop (Oberfläche, SW-3)"
+license = "GPL-3.0-or-later"
+publish = false
+
+[dependencies]
+# Dieselben Bindings wie Editor, Bilder und Rechner (gtk-rs 0.11, Cargo.lock
+# vom Rechner übernommen, damit der Bau --offline gelingt).
+gtk = { package = "gtk4", version = "0.11", features = ["v4_12"] }
+async-trait = "0.1.92"
+# Gemeinsame Typen und Traits von SW-1 (Commit 637b7b0, qs_typen 0.1.0).
+qs_typen = { path = "../querencia-software-paketkit/qs_typen" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
