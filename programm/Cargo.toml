@@ -13,11 +13,11 @@ publish = false
 gtk = { package = "gtk4", version = "0.11", features = ["v4_12"] }
 async-trait = "0.1.92"
 # Gemeinsame Typen und Traits von SW-1 (Commit 637b7b0, qs_typen 0.1.0).
-qs_typen = { path = "../querencia-software-paketkit/qs_typen" }
-
-[profile.release]
-lto = true
-codegen-units = 1
+qs_typen.workspace = true
+# Echte Backends (SW-6): PackageKit (SW-1), AppStream (SW-2), Transaktionsmonitor (SW-4).
+qs_paketkit.workspace = true
+qs_katalog.workspace = true
+qs_transaktion.workspace = true
 
 [lints.rust]
 unsafe_code = "forbid"

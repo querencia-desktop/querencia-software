@@ -20,12 +20,14 @@ use std::rc::Rc;
 
 use gtk::prelude::*;
 use gtk::{gdk, gio, glib};
-use qs_typen::{Fehler, Symbol, Vorgang};
+use qs_typen::{Fehler, Paket, Vorgang};
 
 use crate::debug;
 use crate::dialoge;
 use crate::logik::{self, fehlertext, Ansicht, Paketstand, SymbolWahl, Zeile};
-use crate::schnittstellen::{Auftrag, Simulation, TransaktionsGriff, Zustand};
+use crate::schnittstellen::{
+    Auftrag, Katalog, Simulation, TransaktionsGriff, Transaktionsmonitor, Zustand,
+};
 use crate::{Backends, APP_NAME};
 
 const CSS: &str = include_str!("style.css");
@@ -151,12 +153,16 @@ struct Fortschrittsleiste {
 
 /// Laufender Vorgang.
 struct Transaktion {
+    /// Zählt die Rückrufe zu: Meldungen eines früheren Griffs werden verworfen.
+    generation: u64,
     griff: TransaktionsGriff,
     /// `None` bei einem nach dem Neustart wieder angebundenen Vorgang.
     vorgang: Option<Vorgang>,
     zeile: Zeile,
     simulation: Option<Simulation>,
     sperrdialog_offen: bool,
+    /// Nachfrage „kein Fortschritt“ (SW-4, nach 10 min) wird angezeigt.
+    nachfrage_offen: bool,
 }
 
 pub struct Fenster {
@@ -183,8 +189,23 @@ pub struct Fenster {
     letzte_meldung: RefCell<Option<String>>,
     /// Nach dem nächsten Laden „Aktualisierungen geprüft“ melden.
     pruefung_melden: Cell<bool>,
+    /// Echter Betrieb: der AppStream-Katalog lädt noch im Hintergrund.
+    katalog_laedt: Cell<bool>,
+    /// Echter Betrieb, Expertenliste: letzte PackageKit-Suche (Text, Ergebnis);
+    /// `Ok(None)` = Suche läuft.
+    experten: RefCell<Option<Expertensuche>>,
+    /// Beobachter aus `wieder_anbinden` (SW-4 liefert immer genau einen):
+    /// Generation, Griff, ob die Fortschrittsleiste für ihn sichtbar ist.
+    beobachter: RefCell<Option<(u64, TransaktionsGriff, bool)>>,
+    generation: Cell<u64>,
     debug: bool,
 }
+
+/// Suchtext und Ergebnis der PackageKit-Suche in der Expertenliste.
+type Expertensuche = (String, Result<Option<Vec<Paket>>, Fehler>);
+
+/// Mindestlänge des Suchtexts für die PackageKit-Suche in der Expertenliste.
+const EXPERTEN_MINDESTLAENGE: usize = 2;
 
 thread_local! {
     static FENSTER: RefCell<Option<Rc<Fenster>>> = const { RefCell::new(None) };
@@ -357,6 +378,10 @@ impl Fenster {
             letzte_pruefung: RefCell::new(None),
             letzte_meldung: RefCell::new(None),
             pruefung_melden: Cell::new(false),
+            katalog_laedt: Cell::new(false),
+            experten: RefCell::new(None),
+            beobachter: RefCell::new(None),
+            generation: Cell::new(0),
             debug,
         });
 
@@ -370,9 +395,56 @@ impl Fenster {
         fenster
             .seitenleiste
             .select_row(fenster.seiten_zeilen.borrow().first().map(|(_, r, _)| r));
+        fenster.katalog_laden();
         fenster.paketstand_laden(true);
         fenster.wieder_anbinden();
         fenster
+    }
+
+    /// Der aktuelle Katalog (im echten Betrieb bis zum Ende des Ladens leer).
+    fn katalog(&self) -> Rc<dyn Katalog> {
+        self.backends.katalog.borrow().clone()
+    }
+
+    /// Echter Betrieb: AppStream-Katalog im Hintergrund-Thread laden
+    /// (SCHNITTSTELLEN.md: `laden` darf 1–2 s dauern), danach Liste und
+    /// Paketstand neu aufbauen.
+    fn katalog_laden(self: &Rc<Self>) {
+        let Some(konfiguration) = self.backends.katalog_laden.borrow_mut().take() else {
+            return;
+        };
+        self.katalog_laedt.set(true);
+        self.melde("Katalog wird geladen …");
+        self.aktualisiere_liste();
+        let weak = Rc::downgrade(self);
+        glib::MainContext::default().spawn_local(async move {
+            let beginn = std::time::Instant::now();
+            let ergebnis =
+                gio::spawn_blocking(move || crate::echt::AppKatalog::laden(konfiguration)).await;
+            let Some(s) = weak.upgrade() else {
+                return;
+            };
+            s.katalog_laedt.set(false);
+            match ergebnis {
+                Ok(Ok((katalog, statistik))) => {
+                    for (datei, fehler) in katalog.ladefehler() {
+                        eprintln!("querencia-software: Katalogdatei {datei}: {fehler}");
+                    }
+                    crate::debug_katalog(&statistik);
+                    debug(&format!(
+                        "zeit\tkatalog\t{}\t{}",
+                        beginn.elapsed().as_millis(),
+                        crate::seit_start_ms()
+                    ));
+                    *s.backends.katalog.borrow_mut() = Rc::new(katalog);
+                    *s.letzte_meldung.borrow_mut() = None;
+                }
+                Ok(Err(e)) => s.melde(&format!("Katalog nicht ladbar: {e}")),
+                Err(_) => s.melde("Katalog nicht ladbar: Lesefehler"),
+            }
+            s.aktualisiere_liste();
+            s.paketstand_laden(true);
+        });
     }
 
     fn baue_details() -> Detailseite {
@@ -611,7 +683,7 @@ impl Fenster {
         let pfad = zeile
             .anwendung
             .as_ref()
-            .and_then(|a| self.backends.katalog.symbol_pfad(a, groesse));
+            .and_then(|a| self.katalog().symbol_pfad(a, groesse));
         match logik::symbol_wahl(pfad, &zeile.symbol, symbol_vorhanden) {
             SymbolWahl::Datei(p) => image.set_from_file(Some(&p)),
             SymbolWahl::Thema(n) => image.set_icon_name(Some(&n)),
@@ -765,10 +837,29 @@ impl Fenster {
     /// Paketstand (alle Pakete, Aktualisierungen) von der Quelle holen und
     /// die Liste neu aufbauen. `pruefung`: als Aktualisierungsprüfung zählen.
     fn paketstand_laden(self: &Rc<Self>, pruefung: bool) {
+        if self.katalog_laedt.get() {
+            return; // kommt nach dem Laden des Katalogs
+        }
         let weak = Rc::downgrade(self);
         let quelle = self.backends.quelle.clone();
+        let aufloeser = self.backends.aufloeser.clone();
+        let mut namen: Vec<String> = self
+            .katalog()
+            .alle()
+            .iter()
+            .filter_map(|a| a.paketname.clone())
+            .collect();
+        namen.sort();
+        namen.dedup();
         glib::MainContext::default().spawn_local(async move {
-            let pakete = quelle.suchen("", false).await;
+            let beginn = std::time::Instant::now();
+            let n = namen.len();
+            let pakete = aufloeser.aufloesen(namen).await;
+            debug(&format!(
+                "zeit\tpaketstand\t{}\t{n}\t{}",
+                beginn.elapsed().as_millis(),
+                pakete.as_ref().map(|p| p.len()).unwrap_or(0)
+            ));
             let akt = quelle.aktualisierungen().await;
             let Some(s) = weak.upgrade() else {
                 return;
@@ -822,17 +913,76 @@ impl Fenster {
         self.aktualisiere_liste();
     }
 
-    fn aktuelle_zeilen(&self) -> Vec<Zeile> {
+    fn aktuelle_zeilen(self: &Rc<Self>) -> Vec<Zeile> {
+        let text = self.suchfeld.text().trim().to_string();
+        if self.backends.echt && self.ansicht.get() == Ansicht::Expertenliste && !text.is_empty() {
+            return self.experten_zeilen(&text);
+        }
         let stand = self.stand.borrow();
-        logik::zeilen_gesucht(
-            self.ansicht.get(),
-            &self.suchfeld.text(),
-            &*self.backends.katalog,
-            &stand,
-        )
+        logik::zeilen_gesucht(self.ansicht.get(), &text, &*self.katalog(), &stand)
+    }
+
+    /// Echter Betrieb, Expertenliste mit Suchtext: PackageKit-Suche über alle
+    /// Pakete (ab `EXPERTEN_MINDESTLAENGE` Zeichen), Ergebnis zwischengespeichert.
+    fn experten_zeilen(self: &Rc<Self>, text: &str) -> Vec<Zeile> {
+        if text.chars().count() < EXPERTEN_MINDESTLAENGE {
+            self.leer
+                .set_text("Bitte mindestens zwei Zeichen eingeben, um alle Pakete zu durchsuchen.");
+            return Vec::new();
+        }
+        let gespeichert = self.experten.borrow().clone();
+        match gespeichert {
+            Some((t, Ok(Some(pakete)))) if t == text => {
+                let stand = self.stand.borrow();
+                let mut zeilen: Vec<Zeile> = Paketstand::aus(pakete, Vec::new())
+                    .pakete
+                    .values()
+                    .map(|p| Zeile::aus_paket(p, stand.aktualisierbar(&p.name)))
+                    .collect();
+                zeilen.sort_by_cached_key(|z| logik::sortierschluessel(&z.titel));
+                zeilen
+            }
+            Some((t, Ok(None))) if t == text => {
+                self.leer.set_text("Suche läuft …");
+                Vec::new()
+            }
+            Some((t, Err(e))) if t == text => {
+                self.leer
+                    .set_text(&format!("Suche fehlgeschlagen: {}", fehlertext(&e)));
+                Vec::new()
+            }
+            _ => {
+                *self.experten.borrow_mut() = Some((text.to_string(), Ok(None)));
+                self.leer.set_text("Suche läuft …");
+                let weak = Rc::downgrade(self);
+                let quelle = self.backends.quelle.clone();
+                let text = text.to_string();
+                glib::MainContext::default().spawn_local(async move {
+                    let ergebnis = quelle.suchen(&text, false).await;
+                    let Some(s) = weak.upgrade() else {
+                        return;
+                    };
+                    let aktuell = s
+                        .experten
+                        .borrow()
+                        .as_ref()
+                        .is_some_and(|(t, _)| *t == text);
+                    if aktuell {
+                        *s.experten.borrow_mut() = Some((text, ergebnis.map(Some)));
+                        s.aktualisiere_liste();
+                    }
+                });
+                Vec::new()
+            }
+        }
     }
 
     fn aktualisiere_liste(self: &Rc<Self>) {
+        self.leer.set_text(if self.katalog_laedt.get() {
+            "Katalog wird geladen …"
+        } else {
+            "Keine Programme gefunden."
+        });
         let zeilen = self.aktuelle_zeilen();
         let n = zeilen.len();
         let suchtext = self.suchfeld.text().to_string();
@@ -877,7 +1027,7 @@ impl Fenster {
 
     fn aktualisiere_status(&self) {
         let stand = self.stand.borrow();
-        let katalog = &self.backends.katalog;
+        let katalog = self.katalog();
         let programme = katalog.alle().len();
         let installiert = katalog
             .alle()
@@ -1110,17 +1260,20 @@ impl Fenster {
         self.fortschritt.status.set_text("Wird vorbereitet …");
         self.fortschritt.leiste.set_visible(true);
         self.fortschritt.abbrechen.set_sensitive(true);
-        let melden = self.melde_rueckruf();
+        let generation = self.naechste_generation();
+        let melden = self.melde_rueckruf(generation, false);
         let griff = self
             .backends
             .monitor
             .starten(auftrag, self.backends.quelle.clone(), melden);
         *self.transaktion.borrow_mut() = Some(Transaktion {
+            generation,
             griff,
             vorgang: Some(vorgang.clone()),
             zeile,
             simulation: None,
             sperrdialog_offen: false,
+            nachfrage_offen: false,
         });
         debug(&format!(
             "transaktion\tgestartet\t{}\t{}",
@@ -1132,60 +1285,96 @@ impl Fenster {
         }
     }
 
+    fn naechste_generation(&self) -> u64 {
+        self.generation.set(self.generation.get() + 1);
+        self.generation.get()
+    }
+
     /// Rückruf für den Monitor. Meldungen laufen immer über den
     /// Hauptschleifen-Leerlauf, damit der Griff vor der ersten Meldung
     /// gespeichert ist und Dialoge nie aus einem Klick-Handler heraus
-    /// geöffnet werden.
-    fn melde_rueckruf(self: &Rc<Self>) -> Box<dyn Fn(Zustand)> {
+    /// geöffnet werden. `beobachter`: Rückruf des Wiederanbindungs-Griffs.
+    fn melde_rueckruf(self: &Rc<Self>, generation: u64, beobachter: bool) -> Box<dyn Fn(Zustand)> {
         let weak = Rc::downgrade(self);
         Box::new(move |z| {
             let weak = weak.clone();
             glib::idle_add_local_once(move || {
                 if let Some(s) = weak.upgrade() {
-                    s.zustand_gemeldet(z);
+                    if beobachter {
+                        s.beobachter_gemeldet(generation, z);
+                    } else {
+                        s.zustand_gemeldet(generation, z);
+                    }
                 }
             });
         })
     }
 
-    /// Nach einem Neustart: laufende Transaktionen wieder anbinden. v1 zeigt
-    /// den ersten wieder angebundenen Vorgang in der Fortschrittsleiste.
+    /// Nach einem Neustart: laufende Transaktionen wieder anbinden. Der
+    /// Monitor (SW-4) liefert immer einen Beobachter-Griff; er meldet `Laeuft`,
+    /// solange beim Daemon eine frühere Transaktion läuft, sonst gleich
+    /// `Fertig`. Erst bei `Laeuft` erscheint die Fortschrittsleiste; der
+    /// Beobachter blockiert eigene Vorgänge nicht.
     fn wieder_anbinden(self: &Rc<Self>) {
-        let melden = self.melde_rueckruf();
+        let generation = self.naechste_generation();
+        let melden = self.melde_rueckruf(generation, true);
         let mut griffe = self
             .backends
             .monitor
             .wieder_anbinden(self.backends.quelle.clone(), melden);
-        debug(&format!("transaktion\twieder-angebunden\t{}", griffe.len()));
         if griffe.is_empty() {
+            debug("transaktion\twieder-angebunden\t0");
             return;
         }
         let griff = griffe.remove(0);
-        let zeile = Zeile {
-            titel: "Laufender Vorgang".into(),
-            zusammenfassung: String::new(),
-            symbol: Symbol::Keines,
-            paketname: None,
-            installiert: false,
-            aktualisierbar: false,
-            anwendung: None,
-            paket: None,
+        *self.beobachter.borrow_mut() = Some((generation, griff, false));
+    }
+
+    fn beobachter_gemeldet(self: &Rc<Self>, generation: u64, zustand: Zustand) {
+        let sichtbar = match self.beobachter.borrow().as_ref() {
+            Some((g, _, sichtbar)) if *g == generation => *sichtbar,
+            _ => return,
         };
-        self.fortschritt
-            .vorgang
-            .set_text("Wieder angebunden: laufender Vorgang der Paketverwaltung");
-        self.fortschritt.balken.set_fraction(0.0);
-        self.fortschritt.balken.set_text(Some("…"));
-        self.fortschritt.status.set_text("Warte auf Meldungen …");
-        self.fortschritt.leiste.set_visible(true);
-        self.fortschritt.abbrechen.set_sensitive(true);
-        *self.transaktion.borrow_mut() = Some(Transaktion {
-            griff,
-            vorgang: None,
-            zeile,
-            simulation: None,
-            sperrdialog_offen: false,
-        });
+        let eigener_vorgang = self.transaktion.borrow().is_some();
+        match zustand {
+            Zustand::Laeuft { status, .. } => {
+                if !sichtbar {
+                    debug("transaktion\twieder-angebunden\t1");
+                }
+                if let Some(b) = self.beobachter.borrow_mut().as_mut() {
+                    b.2 = true;
+                }
+                if !eigener_vorgang {
+                    let f = &self.fortschritt;
+                    f.vorgang
+                        .set_text("Wieder angebunden: laufender Vorgang der Paketverwaltung");
+                    f.balken.set_fraction(0.0);
+                    f.balken.set_text(Some("…"));
+                    f.status.set_text(&status);
+                    f.leiste.set_visible(true);
+                    f.abbrechen.set_sensitive(true);
+                }
+            }
+            ende => {
+                *self.beobachter.borrow_mut() = None;
+                if !sichtbar {
+                    debug("transaktion\twieder-angebunden\t0");
+                    if let Zustand::Fehlgeschlagen(e) = &ende {
+                        eprintln!(
+                            "querencia-software: Wiederanbindung: {}",
+                            qs_transaktion::fehlertexte::kurz(e)
+                        );
+                    }
+                    return;
+                }
+                debug("transaktion\twieder-angebunden-ende");
+                if !eigener_vorgang {
+                    self.fortschritt.leiste.set_visible(false);
+                }
+                self.melde("Früherer Vorgang der Paketverwaltung beendet.");
+                self.paketstand_laden(false);
+            }
+        }
     }
 
     fn abbrechen(&self) {
@@ -1193,17 +1382,21 @@ impl Fenster {
             self.fortschritt.abbrechen.set_sensitive(false);
             self.fortschritt.status.set_text("Wird abgebrochen …");
             t.griff.abbrechen();
+        } else if let Some((_, griff, true)) = self.beobachter.borrow().as_ref() {
+            self.fortschritt.abbrechen.set_sensitive(false);
+            self.fortschritt.status.set_text("Wird abgebrochen …");
+            griff.abbrechen();
         }
     }
 
-    fn zustand_gemeldet(self: &Rc<Self>, zustand: Zustand) {
+    fn zustand_gemeldet(self: &Rc<Self>, generation: u64, zustand: Zustand) {
         let f = &self.fortschritt;
         let (titel, paketname) = match self.transaktion.borrow().as_ref() {
-            Some(t) => (
+            Some(t) if t.generation == generation => (
                 t.zeile.titel.clone(),
                 t.zeile.paketname.clone().unwrap_or_default(),
             ),
-            None => return,
+            _ => return,
         };
         match zustand {
             Zustand::Simuliert(sim) => {
@@ -1215,6 +1408,16 @@ impl Fenster {
                         .collect::<Vec<_>>()
                         .join(",")
                 ));
+                debug(&format!(
+                    "simulation\t{}\t{}\t{}",
+                    sim.installieren
+                        .iter()
+                        .map(|p| p.name.as_str())
+                        .collect::<Vec<_>>()
+                        .join(","),
+                    sim.aktualisieren.len(),
+                    sim.download_bytes
+                ));
                 if let Some(t) = self.transaktion.borrow_mut().as_mut() {
                     t.simulation = Some(sim);
                 }
@@ -1223,32 +1426,50 @@ impl Fenster {
             }
             Zustand::WartetAufBestaetigung => {
                 debug("transaktion\twartet-auf-bestaetigung");
-                let sim = self
+                let (sim, vorgang) = self
                     .transaktion
                     .borrow()
                     .as_ref()
-                    .and_then(|t| t.simulation.clone())
+                    .map(|t| (t.simulation.clone().unwrap_or_default(), t.vorgang.clone()))
                     .unwrap_or_default();
+                let entfernen = vorgang == Some(Vorgang::Entfernen);
                 let w1 = Rc::downgrade(self);
                 let w2 = Rc::downgrade(self);
-                dialoge::bestaetigen_entfernen(
-                    &self.window,
-                    &titel,
-                    &sim,
-                    Box::new(move || {
-                        if let Some(s) = w1.upgrade() {
-                            if let Some(t) = s.transaktion.borrow().as_ref() {
-                                s.fortschritt.status.set_text("Bestätigt, entferne …");
-                                t.griff.bestaetigen();
-                            }
+                let bestaetigt: Box<dyn Fn()> = Box::new(move || {
+                    if let Some(s) = w1.upgrade() {
+                        if let Some(t) = s.transaktion.borrow().as_ref() {
+                            s.fortschritt.status.set_text(if entfernen {
+                                "Bestätigt, entferne …"
+                            } else {
+                                "Bestätigt, installiere …"
+                            });
+                            t.griff.bestaetigen();
                         }
-                    }),
-                    Box::new(move || {
-                        if let Some(s) = w2.upgrade() {
-                            s.abbrechen();
-                        }
-                    }),
-                );
+                    }
+                });
+                let abgelehnt: Box<dyn Fn()> = Box::new(move || {
+                    if let Some(s) = w2.upgrade() {
+                        s.abbrechen();
+                    }
+                });
+                if entfernen {
+                    dialoge::bestaetigen_entfernen(
+                        &self.window,
+                        &titel,
+                        &sim,
+                        bestaetigt,
+                        abgelehnt,
+                    );
+                } else {
+                    // SW-4: auch Installieren mit Zusatzpaketen oder > 50 MiB.
+                    dialoge::bestaetigen_installieren(
+                        &self.window,
+                        &titel,
+                        &sim,
+                        bestaetigt,
+                        abgelehnt,
+                    );
+                }
             }
             Zustand::Laeuft { prozent, status } => {
                 match prozent {
@@ -1263,6 +1484,37 @@ impl Fenster {
                     "transaktion\tlaeuft\t{}\t{status}",
                     prozent.map(|p| p.to_string()).unwrap_or_else(|| "-".into())
                 ));
+                let nachfrage = qs_transaktion::ist_nachfrage(&Zustand::Laeuft {
+                    prozent,
+                    status: status.clone(),
+                });
+                let schon_offen = !nachfrage
+                    || self
+                        .transaktion
+                        .borrow_mut()
+                        .as_mut()
+                        .map(|t| std::mem::replace(&mut t.nachfrage_offen, true))
+                        .unwrap_or(true);
+                if !schon_offen {
+                    let w1 = Rc::downgrade(self);
+                    let w2 = Rc::downgrade(self);
+                    dialoge::nachfrage(
+                        &self.window,
+                        &status,
+                        Box::new(move || {
+                            if let Some(s) = w1.upgrade() {
+                                if let Some(t) = s.transaktion.borrow_mut().as_mut() {
+                                    t.nachfrage_offen = false;
+                                }
+                            }
+                        }),
+                        Box::new(move || {
+                            if let Some(s) = w2.upgrade() {
+                                s.abbrechen();
+                            }
+                        }),
+                    );
+                }
             }
             Zustand::WartetAufSperre { .. } => {
                 debug("transaktion\twartet-auf-sperre");
@@ -1298,11 +1550,17 @@ impl Fenster {
             }
             Zustand::Fertig => {
                 debug(&format!("transaktion\tfertig\t{paketname}"));
-                let vorgang = self
+                let (vorgang, neustart) = self
                     .transaktion
                     .borrow()
                     .as_ref()
-                    .and_then(|t| t.vorgang.clone());
+                    .map(|t| {
+                        (
+                            t.vorgang.clone(),
+                            self.backends.monitor.braucht_neustart(t.griff.id),
+                        )
+                    })
+                    .unwrap_or_default();
                 self.beende_transaktion();
                 let was = match vorgang {
                     Some(Vorgang::Installieren) => "installiert",
@@ -1310,28 +1568,29 @@ impl Fenster {
                     Some(Vorgang::Aktualisieren) => "aktualisiert",
                     _ => "abgeschlossen",
                 };
-                self.melde(&format!("{titel} wurde {was}."));
+                let text = if neustart {
+                    debug("transaktion\tneustart");
+                    format!("{titel} wurde {was}. Ein Neustart ist nötig.")
+                } else {
+                    format!("{titel} wurde {was}.")
+                };
+                self.benachrichtigen(&text);
+                self.melde(&text);
                 self.paketstand_laden(false);
             }
             Zustand::Fehlgeschlagen(e) => {
                 debug(&format!("transaktion\tfehler\t{e:?}"));
                 self.beende_transaktion();
+                self.benachrichtigen(&format!("{titel}: Vorgang fehlgeschlagen"));
                 self.melde(&format!("{titel}: {}", fehlertext(&e)));
-                match e {
-                    Fehler::KeinAgent => dialoge::kein_agent(&self.window),
-                    Fehler::NichtBerechtigt => dialoge::meldung(
-                        &self.window,
-                        "Keine Berechtigung",
-                        &fehlertext(&e),
-                        "nicht-berechtigt",
-                    ),
-                    other => dialoge::meldung(
-                        &self.window,
-                        "Vorgang fehlgeschlagen",
-                        &fehlertext(&other),
-                        "fehler",
-                    ),
-                }
+                // Dialogtexte von SW-4 (Überschrift, Erklärung, Handlung).
+                let text = qs_transaktion::fehlertexte::fehlertext(&e);
+                let kennung = match e {
+                    Fehler::KeinAgent => "kein-agent",
+                    Fehler::NichtBerechtigt => "nicht-berechtigt",
+                    _ => "fehler",
+                };
+                dialoge::fehler(&self.window, &text, kennung);
             }
             Zustand::Abgebrochen => {
                 debug("transaktion\tabgebrochen");
@@ -1340,6 +1599,23 @@ impl Fenster {
                 self.paketstand_laden(false);
             }
         }
+    }
+
+    /// Meldung an den Benachrichtigungsdienst der Sitzung, wenn das Fenster
+    /// gerade nicht aktiv ist (Vorgang im Hintergrund abgeschlossen). „Nicht
+    /// stören“ entscheidet der Dienst (Querencia Benachrichtigungen).
+    fn benachrichtigen(&self, text: &str) {
+        if self.window.is_active() {
+            return;
+        }
+        let Some(app) = self.window.application() else {
+            return;
+        };
+        let n = gio::Notification::new(APP_NAME);
+        n.set_body(Some(text));
+        n.set_icon(&gio::ThemedIcon::new(crate::APP_ID));
+        app.send_notification(Some("vorgang"), &n);
+        debug(&format!("benachrichtigung\t{text}"));
     }
 
     fn beende_transaktion(&self) {

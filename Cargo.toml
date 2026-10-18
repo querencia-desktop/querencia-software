@@ -1,0 +1,30 @@
+# Querencia Software – Integrations-Workspace (SW-6).
+#
+# Einziges Mitglied ist das Programm (`programm/`, übernommen aus SW-3 per git subtree).
+# Die Bibliotheken der Teilprojekte bleiben in ihren eigenen Repos und werden als
+# Pfad-Abhängigkeiten auf die getaggten Stände eingebunden (Prüfung: `werkzeug/teile-pruefen.sh`).
+# Sie können keine Mitglieder sein: qs_paketkit und qs_transaktion haben eigene
+# `[workspace]`-Tabellen, und Mitglieder außerhalb dieses Ordners verlangen Änderungen in
+# den Teil-Repos (`package.workspace`).
+[workspace]
+resolver = "2"
+members = ["programm"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.92"
+license = "GPL-3.0-or-later"
+publish = false
+
+[workspace.dependencies]
+# SW-1, Tag paketkit/0.1.0
+qs_typen = { path = "../querencia-software-paketkit/qs_typen" }
+qs_paketkit = { path = "../querencia-software-paketkit" }
+# SW-2, Tag katalog/0.1.0
+qs_katalog = { path = "../querencia-software-katalog" }
+# SW-4, Tag transaktion/0.1.1
+qs_transaktion = { path = "../querencia-software-transaktion/qs_transaktion", features = ["glib"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

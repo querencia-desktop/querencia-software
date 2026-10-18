@@ -6,27 +6,31 @@
 //! Seitenleiste mit Kategorien, Liste, Detailseite, Fortschrittsleiste,
 //! Statuszeile – alles deutsch.
 //!
-//! Die Oberfläche spricht nur über die Traits in `schnittstellen` mit den
-//! Backends (`Rc<dyn Paketquelle>`, `Rc<dyn Katalog>`,
-//! `Rc<dyn Transaktionsmonitor>`). Ohne echte Backends laufen die Attrappen
-//! aus `attrappen` (`QS_ATTRAPPE=1`); siehe `backends()`.
+//! Die Oberfläche spricht über die Traits in `schnittstellen` mit den
+//! Backends (`Rc<dyn Paketquelle>`, `Rc<dyn Katalog>`, Transaktionsmonitor).
+//! Seit der Integration (SW-6) sind das PackageKit (`qs_paketkit`, SW-1),
+//! AppStream (`qs_katalog`, SW-2) und `qs_transaktion::Monitor` (SW-4);
+//! `QS_ATTRAPPE=1` schaltet auf die Attrappen aus `attrappen` um (GUI-Prüfung
+//! ohne Daemon). Siehe `backends()` und `echt`.
 //!
 //! `QS_DEBUG=1` schreibt für die isolierte GUI-Prüfung Zustände und
 //! Widget-Positionen nach stdout (Format: Tab-getrennt, siehe `fenster.rs`).
 
 mod attrappen;
 mod dialoge;
+mod echt;
 mod fenster;
 mod logik;
-mod monitor;
 mod schnittstellen;
 
+use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::Instant;
 
 use gtk::prelude::*;
 use gtk::{gio, glib};
 
-use schnittstellen::{Katalog, Paketquelle, Transaktionsmonitor};
+use schnittstellen::{Katalog, Paketquelle};
 
 pub const APP_ID: &str = "org.querencia.Software";
 pub const APP_NAME: &str = "Querencia Software";
@@ -47,52 +51,100 @@ pub fn debug(zeile: &str) {
     }
 }
 
-/// Die drei Backends der Oberfläche.
+/// Zeitpunkt des Programmstarts (für die Startzeit-Messung, `zeit`-Zeilen).
+pub fn seit_start_ms() -> u128 {
+    START.get_or_init(Instant::now).elapsed().as_millis()
+}
+static START: std::sync::OnceLock<Instant> = std::sync::OnceLock::new();
+
+/// Die Backends der Oberfläche.
 pub struct Backends {
     pub quelle: Rc<dyn Paketquelle>,
-    pub katalog: Rc<dyn Katalog>,
-    pub monitor: Rc<dyn Transaktionsmonitor>,
+    /// Im echten Betrieb zuerst `LeererKatalog`, nach dem Laden im
+    /// Hintergrund-Thread der AppStream-Katalog.
+    pub katalog: RefCell<Rc<dyn Katalog>>,
+    pub monitor: Rc<qs_transaktion::Monitor>,
+    /// Installiert-Zustand der Katalog-Pakete (INTEGRATION.md Nr. 6).
+    pub aufloeser: Rc<dyn echt::Aufloeser>,
+    /// `Some`: Katalog muss noch geladen werden (echter Betrieb).
+    pub katalog_laden: RefCell<Option<qs_katalog::Konfiguration>>,
+    /// Echter Betrieb (PackageKit/AppStream) statt Attrappen.
+    pub echt: bool,
 }
 
-/// INTEGRATION: Hier echte Backends einhängen. Vorgesehen:
-///
-/// ```ignore
-/// if std::env::var_os("QS_ATTRAPPE").is_some() { attrappen() } else {
-///     let quelle = Rc::new(qs_paketkit::PackageKitQuelle::verbinden().await?);
-///     let mut katalog = qs_katalog::AppStreamKatalog::new();   // laden() im Hintergrund-Thread
-///     let monitor = Rc::new(qs_transaktion::Monitor::new());
-///     …
-/// }
-/// ```
-/// Solange die echten Crates fehlen, laufen immer die Attrappen; ohne
-/// `QS_ATTRAPPE` wird eine Warnung auf stderr ausgegeben.
+/// `QS_ATTRAPPE=1`: Attrappen von SW-3 (30 Beispielanwendungen, simulierte
+/// Transaktionen), sonst PackageKit (`qs_paketkit`, Systembus oder
+/// `QS_PK_BUS`) und AppStream (`qs_katalog`). Der Transaktionsmonitor ist in
+/// beiden Fällen `qs_transaktion::Monitor`; sein Protokoll geht nach
+/// `~/.local/state/querencia/software.log` (umlenkbar mit `QS_LOG`).
+/// `QS_NUR_LESEN=1` sperrt schreibende Vorgänge (`echt::NurLesen`).
 pub fn backends() -> Backends {
-    if std::env::var_os("QS_ATTRAPPE").is_none() {
-        eprintln!("querencia-software: keine echten Backends eingebunden, verwende Attrappen (QS_ATTRAPPE=1 unterdrückt diese Meldung)");
-    }
-    let quelle = Rc::new(attrappen::AttrappeQuelle::new());
-    let mut katalog = attrappen::AttrappeKatalog::new();
-    match katalog.laden() {
-        Ok(s) => {
-            debug(&format!(
-                "katalog\t{}\t{}\t{}\t{}\t{}",
-                s.komponenten,
-                s.mit_paket,
-                s.mit_symbol,
-                s.deutsch,
-                s.quellen.join(",")
-            ));
+    let monitor = Rc::new(qs_transaktion::Monitor::neu(Rc::new(
+        qs_transaktion::laufzeit::GlibLaufzeit,
+    )));
+    if std::env::var_os("QS_ATTRAPPE").is_some() {
+        let quelle: Rc<dyn Paketquelle> = Rc::new(attrappen::AttrappeQuelle::new());
+        let mut katalog = attrappen::AttrappeKatalog::new();
+        match katalog.laden() {
+            Ok(s) => debug_katalog(&s),
+            Err(e) => eprintln!("querencia-software: Katalog nicht ladbar: {e}"),
         }
-        Err(e) => eprintln!("querencia-software: Katalog nicht ladbar: {e}"),
+        debug("backends\tattrappe");
+        return Backends {
+            aufloeser: Rc::new(echt::LeersucheAufloeser(quelle.clone())),
+            quelle,
+            katalog: RefCell::new(Rc::new(katalog)),
+            monitor,
+            katalog_laden: RefCell::new(None),
+            echt: false,
+        };
     }
+    let (quelle, aufloeser): (Rc<dyn Paketquelle>, Rc<dyn echt::Aufloeser>) =
+        match qs_paketkit::PaketKit::neu_blockierend() {
+            Ok(pk) => (Rc::new(pk.clone()), Rc::new(echt::PaketKitAufloeser(pk))),
+            Err(e) => {
+                eprintln!("querencia-software: keine Verbindung zu PackageKit: {e:?}");
+                (
+                    Rc::new(echt::OhneVerbindung(e.clone())),
+                    Rc::new(echt::OhneVerbindung(e)),
+                )
+            }
+        };
+    let nur_lesen = std::env::var_os("QS_NUR_LESEN").is_some_and(|v| v == "1");
+    let quelle: Rc<dyn Paketquelle> = if nur_lesen {
+        Rc::new(echt::NurLesen(quelle))
+    } else {
+        quelle
+    };
+    debug(&format!(
+        "backends\techt\t{}\t{}",
+        std::env::var("QS_PK_BUS").unwrap_or_else(|_| "system".into()),
+        if nur_lesen { "nur-lesen" } else { "schreibend" }
+    ));
     Backends {
         quelle,
-        katalog: Rc::new(katalog),
-        monitor: Rc::new(monitor::LokalerMonitor::new()),
+        katalog: RefCell::new(Rc::new(echt::LeererKatalog)),
+        monitor,
+        aufloeser,
+        katalog_laden: RefCell::new(Some(echt::katalog_konfiguration())),
+        echt: true,
     }
+}
+
+/// `katalog`-Zeile der Debug-Ausgabe.
+pub fn debug_katalog(s: &qs_typen::Statistik) {
+    debug(&format!(
+        "katalog\t{}\t{}\t{}\t{}\t{}",
+        s.komponenten,
+        s.mit_paket,
+        s.mit_symbol,
+        s.deutsch,
+        s.quellen.join(",")
+    ));
 }
 
 fn main() -> glib::ExitCode {
+    seit_start_ms();
     if std::env::args().nth(1).as_deref() == Some("--version") {
         println!("{APP_NAME} {}", env!("CARGO_PKG_VERSION"));
         return glib::ExitCode::SUCCESS;

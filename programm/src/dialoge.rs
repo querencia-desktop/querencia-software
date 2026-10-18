@@ -1,5 +1,7 @@
-//! Dialoge: Info (Querencia-Q), Bestätigung vor dem Entfernen (mit
-//! Simulationsliste), Meldung, Erklärdialog „KeinAgent“, Sperre belegt.
+//! Dialoge: Info (Querencia-Q), Bestätigung vor dem Entfernen bzw. vor einer
+//! Installation mit Zusatzpaketen (mit Simulationsliste), Meldung,
+//! Fehlerdialog mit den Texten von SW-4 (auch „KeinAgent“), Sperre belegt,
+//! Nachfrage bei fehlendem Fortschritt.
 //! Dialoge sind gewöhnliche modale Fenster ohne eigene Titelleiste: labwc
 //! dekoriert sie wie jedes andere Fenster.
 
@@ -207,18 +209,20 @@ pub fn meldung(parent: &impl IsA<gtk::Window>, titel: &str, text: &str, kennung:
     close.grab_focus();
 }
 
-/// Erklärdialog für `Fehler::KeinAgent` (G2-I, Abschnitt 1.4).
-pub fn kein_agent(parent: &impl IsA<gtk::Window>) {
+/// Fehlerdialog mit Überschrift, Erklärung und Handlung aus
+/// `qs_transaktion::fehlertexte` (SW-4). Bei `Fehler::KeinAgent` erklärt er,
+/// dass der Berechtigungsdialog der Sitzung (querencia-polkit-agent) fehlt –
+/// der Pfad bleibt für Sitzungen ohne Agent erhalten.
+pub fn fehler(
+    parent: &impl IsA<gtk::Window>,
+    text: &qs_transaktion::fehlertexte::Fehlertext,
+    kennung: &'static str,
+) {
     meldung(
         parent,
-        "Berechtigungsdialog fehlt",
-        "Es fehlt der Berechtigungsdialog der Sitzung (polkit-Agent). Ohne ihn kann \
-         kein Programm Software installieren oder entfernen, weil die Sitzung die \
-         Nachfrage nach dem Passwort nicht anzeigen kann.\n\n\
-         Der Agent gehört zur Sitzungsverwaltung von Querencia Desktop (Teilprojekt \
-         G2-K) und wird mit ihr nachgeliefert. Bis dahin ist dieser Vorgang nicht \
-         möglich.",
-        "kein-agent",
+        &text.ueberschrift,
+        &format!("{}\n\n{}", text.erklaerung, text.handlung),
+        kennung,
     );
 }
 
@@ -295,6 +299,94 @@ pub fn bestaetigen_entfernen(
     window.set_default_width(460);
     window.present();
     knopf_entfernen.grab_focus();
+}
+
+/// Bestätigung vor einer Installation, die Zusatzpakete mitbringt oder
+/// mehr als 50 MiB lädt (SW-4, `braucht_bestaetigung`). Eingabetaste
+/// installiert, Escape oder „Abbrechen“ bricht ab.
+pub fn bestaetigen_installieren(
+    parent: &impl IsA<gtk::Window>,
+    name: &str,
+    simulation: &Simulation,
+    installieren: Box<dyn Fn()>,
+    abbrechen: Box<dyn Fn()>,
+) {
+    let window = modal_window(parent, "Installation bestätigen", "installieren");
+    let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
+    let frage = gtk::Label::new(None);
+    frage.set_markup(&format!(
+        "<b>Soll „{}“ installiert werden?</b>",
+        glib::markup_escape_text(name)
+    ));
+    frage.set_xalign(0.0);
+    body.append(&frage);
+    let mut zusatz: Vec<Paket> = simulation.installieren.clone();
+    zusatz.extend(simulation.aktualisieren.iter().cloned());
+    let mut text = format!("Zusätzlich werden installiert ({}):", zusatz.len());
+    if simulation.download_bytes > 0 {
+        text.push_str(&format!(
+            "\nHerunterzuladen: {}",
+            crate::logik::groesse_text(simulation.download_bytes)
+        ));
+    }
+    let hinweis = gtk::Label::new(Some(&text));
+    hinweis.set_xalign(0.0);
+    body.append(&hinweis);
+    body.append(&paketliste(&zusatz));
+    if !simulation.entfernen.is_empty() {
+        let warnung = gtk::Label::new(Some(&format!(
+            "Dafür werden entfernt ({}):",
+            simulation.entfernen.len()
+        )));
+        warnung.set_xalign(0.0);
+        body.append(&warnung);
+        body.append(&paketliste(&simulation.entfernen));
+    }
+    let abbruch_rc = std::rc::Rc::new(abbrechen);
+    let a1 = abbruch_rc.clone();
+    let knopf_abbrechen = knopf_schliesst(&window, "_Abbrechen", Some(Box::new(move || a1())));
+    let knopf_ok = knopf_schliesst(&window, "_Installieren", Some(installieren));
+    knopf_ok.add_css_class("suggested-action");
+    window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_ok])));
+    window.set_default_widget(Some(&knopf_ok));
+    let a2 = abbruch_rc.clone();
+    close_on_escape(&window, Some(Box::new(move || a2())));
+    window.set_default_width(460);
+    window.present();
+    knopf_ok.grab_focus();
+}
+
+/// Nachfrage, wenn ein Vorgang lange keinen Fortschritt meldet (SW-4,
+/// `ist_nachfrage`): „Weiter warten“ (nichts tun) oder „Abbrechen“.
+pub fn nachfrage(
+    parent: &impl IsA<gtk::Window>,
+    text: &str,
+    warten: Box<dyn Fn()>,
+    abbrechen: Box<dyn Fn()>,
+) {
+    let window = modal_window(parent, "Vorgang dauert lange", "nachfrage");
+    let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
+    let ueberschrift = gtk::Label::new(None);
+    ueberschrift.set_markup("<b>Der Vorgang meldet keinen Fortschritt</b>");
+    ueberschrift.set_xalign(0.0);
+    let label = gtk::Label::new(Some(&format!(
+        "{text}\n\nSie können weiter warten oder den Vorgang abbrechen."
+    )));
+    label.set_wrap(true);
+    label.set_max_width_chars(60);
+    label.set_xalign(0.0);
+    body.append(&ueberschrift);
+    body.append(&label);
+    let abbruch_rc = std::rc::Rc::new(abbrechen);
+    let a1 = abbruch_rc.clone();
+    let knopf_abbrechen = knopf_schliesst(&window, "_Abbrechen", Some(Box::new(move || a1())));
+    let knopf_warten = knopf_schliesst(&window, "_Weiter warten", Some(warten));
+    window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_warten])));
+    window.set_default_widget(Some(&knopf_warten));
+    let a2 = abbruch_rc.clone();
+    close_on_escape(&window, Some(Box::new(move || a2())));
+    window.present();
+    knopf_warten.grab_focus();
 }
 
 /// Sperre belegt: Warten (erneut versuchen) oder Abbrechen. Alt+W / Eingabe
