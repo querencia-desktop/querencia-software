@@ -136,10 +136,21 @@ def main() -> int:
         except (OSError, ProcessLookupError):
             pass
     time.sleep(1)
-    # Falls doch ein Portal lief: nur den eigenen Mount aushängen.
-    doc = os.path.join(runtime, "doc")
-    if os.path.ismount(doc):
-        subprocess.run(["fusermount3", "-u", doc], check=False)
+    # Falls doch ein Portal lief: nur Einhängepunkte unterhalb der eigenen Laufzeit
+    # aushängen. os.path.ismount() erkennt tote FUSE-Punkte nicht (PT-1), deshalb aus
+    # /proc/self/mountinfo lesen und fusermount3 -u auf <laufzeit>/doc immer versuchen.
+    eigene = {os.path.join(runtime, "doc")}
+    try:
+        with open("/proc/self/mountinfo") as f:
+            for zeile in f:
+                punkt = zeile.split()[4].replace("\\040", " ")
+                if punkt.startswith(runtime + os.sep):
+                    eigene.add(punkt)
+    except OSError:
+        pass
+    for punkt in sorted(eigene, reverse=True):
+        subprocess.run(["fusermount3", "-u", "-z", punkt], check=False,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     shutil.rmtree(runtime, ignore_errors=True)
     for pid in SESSION_LABWC_PIDS:
         assert os.path.exists(f"/proc/{pid}"), "Sitzungs-labwc verschwunden!"
