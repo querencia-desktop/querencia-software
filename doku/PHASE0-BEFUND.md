@@ -17,3 +17,9 @@ Diese Datei ersetzt die Checkliste nicht, sie hält den Stand vor der Live-Ablag
 - Die **Live-Ablage** (Programm, Menüeintrag, Symbol, MetaInfo) braucht keinen Agenten. Das Programm startet, lädt den Katalog und zeigt Paketstand und Aktualisierungen.
 - Eine **echte Installation** braucht den Agenten. Sie bleibt dem Besitzer vorbehalten: nach einer Neuanmeldung oder nach `~/opt/querencia/bin/querencia-polkit-agent &` aus einem Terminal der Sitzung. Danach ein kleines, harmloses Paket wie `sl` oder `cowsay` installieren und wieder entfernen.
 - Solange kein Agent läuft, endet jeder Installationsversuch mit dem Dialog „Berechtigungsdialog fehlt“. Am System passiert dabei nichts.
+
+## Nachtrag 22:21
+
+Der Besitzer hat den Agenten um 22:20:24 neu gestartet (`querencia-polkit-agent`, PID 1288664). Damit
+erscheint bei einer Installation der Passwortdialog statt „Berechtigungsdialog fehlt“. Die Status-Session
+hat bestätigt, dass `apt-config-icons` und `language-pack-gnome-de-base` nicht installiert sind.
