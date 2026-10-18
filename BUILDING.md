@@ -19,8 +19,12 @@ rustfmt --edition 2021 src/main.rs            # bzw. --check
 Das Release-Binary liegt unter `target/release/querencia-software`; seine
 Prüfsumme steht in `nachweis/release/SHA256SUMS`.
 
-**Symbol:** nur ein Platzhalter-Fenstersymbol als SVG-Ressource
-(`org.querencia.Software-fenster`, `werkzeug/ressourcen.sh` erzeugt
-`data/resource/software.gresource`). Keine PNG-Stufen: liegt ein Symbol in
-`48x48` und in Scalable, stürzt GTK 4.22 beim Schließen fokussierter Dialoge
-ab. Das endgültige Symbol liefert SW-5.
+**Symbole:** zwei SVG-Ressourcen unter `/org/querencia/Software/icons`
+(`werkzeug/ressourcen.sh` erzeugt `data/resource/software.gresource`):
+`org.querencia.Software-fenster` ist das Programmsymbol von SW-5 (byte-gleich
+mit `software-paket/0.1.1`, Prüfsumme in `data/resource/HERKUNFT`), benutzt
+als Fenstersymbol und im Info-Dialog; `org.querencia.Software-paket` ist das
+graue Ersatzsymbol für Anwendungen ohne Symbol. Keine PNG-Stufen: liegt ein
+Symbol in `48x48` und in Scalable, stürzt GTK 4.22 beim Schließen
+fokussierter Dialoge ab. `xmllint` fehlt auf der VM, daher ohne
+`xml-stripblanks`.

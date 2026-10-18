@@ -14,7 +14,9 @@
 //!
 //! `AttrappeKatalog`: 30 Anwendungen über alle 10 Kategorien, deutsche und
 //! (drei) englische Texte, Themensymbole aus Adwaita/hicolor, die auf der VM
-//! existieren; ein Symbol als Datei (htop).
+//! existieren; ein Symbol als Datei (htop), eines ohne Symbol (Seahorse) und
+//! eines mit einem Themennamen, den es nicht gibt (Font Manager) – beide
+//! zeigen das Ersatzsymbol.
 //!
 //! INTEGRATION: `main.rs` wählt zwischen Attrappen und echten Backends; die
 //! echten liegen in `qs_paketkit` (Quelle) und `qs_katalog` (Katalog).
@@ -108,9 +110,9 @@ fn rohdaten() -> Vec<Roh> {
         Roh { id: "org.virt-manager.virt-manager", name: "Virtuelle Maschinen", zusammenfassung: "Virtuelle Maschinen verwalten", paket: PAKET_KEIN_AGENT, version: "1:5.0.0-4", kategorien: &[K::System], symbol: thema("qemu"), kib: 8_700, lizenz: "GPL-2.0-or-later", homepage: "https://virt-manager.org", beschreibung: "Virt-Manager verwaltet virtuelle Maschinen über libvirt: anlegen, starten, Konsole, Speicher und Netzwerke.\n\n(Attrappe: liefert „KeinAgent“.)", installiert: false },
         Roh { id: "org.wireshark.Wireshark", name: "Wireshark", zusammenfassung: "Netzwerkverkehr mitschneiden und auswerten", paket: PAKET_NICHT_BERECHTIGT, version: "4.4.9-1", kategorien: &[K::System, K::Internet], symbol: thema("network-workgroup"), kib: 110_000, lizenz: "GPL-2.0-or-later", homepage: "https://www.wireshark.org", beschreibung: "Wireshark analysiert Netzwerkprotokolle Paket für Paket, live oder aus Mitschnittdateien.\n\n(Attrappe: liefert „NichtBerechtigt“.)", installiert: false },
         // Sonstiges
-        Roh { id: "org.gnome.FontManager", name: "Schriftverwaltung", zusammenfassung: "Schriften ansehen und verwalten", paket: "font-manager", version: "0.9.1-1", kategorien: &[K::Sonstiges], symbol: thema("font-x-generic"), kib: 3_400, lizenz: "GPL-3.0-or-later", homepage: "https://fontmanager.github.io", beschreibung: "Font Manager zeigt installierte Schriften mit Vorschau, Sammlungen und Vergleich.", installiert: false },
+        Roh { id: "org.gnome.FontManager", name: "Schriftverwaltung", zusammenfassung: "Schriften ansehen und verwalten", paket: "font-manager", version: "0.9.1-1", kategorien: &[K::Sonstiges], symbol: thema("querencia-gibt-es-nicht"), kib: 3_400, lizenz: "GPL-3.0-or-later", homepage: "https://fontmanager.github.io", beschreibung: "Font Manager zeigt installierte Schriften mit Vorschau, Sammlungen und Vergleich.\n\n(Attrappe: Themensymbol, das es nicht gibt → Ersatzsymbol.)", installiert: false },
         Roh { id: "system-config-printer.desktop", name: "Drucker", zusammenfassung: "Drucker einrichten", paket: "system-config-printer", version: "1.5.18-2", kategorien: &[K::Sonstiges, K::System], symbol: thema("printer"), kib: 2_600, lizenz: "GPL-2.0-or-later", homepage: "https://github.com/OpenPrinting/system-config-printer", beschreibung: "Druckerverwaltung für CUPS: Drucker hinzufügen, Treiber wählen, Warteschlangen und Testseiten.", installiert: false },
-        Roh { id: "org.gnome.seahorse.Application", name: "Passwörter und Schlüssel", zusammenfassung: "Schlüssel und Passwörter verwalten", paket: "seahorse", version: "47.0.1-1", kategorien: &[K::Sonstiges], symbol: thema("application-certificate"), kib: 4_900, lizenz: "GPL-2.0-or-later", homepage: "https://wiki.gnome.org/Apps/Seahorse", beschreibung: "Seahorse verwaltet PGP- und SSH-Schlüssel sowie Passwörter im Schlüsselbund.", installiert: false },
+        Roh { id: "org.gnome.seahorse.Application", name: "Passwörter und Schlüssel", zusammenfassung: "Schlüssel und Passwörter verwalten", paket: "seahorse", version: "47.0.1-1", kategorien: &[K::Sonstiges], symbol: Symbol::Keines, kib: 4_900, lizenz: "GPL-2.0-or-later", homepage: "https://wiki.gnome.org/Apps/Seahorse", beschreibung: "Seahorse verwaltet PGP- und SSH-Schlüssel sowie Passwörter im Schlüsselbund.\n\n(Attrappe: ohne Symbol → Ersatzsymbol.)", installiert: false },
     ]
 }
 

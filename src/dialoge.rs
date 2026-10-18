@@ -18,7 +18,7 @@ use crate::APP_NAME;
 /// Schließen eines fokussierten Dialogs ab, siehe
 /// ). Das endgültige
 /// App-Symbol liefert SW-5.
-const WINDOW_ICON: &str = "org.querencia.Software-fenster";
+pub const WINDOW_ICON: &str = "org.querencia.Software-fenster";
 
 /// Bettet das Fenstersymbol als Ressource ein und macht es dem Symbolthema
 /// bekannt; läuft nach dem Start von GTK.
@@ -28,8 +28,15 @@ pub fn register_window_icon() {
         Ok(resource) => {
             gio::resources_register(&resource);
             if let Some(display) = gdk::Display::default() {
-                gtk::IconTheme::for_display(&display)
-                    .add_resource_path("/org/querencia/Software/icons");
+                let thema = gtk::IconTheme::for_display(&display);
+                thema.add_resource_path("/org/querencia/Software/icons");
+                debug(&format!(
+                    "symbole\t{}\t{}\t{}\t{}",
+                    WINDOW_ICON,
+                    thema.has_icon(WINDOW_ICON),
+                    crate::logik::ERSATZSYMBOL,
+                    thema.has_icon(crate::logik::ERSATZSYMBOL)
+                ));
             }
         }
         Err(err) => eprintln!("querencia-software: Ressourcen nicht lesbar: {err}"),
@@ -128,11 +135,25 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
     let window = modal_window(parent, &format!("Info zu {APP_NAME}"), "info");
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     body.set_halign(gtk::Align::Center);
-    if let Ok(texture) = gdk::Texture::from_bytes(&glib::Bytes::from_static(LOGO_64)) {
+    // Programmsymbol (SW-5) neben dem Querencia-Q.
+    let symbole = gtk::Box::new(gtk::Orientation::Horizontal, 16);
+    symbole.set_halign(gtk::Align::Center);
+    let programm = gtk::Image::from_icon_name(WINDOW_ICON);
+    programm.set_pixel_size(64);
+    symbole.append(&programm);
+    let mit_q = if let Ok(texture) = gdk::Texture::from_bytes(&glib::Bytes::from_static(LOGO_64)) {
         let image = gtk::Image::from_paintable(Some(&texture));
         image.set_pixel_size(64);
-        body.append(&image);
-    }
+        symbole.append(&image);
+        true
+    } else {
+        false
+    };
+    body.append(&symbole);
+    debug(&format!(
+        "info-symbole\t{WINDOW_ICON}\t{}",
+        if mit_q { "querencia-q" } else { "-" }
+    ));
     let name = gtk::Label::new(None);
     name.set_markup(&format!(
         "<b><big>{APP_NAME} {}</big></b>",

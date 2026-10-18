@@ -144,6 +144,36 @@ impl Paketstand {
     }
 }
 
+/// Woher das Symbol einer Zeile kommt.
+#[derive(Clone, Debug, PartialEq)]
+pub enum SymbolWahl {
+    Datei(std::path::PathBuf),
+    Thema(String),
+    /// Eigenes graues Paketsymbol (`ERSATZSYMBOL`).
+    Ersatz,
+}
+
+/// Name des eingebetteten Ersatzsymbols für Anwendungen ohne Symbol.
+pub const ERSATZSYMBOL: &str = "org.querencia.Software-paket";
+
+/// Symbolwahl: Datei vom Katalog (nur wenn vorhanden), sonst das Symbol der
+/// Anwendung – ein Themenname nur, wenn das Thema ihn kennt, eine Datei nur,
+/// wenn sie existiert –, sonst das Ersatzsymbol. Nie ein kaputtes Bild.
+pub fn symbol_wahl(
+    katalog_pfad: Option<std::path::PathBuf>,
+    symbol: &Symbol,
+    thema_hat: impl Fn(&str) -> bool,
+) -> SymbolWahl {
+    if let Some(p) = katalog_pfad.filter(|p| p.is_file()) {
+        return SymbolWahl::Datei(p);
+    }
+    match symbol {
+        Symbol::Thema(n) if !n.is_empty() && thema_hat(n) => SymbolWahl::Thema(n.clone()),
+        Symbol::Datei(p) if p.is_file() => SymbolWahl::Datei(p.clone()),
+        _ => SymbolWahl::Ersatz,
+    }
+}
+
 /// Sortierschlüssel: Groß/Klein und Umlaute gleichwertig (ä→a usw.).
 pub fn sortierschluessel(s: &str) -> String {
     s.chars()
@@ -581,6 +611,58 @@ mod tests {
             .block_on(quelle.simulieren(Vorgang::Entfernen, vec![p.id.clone()]))
             .unwrap();
         assert!(sim.entfernen.iter().any(|x| x.name == "gimp"));
+    }
+
+    #[test]
+    fn symbolwahl_nie_kaputt() {
+        use std::path::PathBuf;
+        let ja = |_: &str| true;
+        let nein = |_: &str| false;
+        let htop = PathBuf::from("/usr/share/icons/hicolor/scalable/apps/htop.svg");
+        let fehlt = PathBuf::from("/gibt/es/nicht.png");
+        // Katalogdatei hat Vorrang, aber nur wenn sie existiert
+        assert_eq!(
+            symbol_wahl(Some(htop.clone()), &Symbol::Keines, ja),
+            SymbolWahl::Datei(htop.clone())
+        );
+        assert_eq!(
+            symbol_wahl(Some(fehlt.clone()), &Symbol::Keines, ja),
+            SymbolWahl::Ersatz
+        );
+        // Themenname nur, wenn das Thema ihn kennt
+        assert_eq!(
+            symbol_wahl(None, &Symbol::Thema("gimp".into()), ja),
+            SymbolWahl::Thema("gimp".into())
+        );
+        assert_eq!(
+            symbol_wahl(None, &Symbol::Thema("gimp".into()), nein),
+            SymbolWahl::Ersatz
+        );
+        assert_eq!(
+            symbol_wahl(None, &Symbol::Thema(String::new()), ja),
+            SymbolWahl::Ersatz
+        );
+        // Datei nur, wenn vorhanden
+        assert_eq!(
+            symbol_wahl(None, &Symbol::Datei(htop.clone()), nein),
+            SymbolWahl::Datei(htop)
+        );
+        assert_eq!(
+            symbol_wahl(None, &Symbol::Datei(fehlt), ja),
+            SymbolWahl::Ersatz
+        );
+        assert_eq!(symbol_wahl(None, &Symbol::Keines, ja), SymbolWahl::Ersatz);
+    }
+
+    #[test]
+    fn attrappe_deckt_symbolfaelle_ab() {
+        let (katalog, _) = aufbau();
+        let alle = katalog.alle();
+        assert!(alle.iter().any(|a| a.symbol == Symbol::Keines));
+        assert!(alle.iter().any(|a| matches!(&a.symbol, Symbol::Datei(_))));
+        assert!(alle
+            .iter()
+            .any(|a| matches!(&a.symbol, Symbol::Thema(n) if n == "querencia-gibt-es-nicht")));
     }
 
     #[test]

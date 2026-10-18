@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Ersatzsymbol für Anwendungen ohne Symbol (SW-3): derselbe Karton wie das
+       Programmsymbol von SW-5, aber nur in Grau und ohne Pfeil. Flächig, kein
+       Verlauf. Nur SVG (Symbolregel GTK 4.22). -->
+  <rect x="8" y="22" width="48" height="37" rx="3" fill="#D9D9D9" stroke="#8C8C8C" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="4.5" y="11" width="55" height="12" rx="2.5" fill="#D9D9D9" stroke="#8C8C8C" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="27" y="12.5" width="10" height="9" fill="#BFBFBF"/>
+  <rect x="27" y="23.5" width="10" height="12" fill="#BFBFBF"/>
+</svg>

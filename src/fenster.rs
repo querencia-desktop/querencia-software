@@ -24,7 +24,7 @@ use qs_typen::{Fehler, Symbol, Vorgang};
 
 use crate::debug;
 use crate::dialoge;
-use crate::logik::{self, fehlertext, Ansicht, Paketstand, Zeile};
+use crate::logik::{self, fehlertext, Ansicht, Paketstand, SymbolWahl, Zeile};
 use crate::schnittstellen::{Auftrag, Simulation, TransaktionsGriff, Zustand};
 use crate::{Backends, APP_NAME};
 
@@ -33,7 +33,7 @@ const CSS: &str = include_str!("style.css");
 /// Rückruf einer Fensteraktion.
 type ActionFn = Box<dyn Fn(&Rc<Fenster>)>;
 
-const FALLBACK_SYMBOL: &str = "package-x-generic";
+const FALLBACK_SYMBOL: &str = logik::ERSATZSYMBOL;
 
 pub fn load_css() {
     let provider = gtk::CssProvider::new();
@@ -605,18 +605,17 @@ impl Fenster {
     }
 
     /// Symbol einer Zeile: Datei vom Katalog, sonst Themenname, sonst Fallback.
+    /// Symbol einer Zeile (siehe `logik::symbol_wahl`): nie ein kaputtes Bild.
     fn setze_symbol(&self, image: &gtk::Image, zeile: &Zeile, groesse: u32) {
         image.set_pixel_size(groesse as i32);
-        if let Some(a) = &zeile.anwendung {
-            if let Some(pfad) = self.backends.katalog.symbol_pfad(a, groesse) {
-                image.set_from_file(Some(&pfad));
-                return;
-            }
-        }
-        match &zeile.symbol {
-            Symbol::Thema(name) if symbol_vorhanden(name) => image.set_icon_name(Some(name)),
-            Symbol::Datei(p) if p.exists() => image.set_from_file(Some(p)),
-            _ => image.set_icon_name(Some(FALLBACK_SYMBOL)),
+        let pfad = zeile
+            .anwendung
+            .as_ref()
+            .and_then(|a| self.backends.katalog.symbol_pfad(a, groesse));
+        match logik::symbol_wahl(pfad, &zeile.symbol, symbol_vorhanden) {
+            SymbolWahl::Datei(p) => image.set_from_file(Some(&p)),
+            SymbolWahl::Thema(n) => image.set_icon_name(Some(&n)),
+            SymbolWahl::Ersatz => image.set_icon_name(Some(FALLBACK_SYMBOL)),
         }
     }
 
@@ -971,6 +970,11 @@ impl Fenster {
         *self.detail_zeile.borrow_mut() = Some(zeile.clone());
         self.stack.set_visible_child_name("details");
         d.zurueck.grab_focus();
+        debug(&format!(
+            "detailsymbol\t{}\t{}",
+            zeile.titel,
+            bildquelle(&d.symbol)
+        ));
         debug(&format!(
             "details\t{}\t{}\t{}",
             zeile.titel,
@@ -1403,6 +1407,9 @@ impl Fenster {
                     .map(|l| l.text().to_string())
                     .unwrap_or_default();
                 rechteck(&format!("zeile\t{i}\t{titel}"), &hbox);
+                if let Some(img) = finde_klasse(&hbox, "qs-symbol").and_downcast::<gtk::Image>() {
+                    debug(&format!("zeilensymbol\t{i}\t{titel}\t{}", bildquelle(&img)));
+                }
                 if let Some(b) = finde_klasse(&hbox, "qs-knopf").and_downcast::<gtk::Button>() {
                     let text = b.label().map(|t| t.to_string()).unwrap_or_default();
                     rechteck(&format!("knopf\t{i}\t{text}"), b.upcast_ref());
@@ -1461,6 +1468,18 @@ fn symbol_vorhanden(name: &str) -> bool {
     gdk::Display::default()
         .map(|d| gtk::IconTheme::for_display(&d).has_icon(name))
         .unwrap_or(false)
+}
+
+/// Woher ein Bild kommt (nur für die Debug-Ausgabe): `thema:<name>`,
+/// `datei:<pfad>` oder `leer`.
+fn bildquelle(img: &gtk::Image) -> String {
+    if let Some(n) = img.icon_name() {
+        format!("thema:{n}")
+    } else if let Some(f) = img.file() {
+        format!("datei:{f}")
+    } else {
+        "leer".into()
+    }
 }
 
 /// Ist unter `wurzel` ein Popover (Menü) sichtbar?

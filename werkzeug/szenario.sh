@@ -100,6 +100,8 @@ if [ -n "${ZX:-}" ]; then OX=$((420 - ZX)); OY=$((410 - ZY)); ok "Kalibrierung: 
 else OX=21; OY=47; blocked "Kalibrierung: keine Zeigermeldung, Annahme ($OX, $OY)"; fi
 
 fall "Start ruft wieder_anbinden (lokaler Monitor: 0 laufende Vorgänge)" hat_letzte '^transaktion\twieder' $'transaktion\twieder-angebunden\t0'
+fall "Programmsymbol (SW-5) und Ersatzsymbol als Ressource im Symbolthema" \
+    hat_letzte '^symbole' $'symbole\torg.querencia.Software-fenster\ttrue\torg.querencia.Software-paket\ttrue'
 read -r FW FH < <(letzte '^fenster' | cut -f2,3)
 fall "Fenstergröße 960×640 (ist ${FW:-?}×${FH:-?})" test "${FW:-0}" = 960 -a "${FH:-0}" = 640
 fall "Katalog geladen: Alle Programme mit 30 Einträgen" hat_letzte '^ansicht' $'ansicht\talle\t30\t'
@@ -146,6 +148,21 @@ fall "Escape führt von der Detailseite zurück zur Liste" hat_letzte '^details'
 v=$(zahl '^ansicht'); q "key Escape" "wait 500"
 fall "Escape in der Liste leert die Suche" hat_letzte '^ansicht' $'ansicht\talle\t30\t'
 warte_layout >/dev/null
+
+# Symbole: Thema, Datei, ohne Symbol, unbekannter Themenname → Ersatz
+zsym() { letzte "^zeilensymbol\t0\t$1\t" | cut -f4; }
+suche gimp
+fall "Symbol aus dem Thema (GIMP)" test "$(zsym GIMP)" = thema:applications-graphics-symbolic
+suche htop
+fall "Symbol als Datei (htop)" bash -c "[[ '$(zsym htop)' == datei:*htop.svg ]]"
+suche passw
+fall "Anwendung ohne Symbol zeigt das Ersatzsymbol" test "$(zsym 'Passwörter und Schlüssel')" = thema:org.querencia.Software-paket
+shot ersatzsymbol
+suche schrift
+fall "Unbekannter Themenname zeigt das Ersatzsymbol, kein kaputtes Bild" test "$(zsym Schriftverwaltung)" = thema:org.querencia.Software-paket
+q "key Return" "wait 500"
+fall "Detailseite: Ersatzsymbol 64 px" hat_letzte '^detailsymbol' $'detailsymbol\tSchriftverwaltung\tthema:org.querencia.Software-paket'
+q "key Escape" "wait 300"
 
 # Zeile anklicken + Eingabetaste
 suche minen
@@ -301,6 +318,8 @@ for weg in Eingabetaste Escape Alt+S; do
     else nok "Info-Dialog per $weg schließen / Folgetasten ($(letzte '^ansicht'))"; fi
     q "chord ctrl a" "key BackSpace" "wait 500"
 done
+fall "Info-Dialog zeigt Programmsymbol (SW-5) neben dem Querencia-Q" \
+    hat_letzte '^info-symbole' $'info-symbole\torg.querencia.Software-fenster\tquerencia-q'
 shot nach-info
 
 # 15 Zweite Instanz ------------------------------------------------------------
