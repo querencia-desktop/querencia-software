@@ -610,7 +610,9 @@ mod tests {
         let sim = ctx
             .block_on(quelle.simulieren(Vorgang::Entfernen, vec![p.id.clone()]))
             .unwrap();
-        assert!(sim.entfernen.iter().any(|x| x.name == "gimp"));
+        // Nur was mitgeht (wie qs_paketkit), nicht das Paket selbst.
+        assert!(sim.entfernen.iter().any(|x| x.name == "gimp-data"));
+        assert!(!sim.entfernen.iter().any(|x| x.name == "gimp"));
     }
 
     #[test]

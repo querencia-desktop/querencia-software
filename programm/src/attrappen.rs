@@ -508,8 +508,9 @@ impl Paketquelle for AttrappeQuelle {
                         .find(|e| e.paket.name == p.name)
                         .map(|e| e.details.groesse_bytes)
                         .unwrap_or(0);
+                    // Wie qs_paketkit (SW-1): nur Zusatzpakete, nicht das
+                    // angefragte Paket selbst.
                     sim.installieren.push(abhaengig(&p));
-                    sim.installieren.push(p);
                 }
                 Vorgang::Entfernen => {
                     // Was mitgeht: das Datenpaket und ein abhängiges Hilfspaket.
@@ -522,7 +523,6 @@ impl Paketquelle for AttrappeQuelle {
                         zusammenfassung: format!("Erweiterungen für {}", p.name),
                         installiert: true,
                     });
-                    sim.entfernen.push(p);
                 }
                 Vorgang::Aktualisieren => sim.aktualisieren.push(p),
                 Vorgang::QuellenAuffrischen => {}

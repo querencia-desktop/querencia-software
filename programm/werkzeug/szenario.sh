@@ -3,6 +3,9 @@
 # Software gegen die Attrappen (QS_ATTRAPPE=1) mit virtuellen Eingaben (Maus
 # und Tastatur) und Bildschirmfotos. Zustände werden aus der Debug-Ausgabe
 # des Programms (QS_DEBUG=1) gelesen, nicht aus den Bildern.
+# SW-6: an qs_transaktion angepasst – Installieren mit Zusatzpaketen fragt
+# nach (`bestaetige`), die Simulation nennt nur mitgehende Pakete, die
+# Wiederanbindung meldet „0“ erst nach der Antwort der Quelle.
 set -u
 . "$HMP04_PROFILE/env.sh"
 mkdir -p "$OUT"
@@ -54,6 +57,14 @@ klick_auf() { # klick_auf "<awk-Bedingung>" "<Beschreibung>"
     if [ -z "${x:-}" ]; then echo "   keine Position für $2" >>"$E"; return 1; fi
     q "move $((OX + x)) $((OY + y))" "click" "wait 250"
 }
+# SW-6: Dialog „Installation bestätigen“ (SW-4: Zusatzpakete oder > 50 MiB)
+# mit der Eingabetaste annehmen, falls er erscheint.
+bestaetige() { # bestaetige <vorher>
+    local i=0
+    while [ $i -lt 30 ] && [ "$(zahl '^dialog\tinstallieren')" -le "$1" ]; do sleep 0.1; i=$((i + 1)); done
+    [ "$(zahl '^dialog\tinstallieren')" -gt "$1" ] && { sleep 0.4; q "key Return" "wait 150"; }
+    return 0
+}
 seite() { klick_auf "\$1==\"seite\" && \$2==\"$1\"" "Seite $1"; }
 zeile() { klick_auf "\$1==\"zeile\" && \$3==\"$1\"" "Zeile $1"; }
 knopf_von() { # Knopf in der Zeile mit Titel $1
@@ -99,7 +110,8 @@ read -r ZX ZY < <(grep '^zeiger' "$LOG" | tail -1 | cut -f2,3)
 if [ -n "${ZX:-}" ]; then OX=$((420 - ZX)); OY=$((410 - ZY)); ok "Kalibrierung: Fensterinhalt beginnt bei ($OX, $OY)"
 else OX=21; OY=47; blocked "Kalibrierung: keine Zeigermeldung, Annahme ($OX, $OY)"; fi
 
-fall "Start ruft wieder_anbinden (lokaler Monitor: 0 laufende Vorgänge)" hat_letzte '^transaktion\twieder' $'transaktion\twieder-angebunden\t0'
+warte '^transaktion\twieder' 0 5
+fall "Start ruft wieder_anbinden (Beobachter von qs_transaktion: 0 laufende Vorgänge)" hat_letzte '^transaktion\twieder' $'transaktion\twieder-angebunden\t0'
 fall "Programmsymbol (SW-5) und Ersatzsymbol als Ressource im Symbolthema" \
     hat_letzte '^symbole' $'symbole\torg.querencia.Software-fenster\ttrue\torg.querencia.Software-paket\ttrue'
 read -r FW FH < <(letzte '^fenster' | cut -f2,3)
@@ -171,8 +183,10 @@ fall "Zeile anklicken, Eingabetaste öffnet Details" hat_letzte '^details' $'det
 warte_layout >/dev/null
 
 # 4 Installieren auf der Detailseite --------------------------------------
-v=$(zahl '^transaktion\tfertig')
+v=$(zahl '^transaktion\tfertig'); vi=$(zahl '^dialog\tinstallieren')
 klick_auf '$1=="aktion"' "Knopf Installieren"
+bestaetige "$vi"
+fall "Bestätigung „Installation bestätigen“ (Zusatzpaket gnome-mines-data)" grep -qP '^simulation\tgnome-mines-data\t' "$LOG"
 sleep 1.0; shot installieren-fortschritt
 fall "Fortschritt läuft (Zwischenstand gemeldet)" grep -qP '^transaktion\tlaeuft\t(4|5|6)\d\t' "$LOG"
 warte '^transaktion\tfertig' "$v" 5
@@ -185,8 +199,8 @@ q "key Escape" "wait 300"
 
 # 5 Fenster bleibt bedienbar während des Vorgangs --------------------------
 suche audacity
-v=$(zahl '^transaktion\tfertig')
-knopf_von Audacity; sleep 0.4
+v=$(zahl '^transaktion\tfertig'); vi=$(zahl '^dialog\tinstallieren')
+knopf_von Audacity; bestaetige "$vi"; sleep 0.4
 vs=$(zahl '^ansicht'); seite "kategorie:Spiele"; warte '^ansicht' "$vs" 2
 f_vor=$(zahl '^transaktion\tfertig')
 fall "Fortschritt nicht modal: Kategorie wechselt während der Installation" \
@@ -198,7 +212,8 @@ fall "Audacity danach installiert" grep -qP '^transaktion\tfertig\taudacity' "$L
 # 6 Abbrechen ----------------------------------------------------------------
 v=$(zahl '^ansicht'); seite alle; warte '^ansicht' "$v"; warte_layout >/dev/null
 suche thunderbird
-knopf_von Thunderbird; sleep 0.7
+vi=$(zahl '^dialog\tinstallieren')
+knopf_von Thunderbird; bestaetige "$vi"; sleep 0.7
 klick_auf '$1=="abbrechen"' "Abbrechen"
 sleep 0.6
 fall "Abbrechen in der Fortschrittsleiste bricht ab" hat_letzte '^transaktion' $'transaktion\tabgebrochen'
@@ -212,7 +227,7 @@ knopf_von Zeichentabelle
 warte '^dialog\tentfernen' "$vd" 3; sleep 0.6
 fall "Bestätigungsdialog vor dem Entfernen erscheint" test "$(zahl '^dialog\tentfernen')" -gt "$vd"
 fall "Simulation: gucharmap-data und gucharmap-plugins gehen mit" \
-    grep -qP '^transaktion\tsimuliert\tgucharmap-data,gucharmap-plugins,gucharmap$' "$LOG"
+    grep -qP '^transaktion\tsimuliert\tgucharmap-data,gucharmap-plugins$' "$LOG"
 shot entfernen-bestaetigen
 q "key Escape" "wait 700"
 fall "Entfernen-Dialog: Escape bricht ab" bash -c "grep -qP '^dialog\tzu\tentfernen' '$LOG' && [ \"\$(grep -P '^transaktion' '$LOG' | tail -1)\" = \$'transaktion\tabgebrochen' ]"
@@ -229,8 +244,8 @@ fall "Statuszeile: 9 installiert nach dem Entfernen" grep -qP '^status\t.*9 inst
 
 # 8 SperreBelegt -------------------------------------------------------------
 suche schach
-vd=$(zahl '^dialog\tsperre'); v=$(zahl '^transaktion\tfertig')
-knopf_von Schach
+vd=$(zahl '^dialog\tsperre'); v=$(zahl '^transaktion\tfertig'); vi=$(zahl '^dialog\tinstallieren')
+knopf_von Schach; bestaetige "$vi"
 warte '^dialog\tsperre' "$vd" 4; sleep 0.8
 fall "SperreBelegt: Dialog „Paketverwaltung belegt“" test "$(zahl '^dialog\tsperre')" -gt "$vd"
 shot sperre-belegt
@@ -242,8 +257,8 @@ fall "Belegte Sperre zeigt keinen Fehlerdialog" test "$(zahl '^dialog\tfehler')"
 
 # 9 KeinAgent ------------------------------------------------------------------
 suche virtuelle
-vd=$(zahl '^dialog\tkein-agent')
-knopf_von "Virtuelle Maschinen"
+vd=$(zahl '^dialog\tkein-agent'); vi=$(zahl '^dialog\tinstallieren')
+knopf_von "Virtuelle Maschinen"; bestaetige "$vi"
 warte '^dialog\tkein-agent' "$vd" 3; sleep 0.6
 fall "KeinAgent: Erklärdialog „Berechtigungsdialog fehlt“" test "$(zahl '^dialog\tkein-agent')" -gt "$vd"
 fall "KeinAgent: Statuszeile nennt den polkit-Agenten" grep -qP '^status\t.*Virtuelle Maschinen: Es fehlt der Berechtigungsdialog der Sitzung \(polkit-Agent\)' "$LOG"
@@ -253,8 +268,8 @@ fall "KeinAgent-Dialog per Eingabetaste (Fokus) geschlossen" grep -qP '^dialog\t
 
 # 10 NichtBerechtigt -------------------------------------------------------------
 suche wireshark
-vd=$(zahl '^dialog\tnicht-berechtigt')
-knopf_von Wireshark
+vd=$(zahl '^dialog\tnicht-berechtigt'); vi=$(zahl '^dialog\tinstallieren')
+knopf_von Wireshark; bestaetige "$vi"
 warte '^dialog\tnicht-berechtigt' "$vd" 3; sleep 0.6
 fall "NichtBerechtigt: Meldung „Keine Berechtigung“" test "$(zahl '^dialog\tnicht-berechtigt')" -gt "$vd"
 shot nicht-berechtigt

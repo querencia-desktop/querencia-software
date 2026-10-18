@@ -985,6 +985,22 @@ impl Fenster {
         });
         let zeilen = self.aktuelle_zeilen();
         let n = zeilen.len();
+        if self.debug {
+            // `listenzeile i titel paketname zustand` (erste 40) und `leer text`:
+            // für die Szenarien der Integration (SW-6), die Zeilen über den
+            // Paketnamen finden.
+            for (i, z) in zeilen.iter().take(40).enumerate() {
+                debug(&format!(
+                    "listenzeile\t{i}\t{}\t{}\t{}",
+                    z.titel,
+                    z.paketname.as_deref().unwrap_or("-"),
+                    z.zustand()
+                ));
+            }
+            if n == 0 {
+                debug(&format!("leer\t{}", self.leer.text()));
+            }
+        }
         let suchtext = self.suchfeld.text().to_string();
         let objekte: Vec<glib::BoxedAnyObject> =
             zeilen.into_iter().map(glib::BoxedAnyObject::new).collect();
@@ -1601,16 +1617,17 @@ impl Fenster {
         }
     }
 
-    /// Meldung an den Benachrichtigungsdienst der Sitzung, wenn das Fenster
-    /// gerade nicht aktiv ist (Vorgang im Hintergrund abgeschlossen). „Nicht
+    /// Meldung an den Benachrichtigungsdienst der Sitzung, wenn kein Fenster
+    /// des Programms aktiv ist (Vorgang im Hintergrund abgeschlossen). „Nicht
     /// stören“ entscheidet der Dienst (Querencia Benachrichtigungen).
     fn benachrichtigen(&self, text: &str) {
-        if self.window.is_active() {
-            return;
-        }
         let Some(app) = self.window.application() else {
             return;
         };
+        // Ein eigener Dialog (Info, Sperre …) zählt als aktiv.
+        if app.windows().iter().any(|w| w.is_active()) {
+            return;
+        }
         let n = gio::Notification::new(APP_NAME);
         n.set_body(Some(text));
         n.set_icon(&gio::ThemedIcon::new(crate::APP_ID));
