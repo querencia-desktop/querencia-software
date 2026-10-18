@@ -49,6 +49,14 @@ cp "$SW5/data/icons/hicolor/scalable/apps/org.querencia.Software.svg" "$PROFIL/d
 if [ "$MODUS" != ohne-metainfo ]; then
     QS_METAINFO_ZIEL=$PROFIL/data/metainfo bash "$SW5/metainfo/metainfo-benutzer-kopieren.sh" --wirklich \
         >"$OUT/metainfo-kopie.txt"
+    # Das Kopierskript ruft metainfo-pruefen.sh, das SW-5s eingecheckte
+    # nachweis/metainfo/validierung.txt neu schreibt (nur der Zeitstempel ändert
+    # sich). Eigene Kopie behalten, SW-5s Stand wiederherstellen.
+    cp "$SW5/nachweis/metainfo/validierung.txt" "$OUT/metainfo-validierung.txt"
+    if [ "$(git -C "$SW5" diff --numstat -- nachweis/metainfo/validierung.txt)" = "$(printf '1\t1\tnachweis/metainfo/validierung.txt')" ] &&
+        git -C "$SW5" diff -U0 -- nachweis/metainfo/validierung.txt | grep -q '^+# 20[0-9-]* [0-9:]*, AppStream'; then
+        git -C "$SW5" checkout -q -- nachweis/metainfo/validierung.txt
+    fi
 fi
 cat >"$PROFIL/config/labwc/rc.xml" <<X
 <?xml version="1.0"?>

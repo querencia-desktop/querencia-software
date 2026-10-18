@@ -51,6 +51,16 @@ def main() -> int:
             f.write('<?xml version="1.0"?>\n<labwc_config>\n'
                     '  <core><decoration>server</decoration></core>\n'
                     '</labwc_config>\n')
+    # SW-6: keine Portale im Wegwerf-Bus. Sonst startet xdg-document-portal und
+    # sein FUSE-Mount <laufzeit>/doc erscheint im echten Querencia Files unter
+    # „Geräte“. $XDG_DATA_HOME/dbus-1/services hat beim Sitzungsbus Vorrang vor
+    # /usr/share; die Einträge hier machen die Portale nicht aktivierbar.
+    masken = os.path.join(profile, "data", "dbus-1", "services")
+    os.makedirs(masken, exist_ok=True)
+    for name in ("org.freedesktop.portal.Documents", "org.freedesktop.portal.Desktop",
+                 "org.freedesktop.impl.portal.PermissionStore"):
+        with open(os.path.join(masken, name + ".service"), "w") as f:
+            f.write(f"[D-BUS Service]\nName={name}\nExec=/bin/false\n")
     laufzeit = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "laufzeit")
     os.makedirs(laufzeit, exist_ok=True)
     runtime = tempfile.mkdtemp(prefix="qs-runtime-", dir=laufzeit)
@@ -73,6 +83,8 @@ def main() -> int:
         "WLR_HEADLESS_OUTPUTS": "1",
         "WLR_LIBINPUT_NO_DEVICES": "1",
         "XKB_DEFAULT_LAYOUT": "de",
+        "GDK_DEBUG": "no-portals",
+        "GTK_USE_PORTAL": "0",
         "HMP04_PROFILE": profile,
     })
     # User directories as on the VM (the profile has no user-dirs.dirs of
@@ -124,6 +136,10 @@ def main() -> int:
         except (OSError, ProcessLookupError):
             pass
     time.sleep(1)
+    # Falls doch ein Portal lief: nur den eigenen Mount aushängen.
+    doc = os.path.join(runtime, "doc")
+    if os.path.ismount(doc):
+        subprocess.run(["fusermount3", "-u", doc], check=False)
     shutil.rmtree(runtime, ignore_errors=True)
     for pid in SESSION_LABWC_PIDS:
         assert os.path.exists(f"/proc/{pid}"), "Sitzungs-labwc verschwunden!"
