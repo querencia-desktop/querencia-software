@@ -24,8 +24,7 @@ use qs_typen::{Fehler, Symbol, Vorgang};
 
 use crate::debug;
 use crate::dialoge;
-use crate::logik::{self, Ansicht, Paketstand, Zeile};
-use crate::monitor::fehlertext;
+use crate::logik::{self, fehlertext, Ansicht, Paketstand, Zeile};
 use crate::schnittstellen::{Auftrag, Simulation, TransaktionsGriff, Zustand};
 use crate::{Backends, APP_NAME};
 
@@ -153,7 +152,8 @@ struct Fortschrittsleiste {
 /// Laufender Vorgang.
 struct Transaktion {
     griff: TransaktionsGriff,
-    vorgang: Vorgang,
+    /// `None` bei einem nach dem Neustart wieder angebundenen Vorgang.
+    vorgang: Option<Vorgang>,
     zeile: Zeile,
     simulation: Option<Simulation>,
     sperrdialog_offen: bool,
@@ -371,6 +371,7 @@ impl Fenster {
             .seitenleiste
             .select_row(fenster.seiten_zeilen.borrow().first().map(|(_, r, _)| r));
         fenster.paketstand_laden(true);
+        fenster.wieder_anbinden();
         fenster
     }
 
@@ -1105,25 +1106,14 @@ impl Fenster {
         self.fortschritt.status.set_text("Wird vorbereitet …");
         self.fortschritt.leiste.set_visible(true);
         self.fortschritt.abbrechen.set_sensitive(true);
-        // Meldungen immer über den Hauptschleifen-Leerlauf, damit der Griff
-        // vor der ersten Meldung gespeichert ist und Dialoge nie aus dem
-        // Klick-Handler heraus geöffnet werden.
-        let weak = Rc::downgrade(self);
-        let melden: Box<dyn Fn(Zustand)> = Box::new(move |z| {
-            let weak = weak.clone();
-            glib::idle_add_local_once(move || {
-                if let Some(s) = weak.upgrade() {
-                    s.zustand_gemeldet(z);
-                }
-            });
-        });
+        let melden = self.melde_rueckruf();
         let griff = self
             .backends
             .monitor
             .starten(auftrag, self.backends.quelle.clone(), melden);
         *self.transaktion.borrow_mut() = Some(Transaktion {
             griff,
-            vorgang: vorgang.clone(),
+            vorgang: Some(vorgang.clone()),
             zeile,
             simulation: None,
             sperrdialog_offen: false,
@@ -1136,6 +1126,62 @@ impl Fenster {
         if self.debug {
             self.debug_layout_spaeter();
         }
+    }
+
+    /// Rückruf für den Monitor. Meldungen laufen immer über den
+    /// Hauptschleifen-Leerlauf, damit der Griff vor der ersten Meldung
+    /// gespeichert ist und Dialoge nie aus einem Klick-Handler heraus
+    /// geöffnet werden.
+    fn melde_rueckruf(self: &Rc<Self>) -> Box<dyn Fn(Zustand)> {
+        let weak = Rc::downgrade(self);
+        Box::new(move |z| {
+            let weak = weak.clone();
+            glib::idle_add_local_once(move || {
+                if let Some(s) = weak.upgrade() {
+                    s.zustand_gemeldet(z);
+                }
+            });
+        })
+    }
+
+    /// Nach einem Neustart: laufende Transaktionen wieder anbinden. v1 zeigt
+    /// den ersten wieder angebundenen Vorgang in der Fortschrittsleiste.
+    fn wieder_anbinden(self: &Rc<Self>) {
+        let melden = self.melde_rueckruf();
+        let mut griffe = self
+            .backends
+            .monitor
+            .wieder_anbinden(self.backends.quelle.clone(), melden);
+        debug(&format!("transaktion\twieder-angebunden\t{}", griffe.len()));
+        if griffe.is_empty() {
+            return;
+        }
+        let griff = griffe.remove(0);
+        let zeile = Zeile {
+            titel: "Laufender Vorgang".into(),
+            zusammenfassung: String::new(),
+            symbol: Symbol::Keines,
+            paketname: None,
+            installiert: false,
+            aktualisierbar: false,
+            anwendung: None,
+            paket: None,
+        };
+        self.fortschritt
+            .vorgang
+            .set_text("Wieder angebunden: laufender Vorgang der Paketverwaltung");
+        self.fortschritt.balken.set_fraction(0.0);
+        self.fortschritt.balken.set_text(Some("…"));
+        self.fortschritt.status.set_text("Warte auf Meldungen …");
+        self.fortschritt.leiste.set_visible(true);
+        self.fortschritt.abbrechen.set_sensitive(true);
+        *self.transaktion.borrow_mut() = Some(Transaktion {
+            griff,
+            vorgang: None,
+            zeile,
+            simulation: None,
+            sperrdialog_offen: false,
+        });
     }
 
     fn abbrechen(&self) {
@@ -1228,7 +1274,7 @@ impl Fenster {
                     let w2 = Rc::downgrade(self);
                     dialoge::sperre_belegt(
                         &self.window,
-                        &fehlertext(&Fehler::SperreBelegt("apt-get, PID 4242".into())),
+                        "Ein anderes Programm verwendet gerade die Paketverwaltung.",
                         Box::new(move || {
                             if let Some(s) = w1.upgrade() {
                                 if let Some(t) = s.transaktion.borrow_mut().as_mut() {
@@ -1252,7 +1298,7 @@ impl Fenster {
                     .transaktion
                     .borrow()
                     .as_ref()
-                    .map(|t| t.vorgang.clone());
+                    .and_then(|t| t.vorgang.clone());
                 self.beende_transaktion();
                 let was = match vorgang {
                     Some(Vorgang::Installieren) => "installiert",

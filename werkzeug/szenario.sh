@@ -99,6 +99,7 @@ read -r ZX ZY < <(grep '^zeiger' "$LOG" | tail -1 | cut -f2,3)
 if [ -n "${ZX:-}" ]; then OX=$((420 - ZX)); OY=$((410 - ZY)); ok "Kalibrierung: Fensterinhalt beginnt bei ($OX, $OY)"
 else OX=21; OY=47; blocked "Kalibrierung: keine Zeigermeldung, Annahme ($OX, $OY)"; fi
 
+fall "Start ruft wieder_anbinden (lokaler Monitor: 0 laufende Vorgänge)" hat_letzte '^transaktion\twieder' $'transaktion\twieder-angebunden\t0'
 read -r FW FH < <(letzte '^fenster' | cut -f2,3)
 fall "Fenstergröße 960×640 (ist ${FW:-?}×${FH:-?})" test "${FW:-0}" = 960 -a "${FH:-0}" = 640
 fall "Katalog geladen: Alle Programme mit 30 Einträgen" hat_letzte '^ansicht' $'ansicht\talle\t30\t'

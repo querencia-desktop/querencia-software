@@ -263,26 +263,3 @@ impl Transaktionsmonitor for LokalerMonitor {
         Vec::new()
     }
 }
-
-/// Deutscher Text für die Fehlerdialoge.
-pub fn fehlertext(f: &Fehler) -> String {
-    match f {
-        Fehler::NichtBerechtigt => {
-            "Sie sind nicht berechtigt, Software zu installieren oder zu entfernen. \
-             Die Anfrage wurde abgelehnt."
-                .into()
-        }
-        Fehler::KeinAgent => "Es fehlt der Berechtigungsdialog der Sitzung (polkit-Agent).".into(),
-        Fehler::SperreBelegt(wer) => {
-            format!("Die Paketverwaltung ist gerade belegt ({wer}).")
-        }
-        Fehler::NetzFehlt => "Keine Netzwerkverbindung.".into(),
-        Fehler::PaketNichtGefunden(p) => format!("Das Paket „{p}“ wurde nicht gefunden."),
-        Fehler::AbhaengigkeitenKonflikt(t) => format!("Abhängigkeiten im Konflikt: {t}"),
-        Fehler::DaemonWeg => {
-            "Die Paketverwaltung (PackageKit) wurde während des Vorgangs beendet.".into()
-        }
-        Fehler::Abgebrochen => "Der Vorgang wurde abgebrochen.".into(),
-        Fehler::Sonstiges { code, text } => format!("{text} ({code})"),
-    }
-}

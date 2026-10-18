@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use qs_typen::{Aktualisierung, Anwendung, Kategorie, Paket, Symbol};
+use qs_typen::{Aktualisierung, Anwendung, Fehler, Kategorie, Paket, Symbol};
 
 use crate::schnittstellen::Katalog;
 
@@ -301,6 +301,29 @@ pub fn groesse_text(bytes: u64) -> String {
     }
 }
 
+/// Deutscher Text für die Fehlerdialoge.
+pub fn fehlertext(f: &Fehler) -> String {
+    match f {
+        Fehler::NichtBerechtigt => {
+            "Sie sind nicht berechtigt, Software zu installieren oder zu entfernen. \
+             Die Anfrage wurde abgelehnt."
+                .into()
+        }
+        Fehler::KeinAgent => "Es fehlt der Berechtigungsdialog der Sitzung (polkit-Agent).".into(),
+        Fehler::SperreBelegt(wer) => {
+            format!("Die Paketverwaltung ist gerade belegt ({wer}).")
+        }
+        Fehler::NetzFehlt => "Keine Netzwerkverbindung.".into(),
+        Fehler::PaketNichtGefunden(p) => format!("Das Paket „{p}“ wurde nicht gefunden."),
+        Fehler::AbhaengigkeitenKonflikt(t) => format!("Abhängigkeiten im Konflikt: {t}"),
+        Fehler::DaemonWeg => {
+            "Die Paketverwaltung (PackageKit) wurde während des Vorgangs beendet.".into()
+        }
+        Fehler::Abgebrochen => "Der Vorgang wurde abgebrochen.".into(),
+        Fehler::Sonstiges { code, text } => format!("{text} ({code})"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -558,6 +581,17 @@ mod tests {
             .block_on(quelle.simulieren(Vorgang::Entfernen, vec![p.id.clone()]))
             .unwrap();
         assert!(sim.entfernen.iter().any(|x| x.name == "gimp"));
+    }
+
+    #[test]
+    fn fehlertexte_deutsch_mit_hinweis() {
+        assert!(fehlertext(&Fehler::KeinAgent).contains("polkit-Agent"));
+        assert!(fehlertext(&Fehler::SperreBelegt("apt".into())).contains("belegt"));
+        let t = fehlertext(&Fehler::Sonstiges {
+            code: "internal-error".into(),
+            text: "kaputt".into(),
+        });
+        assert_eq!(t, "kaputt (internal-error)");
     }
 
     use qs_typen::Vorgang;
