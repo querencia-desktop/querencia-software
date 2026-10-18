@@ -1,0 +1,177 @@
+/* Querencia Software – klassische Optik (Ambiance-Farbwerte wie Panel, Editor,
+   Bilder und Rechner). Querencia-Orange #F07746 nur für Auswahl (Menü,
+   Seitenleiste, Liste) und Fortschritt. */
+
+window.qs-window menubar {
+  background-color: #f2f1f0;
+  border-bottom: 1px solid #c7c2be;
+  padding: 1px 2px;
+}
+
+window.qs-window menubar > item {
+  padding: 3px 8px;
+  border-radius: 0;
+  color: #3c3c3c;
+}
+
+window.qs-window menubar > item:hover,
+window.qs-window menubar > item:selected {
+  background-image: linear-gradient(to bottom, #f6a179, #f07746);
+  color: #ffffff;
+}
+
+window.qs-window popover.menu contents {
+  border-radius: 0;
+  padding: 2px 0;
+  background-color: #f5f4f2;
+  border: 1px solid #c7c2be;
+}
+
+window.qs-window popover.menu modelbutton {
+  border-radius: 0;
+  padding: 3px 16px;
+}
+
+window.qs-window popover.menu modelbutton:hover,
+window.qs-window popover.menu modelbutton:selected {
+  background-image: linear-gradient(to bottom, #f6a179, #f07746);
+  color: #ffffff;
+}
+
+/* Seitenleiste */
+scrolledwindow.qs-seite {
+  border-right: 1px solid #c7c2be;
+  background-color: #f5f4f2;
+}
+
+list.qs-seite {
+  background-color: #f5f4f2;
+}
+
+list.qs-seite > row {
+  padding: 4px 8px;
+  border-radius: 0;
+}
+
+list.qs-seite > row:selected {
+  background-image: linear-gradient(to bottom, #f6a179, #f07746);
+  color: #ffffff;
+}
+
+list.qs-seite > row:selected label {
+  color: #ffffff;
+}
+
+/* Suchzeile und Überschrift */
+box.qs-kopf {
+  border-bottom: 1px solid #c7c2be;
+  padding: 6px 8px;
+  background-color: #f2f1f0;
+}
+
+label.qs-ueberschrift {
+  font-weight: bold;
+}
+
+/* Liste */
+listview.qs-liste {
+  background-color: #ffffff;
+}
+
+listview.qs-liste > row {
+  padding: 0;
+  border-bottom: 1px solid #e6e2de;
+  border-radius: 0;
+}
+
+listview.qs-liste > row:selected {
+  background-color: #f07746;
+  color: #ffffff;
+}
+
+listview.qs-liste > row:selected label.qs-name,
+listview.qs-liste > row:selected label.qs-zusammenfassung,
+listview.qs-liste > row:selected label.qs-zustand {
+  color: #ffffff;
+}
+
+box.qs-zeile {
+  padding: 6px 10px;
+}
+
+label.qs-name,
+label.qs-fett {
+  font-weight: bold;
+}
+
+label.qs-zustand {
+  font-size: 9pt;
+}
+
+label.qs-leer {
+  color: #6f6a66;
+  font-style: italic;
+}
+
+/* Detailseite */
+box.qs-details {
+  background-color: #ffffff;
+  padding: 12px 16px;
+}
+
+label.qs-detail-name {
+  font-size: 15pt;
+  font-weight: bold;
+}
+
+grid.qs-fakten label.qs-fakt-name {
+  color: #6f6a66;
+}
+
+/* Fortschrittsleiste über der Statuszeile */
+box.qs-fortschritt {
+  border-top: 1px solid #c7c2be;
+  background-color: #f5f4f2;
+  padding: 6px 10px;
+}
+
+box.qs-fortschritt progressbar > trough > progress {
+  background-color: #f07746;
+  background-image: none;
+  border-color: #c6602f;
+}
+
+box.qs-fortschritt progressbar > trough {
+  min-height: 12px;
+}
+
+/* Statuszeile */
+box.qs-status {
+  border-top: 1px solid #c7c2be;
+  background-color: #f2f1f0;
+  padding: 3px 10px;
+}
+
+label.qs-status-text {
+  color: #3c3c3c;
+  font-size: 9pt;
+}
+
+/* Knöpfe mit Text, eckig */
+window.qs-window button,
+window.qs-dialog button {
+  border-radius: 2px;
+}
+
+window.qs-dialog button {
+  min-width: 80px;
+}
+
+window.qs-dialog scrolledwindow.qs-rahmen {
+  border: 1px solid #c7c2be;
+  background-color: #ffffff;
+}
+
+window.qs-dialog list.qs-paketliste {
+  background-color: #ffffff;
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Querencia Software – Karton in Querencia-Orange mit grauem Pfeil nach unten</title>
+  <!-- Programmsymbol Querencia Software (SW-5, 2026-10-18, Fassung 2 nach
+       Vorgabe des Besitzers): flächig, kein Verlauf, nur Querencia-Orange
+       #F07746 und Grau. Klassisches Paketmotiv: Karton mit Deckel und
+       Klebeband, darauf ein Pfeil nach unten (Installieren). Wenige große
+       Flächen und kräftige Umrisse, damit es bei 16, 22 und 48 px erkennbar
+       bleibt. Nur als SVG ausgeliefert (Symbolregel: nie 48x48 zusammen mit
+       Scalable, GTK-4.22-Symbolabsturz). -->
+  <!-- Karton -->
+  <rect x="8" y="22" width="48" height="37" rx="3" fill="#F07746" stroke="#4D4D4D" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Deckel, etwas breiter als der Karton -->
+  <rect x="4.5" y="11" width="55" height="12" rx="2.5" fill="#F07746" stroke="#4D4D4D" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Klebeband über den Deckel -->
+  <rect x="27" y="12.5" width="10" height="9" fill="#A6A6A6"/>
+  <!-- Pfeil nach unten -->
+  <path d="M27 28 H37 V40 H45 L32 54 L19 40 H27 Z" fill="#4D4D4D" stroke="#4D4D4D" stroke-width="1" stroke-linejoin="round"/>
+</svg>
