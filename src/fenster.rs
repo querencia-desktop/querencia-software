@@ -181,6 +181,8 @@ pub struct Fenster {
     status: gtk::Label,
     letzte_pruefung: RefCell<Option<String>>,
     letzte_meldung: RefCell<Option<String>>,
+    /// Nach dem nächsten Laden „Aktualisierungen geprüft“ melden.
+    pruefung_melden: Cell<bool>,
     debug: bool,
 }
 
@@ -354,6 +356,7 @@ impl Fenster {
             status,
             letzte_pruefung: RefCell::new(None),
             letzte_meldung: RefCell::new(None),
+            pruefung_melden: Cell::new(false),
             debug,
         });
 
@@ -686,14 +689,13 @@ impl Fenster {
                 s.oeffne_auswahl();
             }
         });
-        let weak = Rc::downgrade(self);
-        self.suchfeld.connect_has_focus_notify(move |e| {
-            if let Some(s) = weak.upgrade() {
-                if s.debug && e.has_focus() {
-                    debug("fokus\tsuche");
-                }
-            }
-        });
+        // Der Fokus liegt im inneren Textfeld des Suchfelds; ein
+        // Fokus-Controller meldet auch das.
+        if self.debug {
+            let fokus = gtk::EventControllerFocus::new();
+            fokus.connect_enter(|_| debug("fokus\tsuche"));
+            self.suchfeld.add_controller(fokus);
+        }
         // Liste: Eingabetaste / Doppelklick
         let weak = Rc::downgrade(self);
         self.listview.connect_activate(move |_, pos| {
@@ -777,6 +779,11 @@ impl Fenster {
                     if pruefung {
                         *s.letzte_pruefung.borrow_mut() = Some(uhrzeit());
                     }
+                    if s.pruefung_melden.replace(false) {
+                        let n = s.stand.borrow().aktualisierungen.len();
+                        *s.letzte_meldung.borrow_mut() =
+                            Some(format!("Aktualisierungen geprüft: {n} verfügbar"));
+                    }
                 }
                 (Err(e), _) | (_, Err(e)) => {
                     s.melde(&format!("Paketquelle nicht erreichbar: {}", fehlertext(&e)));
@@ -790,9 +797,9 @@ impl Fenster {
     }
 
     fn aktualisierungen_pruefen(self: &Rc<Self>) {
+        self.pruefung_melden.set(true);
+        self.melde("Prüfe auf Aktualisierungen …");
         self.paketstand_laden(true);
-        let n = self.stand.borrow().aktualisierungen.len();
-        self.melde(&format!("Aktualisierungen geprüft: {n} verfügbar"));
     }
 
     fn wechsle_ansicht(self: &Rc<Self>, ansicht: Ansicht) {
@@ -863,6 +870,7 @@ impl Fenster {
         for (a, _, label) in self.seiten_zeilen.borrow().iter() {
             if *a == Ansicht::Aktualisierungen {
                 label.set_text(&format!("Aktualisierungen ({n})"));
+                debug(&format!("seitentext\taktualisierungen\t{n}"));
             }
         }
     }
@@ -1125,6 +1133,9 @@ impl Fenster {
             vorgang_text(&vorgang),
             paket.name
         ));
+        if self.debug {
+            self.debug_layout_spaeter();
+        }
     }
 
     fn abbrechen(&self) {
@@ -1339,7 +1350,8 @@ impl Fenster {
         let mut kind = self.listview.first_child();
         let mut i = 0;
         while let Some(k) = kind {
-            if let Some(hbox) = finde_klasse(&k, "qs-zeile") {
+            let sichtbar = k.compute_bounds(w).is_some_and(|r| r.width() > 100.0);
+            if let (true, Some(hbox)) = (sichtbar, finde_klasse(&k, "qs-zeile")) {
                 let titel = finde_klasse(&hbox, "qs-name")
                     .and_downcast::<gtk::Label>()
                     .map(|l| l.text().to_string())
@@ -1366,6 +1378,18 @@ impl Fenster {
         }
         rechteck("abbrechen", self.fortschritt.abbrechen.upcast_ref());
         debug(&format!("fenster\t{}\t{}", w.width(), w.height()));
+        for t in gtk::Window::list_toplevels() {
+            if let Ok(t) = t.downcast::<gtk::Window>() {
+                debug(&format!(
+                    "toplevel\t{}\t{}\t{}\t{}\t{}",
+                    t.type_().name(),
+                    t.title().unwrap_or_default(),
+                    t.is_visible(),
+                    t.width(),
+                    t.height()
+                ));
+            }
+        }
         debug("layout\tende");
     }
 }

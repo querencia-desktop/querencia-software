@@ -3,7 +3,8 @@
 //!
 //! * Entfernen: erst `simulieren`, Zustand `Simuliert`, dann warten auf
 //!   `bestaetigen()`; sonst sofort `ausfuehren`.
-//! * `Fortschritt::WartetAufSperre` → `Zustand::WartetAufSperre`; die
+//! * `Fortschritt::WartetAufSperre` und `Fehler::SperreBelegt` →
+//!   `Zustand::WartetAufSperre`; die
 //!   Oberfläche fragt, `sperre_erneut_versuchen()` startet die Transaktion
 //!   neu.
 //! * `Fortschritt::Fehler(..)` → `Fehlgeschlagen`, `Fertig`, `Abgebrochen`.
@@ -140,6 +141,11 @@ fn ausfuehren(id: u64, vorgang: Vorgang, ids: Vec<String>, quelle: &Rc<dyn Paket
             },
             Fortschritt::Fertig => Zustand::Fertig,
             Fortschritt::Abgebrochen => Zustand::Abgebrochen,
+            // Belegte Sperre ist kein Endzustand: die Oberfläche fragt, ob
+            // sie warten (`sperre_erneut_versuchen`) oder abbrechen soll.
+            Fortschritt::Fehler(Fehler::SperreBelegt(_)) => Zustand::WartetAufSperre {
+                seit: std::time::Instant::now(),
+            },
             Fortschritt::Fehler(e) => Zustand::Fehlgeschlagen(e),
         };
         let endgueltig = matches!(
