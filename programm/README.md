@@ -2,8 +2,8 @@
 
 Grafischer Software-Installer für Querencia Desktop, Teilprojekt SW-3:
 Fenster, Ansichten und Dialoge. Rust + GTK 4 ohne libadwaita,
-Server-Fensterrahmen von labwc, Menüleiste, deutsche Oberfläche,
-App-ID `org.querencia.Software`. Verbindliche Schnittstellen:
+Server-Fensterrahmen von labwc, Menüleiste, Oberfläche Deutsch und
+Englisch (GNU gettext, ab 0.1.1), App-ID `org.querencia.Software`. Verbindliche Schnittstellen:
 `~/projects/querencia-software/SCHNITTSTELLEN.md`; Typen und Traits aus
 `qs_typen` (SW-1).
 
@@ -28,6 +28,10 @@ simulierte Transaktionen 2 s). Austauschstellen: `INTEGRATION.md`.
 | `src/attrappen.rs` | `AttrappeQuelle`, `AttrappeKatalog` |
 | `src/monitor.rs` | lokaler Übergangs-Transaktionsmonitor (SW-4 ersetzt ihn) |
 | `src/logik.rs` | Ansichten, Filter, Sortierung, Suche, Fehlertexte; Unit-Tests |
+| `src/i18n.rs` | gettext: Textdomäne `querencia-software`, Suche der Kataloge, Platzhalter |
+| `src/fremdtexte.rs` | Übersetzung der deutschen Texte der Bausteine (Kategorien, Statustexte, Fehlerdialoge von SW-4) |
+| `po/` | `querencia-software.pot` (erzeugt), `de.po`, `LINGUAS`; Pflege mit `werkzeug/i18n.py` |
+| `data/org.querencia.Software.desktop.in` | englische Vorlage des Starters; `…desktop` daraus mit `[de]`-Zeilen |
 | `src/fenster.rs` | Hauptfenster |
 | `src/dialoge.rs` | Info, Bestätigung, Meldungen, Fenstersymbol |
 | `src/style.css` | klassische Optik, Orange nur für Auswahl und Fortschritt |
@@ -35,6 +39,28 @@ simulierte Transaktionen 2 s). Austauschstellen: `INTEGRATION.md`.
 | `werkzeug/` | isolierte GUI-Prüfung (TESTING.md) |
 | `nachweis/` | Release-Binary mit SHA256, Prüf- und GUI-Protokolle |
 
-Desktop-Datei, Themen-Symbol für Starter und Panel und MetaInfo liefert SW-5.
+Desktop-Datei, Themen-Symbol für Starter und Panel und MetaInfo liefert SW-5;
+die Übersetzung der Desktop-Datei kommt seit 0.1.1 aus `po/de.po`
+(`vorschlag-erzeugen.sh` gleicht sie ab).
 
-Lizenz: GNU GPL, Version 3 oder neuer.
+## Sprache
+
+Englische msgids im Code, Deutsch aus `po/de.po` (Muster: Querencia Editor,
+`docs/i18n-muster.md`). Die Sprache folgt `LANGUAGE`, `LC_ALL`,
+`LC_MESSAGES`, `LANG`; die Querencia-Sitzung setzt `LANGUAGE=de`. Die Kataloge
+liegen neben der Binary (`share/locale/<lang>/LC_MESSAGES/querencia-software.mo`
+in der Ablage), sonst im Präfix (`/usr/share/locale`);
+`QUERENCIA_SOFTWARE_LOCALEDIR` setzt das Verzeichnis ausdrücklich.
+
+```bash
+python3 werkzeug/i18n.py pot && python3 werkzeug/i18n.py update   # nach neuen Texten
+python3 werkzeug/i18n.py pruefen && msgfmt -c -o /dev/null po/de.po
+```
+
+## Lizenz
+
+GPL-3.0-or-later (GNU General Public License, Version 3 oder neuer), siehe
+[LICENSE](LICENSE). Copyright 2026 Querencia Desktop contributors. Die
+Bausteine `qs_typen`, `qs_paketkit`, `qs_katalog` und `qs_transaktion` stehen
+unter MIT OR Apache-2.0 (in ihren eigenen Repos).
+

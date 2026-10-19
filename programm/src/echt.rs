@@ -30,6 +30,7 @@ use qs_typen::{
     Paketdetails, Simulation, Statistik, Vorgang,
 };
 
+use crate::i18n::{gettext, gettext_f};
 use crate::schnittstellen::{Katalog, Paketquelle};
 
 /// Frist für das Auflösen aller Katalog-Paketnamen.
@@ -68,9 +69,9 @@ impl Aufloeser for PaketKitAufloeser {
             Ok(r) => r,
             Err(_) => Err(Fehler::Sonstiges {
                 code: qs_paketkit::CODE_ZEIT.into(),
-                text: format!(
-                    "PackageKit hat nach {} s nicht geantwortet",
-                    FRIST_AUFLOESEN.as_secs()
+                text: gettext_f(
+                    "PackageKit did not answer within {seconds} s",
+                    &[("seconds", &FRIST_AUFLOESEN.as_secs().to_string())],
                 ),
             }),
         }
@@ -180,7 +181,9 @@ impl NurLesen {
     fn verweigert() -> Fehler {
         Fehler::Sonstiges {
             code: CODE_NUR_LESEN.into(),
-            text: "Nur-Lese-Betrieb (QS_NUR_LESEN): schreibende Vorgänge sind gesperrt".into(),
+            text: gettext(
+                "Read-only mode (QS_NUR_LESEN): operations that change the system are disabled",
+            ),
         }
     }
 }

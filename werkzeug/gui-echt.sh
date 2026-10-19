@@ -17,6 +17,13 @@
 #   testfail       SW-1-Prüfgerüst: echter packagekitd --backend=test_fail (Fehlerfall)
 #   leerlauf       Start, Speicher nach 10 min Leerlauf (System-PackageKit nur lesend)
 #   startzeit      fünf Starts, Zeiten bis Fenster/Katalog/Paketstand
+#   glyphen        Statuszeile nach Ansichtswechseln (Werkstatt QREL-05 W.5), nur lesend
+#   i18n           Texte je Sprache (LANGUAGE), Katalog in /proc/<pid>/maps, nur lesend
+#
+# QS_GPU=1: labwc mit gles2 und GTK mit seinem Standard-Renderer (Vulkan/GL) wie
+# live, statt pixman und GSK_RENDERER=cairo; Ergebnisordner mit Zusatz „-gpu“.
+# LANGUAGE wird durchgereicht (Standard de, wie live; LANG=en_US.UTF-8);
+# Ergebnisordner mit Zusatz „-<sprache>“, wenn LANGUAGE nicht de ist.
 #
 # Ergebnis: nachweis/gui/<Modus>-<Auflösung>/ergebnis.txt, Bilder, software.log
 # (QS_DEBUG=1), software.err, protokoll.log (qs_transaktion, QS_LOG).
@@ -35,11 +42,20 @@ case $MODUS in verweigert | nurlesen) SZ=$E/werkzeug/szenario-pruefbus-kurz.sh ;
 [ -f "$SZ" ] || { echo "kein Szenario: $SZ" >&2; exit 2; }
 [ -x "$P/bin/qeingabe" ] || bash "$P/bauen.sh" >/dev/null
 
-PROFIL=$E/gui-test/$MODUS-$R
-OUT=$E/nachweis/gui/$MODUS-$R
+SPRACHE=${LANGUAGE:-de}
+ZUSATZ=${QS_GPU:+-gpu}
+[ "$SPRACHE" = de ] || ZUSATZ=$ZUSATZ-$SPRACHE
+PROFIL=$E/gui-test/$MODUS-$R$ZUSATZ
+OUT=$E/nachweis/gui/$MODUS-$R$ZUSATZ
 case $PROFIL in "$E"/gui-test/?*) rm -rf -- "$PROFIL" ;; *) exit 2 ;; esac
 case $OUT in "$E"/nachweis/gui/?*) rm -rf -- "$OUT" ;; *) exit 2 ;; esac
 mkdir -p "$PROFIL/data/applications" "$PROFIL/data/icons/hicolor/scalable/apps" "$PROFIL/config/labwc" "$OUT"
+# Kataloge (ab 0.1.1): neben der Binary (Ablage, Vorschlag) oder frisch aus
+# programm/po/ für ein Binary unter target/ (QUERENCIA_SOFTWARE_LOCALEDIR).
+if [ ! -d "$(dirname "$BIN")/share/locale" ]; then
+    (cd "$E/programm" && python3 -I werkzeug/i18n.py mo "$PROFIL/locale" >/dev/null)
+    export QUERENCIA_SOFTWARE_LOCALEDIR=$PROFIL/locale
+fi
 
 # Starter und Symbol wie nach `aktivieren`, aber im Profil.
 sed "s|^Exec=.*|Exec=$BIN|; s|^TryExec=.*|TryExec=$BIN|" "$SW5/data/org.querencia.Software.desktop" \
@@ -47,7 +63,7 @@ sed "s|^Exec=.*|Exec=$BIN|; s|^TryExec=.*|TryExec=$BIN|" "$SW5/data/org.querenci
 cp "$SW5/data/icons/hicolor/scalable/apps/org.querencia.Software.svg" "$PROFIL/data/icons/hicolor/scalable/apps/"
 # MetaInfo: SW-5s Kopierskript, Ziel ins Profil umgelenkt (nie ~/.local).
 if [ "$MODUS" != ohne-metainfo ]; then
-    QS_METAINFO_ZIEL=$PROFIL/data/metainfo bash "$SW5/metainfo/metainfo-benutzer-kopieren.sh" --wirklich \
+    LANGUAGE=en QS_METAINFO_ZIEL=$PROFIL/data/metainfo bash "$SW5/metainfo/metainfo-benutzer-kopieren.sh" --wirklich \
         >"$OUT/metainfo-kopie.txt"
     # Das Kopierskript ruft metainfo-pruefen.sh, das SW-5s eingecheckte
     # nachweis/metainfo/validierung.txt neu schreibt (nur der Zeitstempel ändert
@@ -80,7 +96,7 @@ pruefbus | nurlesen) PRUEFBUS="attrappe" ;;
 verweigert) PRUEFBUS="attrappe --polkit verweigern" ;;
 testfail) PRUEFBUS="test_fail" ;;
 esac
-case $MODUS in echt | ohne-metainfo | leerlauf | startzeit | nurlesen | rauch) export QS_NUR_LESEN=1 ;; esac
+case $MODUS in echt | ohne-metainfo | leerlauf | startzeit | nurlesen | rauch | glyphen | i18n | anlauf) export QS_NUR_LESEN=1 ;; esac
 if [ "$PRUEFBUS" != 0 ]; then
     if [ ! -x "$QS_PK_ATTRAPPE" ]; then
         mkdir -p "$(dirname "$QS_PK_ATTRAPPE")"
@@ -93,6 +109,9 @@ if [ "$PRUEFBUS" != 0 ]; then
     trap 'bash "$SW1/pruefgeruest/pk-pruefbus.sh" stop >>"$OUT/pruefbus.txt" 2>&1; cp "$QS_PK_DIR"/*.log "$OUT/" 2>/dev/null || true' EXIT
 fi
 export QS_LOG=$OUT/protokoll.log
+# Sprache erst für die isolierte Sitzung (SW-5s MetaInfo-Prüfung oben liest die
+# englischen Meldungen von appstreamcli).
+export LANG=en_US.UTF-8 LANGUAGE=$SPRACHE
 
 cat >"$PROFIL/env.sh" <<X
 BIN=$BIN
@@ -103,8 +122,8 @@ R=$R
 MODUS=$MODUS
 E=$E
 P=$P
-export GSK_RENDERER=cairo
 X
+if [ "${QS_GPU:-}" = 1 ]; then echo "unset GSK_RENDERER" >>"$PROFIL/env.sh"; else echo "export GSK_RENDERER=cairo" >>"$PROFIL/env.sh"; fi
 sha256sum "$BIN" >"$OUT/binary.sha256"
 ZEIT=420
 case $MODUS in leerlauf) ZEIT=800 ;; esac

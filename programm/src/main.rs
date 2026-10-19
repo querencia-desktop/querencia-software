@@ -4,7 +4,8 @@
 //! GTK 4 ohne libadwaita und ohne eigene Titelleiste: labwc zeichnet den
 //! klassischen Server-Rahmen (Thema Querencia-Klassisch). Menüleiste,
 //! Seitenleiste mit Kategorien, Liste, Detailseite, Fortschrittsleiste,
-//! Statuszeile – alles deutsch.
+//! Statuszeile. Texte über GNU gettext (`i18n`, englische msgids, Deutsch aus
+//! `po/de.po`); die Sprache folgt `LANGUAGE`/`LANG` der Sitzung.
 //!
 //! Die Oberfläche spricht über die Traits in `schnittstellen` mit den
 //! Backends (`Rc<dyn Paketquelle>`, `Rc<dyn Katalog>`, Transaktionsmonitor).
@@ -20,6 +21,8 @@ mod attrappen;
 mod dialoge;
 mod echt;
 mod fenster;
+mod fremdtexte;
+mod i18n;
 mod logik;
 mod schnittstellen;
 
@@ -145,6 +148,7 @@ pub fn debug_katalog(s: &qs_typen::Statistik) {
 
 fn main() -> glib::ExitCode {
     seit_start_ms();
+    i18n::init();
     if std::env::args().nth(1).as_deref() == Some("--version") {
         println!("{APP_NAME} {}", env!("CARGO_PKG_VERSION"));
         return glib::ExitCode::SUCCESS;

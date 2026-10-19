@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use qs_typen::{Aktualisierung, Anwendung, Fehler, Kategorie, Paket, Symbol};
 
+use crate::i18n::{gettext, gettext_f, ngettext_f, pgettext};
 use crate::schnittstellen::Katalog;
 
 /// Was die Liste gerade zeigt.
@@ -20,15 +21,16 @@ pub enum Ansicht {
 impl Ansicht {
     pub fn titel(self) -> String {
         match self {
-            Ansicht::Alle => "Alle Programme".into(),
-            Ansicht::Kategorie(k) => k.name().into(),
-            Ansicht::Installiert => "Installiert".into(),
-            Ansicht::Aktualisierungen => "Aktualisierungen".into(),
-            Ansicht::Expertenliste => "Expertenliste".into(),
+            Ansicht::Alle => gettext("All Software"),
+            Ansicht::Kategorie(k) => crate::fremdtexte::kategorie(k),
+            Ansicht::Installiert => gettext("Installed"),
+            Ansicht::Aktualisierungen => gettext("Updates"),
+            Ansicht::Expertenliste => gettext("Expert List"),
         }
     }
 
-    /// Kurzname für Debug-Ausgabe und Tests.
+    /// Kurzname für Debug-Ausgabe und Tests (nicht übersetzt; Kategorien mit
+    /// dem deutschen Namen aus `qs_typen`).
     pub fn kennung(self) -> String {
         match self {
             Ansicht::Alle => "alle".into(),
@@ -81,26 +83,26 @@ impl Zeile {
     }
 
     /// Zustandstext in der Liste.
-    pub fn zustand(&self) -> &'static str {
+    pub fn zustand(&self) -> String {
         if self.aktualisierbar {
-            "Aktualisierung verfügbar"
+            gettext("Update available")
         } else if self.installiert {
-            "Installiert"
+            gettext("Installed")
         } else if self.paket.is_some() {
-            "Verfügbar"
+            gettext("Available")
         } else {
-            "Nicht verfügbar"
+            gettext("Not available")
         }
     }
 
     /// Beschriftung des Knopfs.
-    pub fn knopf(&self) -> &'static str {
+    pub fn knopf(&self) -> String {
         if self.aktualisierbar {
-            "Aktualisieren"
+            gettext("Update")
         } else if self.installiert {
-            "Entfernen"
+            gettext("Remove")
         } else {
-            "Installieren"
+            gettext("Install")
         }
     }
 }
@@ -315,7 +317,8 @@ pub fn zeilen_gesucht(
         .collect()
 }
 
-/// Größe in lesbarer Form (1.024er-Schritte, deutsche Schreibweise).
+/// Größe in lesbarer Form (1.024er-Schritte; Dezimalzeichen aus dem
+/// Katalog: deutsch „1,5 MiB“, englisch „1.5 MiB“).
 pub fn groesse_text(bytes: u64) -> String {
     const EINHEITEN: [&str; 4] = ["Byte", "KiB", "MiB", "GiB"];
     let mut wert = bytes as f64;
@@ -325,31 +328,39 @@ pub fn groesse_text(bytes: u64) -> String {
         i += 1;
     }
     if i == 0 {
-        format!("{bytes} Byte")
+        // TRANSLATORS: size of a package below 1 KiB
+        ngettext_f("{n} byte", "{n} bytes", bytes as u32, &[])
     } else {
-        format!("{:.1} {}", wert, EINHEITEN[i]).replace('.', ",")
+        // TRANSLATORS: decimal separator in sizes such as “1.5 MiB”
+        let komma = pgettext("decimal separator", ".");
+        format!("{:.1} {}", wert, EINHEITEN[i]).replace('.', &komma)
     }
 }
 
-/// Deutscher Text für die Fehlerdialoge.
+/// Kurzer Fehlertext für Statuszeile und Detailseite.
 pub fn fehlertext(f: &Fehler) -> String {
     match f {
         Fehler::NichtBerechtigt => {
-            "Sie sind nicht berechtigt, Software zu installieren oder zu entfernen. \
-             Die Anfrage wurde abgelehnt."
-                .into()
+            gettext("You are not allowed to install or remove software. The request was denied.")
         }
-        Fehler::KeinAgent => "Es fehlt der Berechtigungsdialog der Sitzung (polkit-Agent).".into(),
-        Fehler::SperreBelegt(wer) => {
-            format!("Die Paketverwaltung ist gerade belegt ({wer}).")
+        Fehler::KeinAgent => {
+            gettext("The session’s authorization dialog (polkit agent) is missing.")
         }
-        Fehler::NetzFehlt => "Keine Netzwerkverbindung.".into(),
-        Fehler::PaketNichtGefunden(p) => format!("Das Paket „{p}“ wurde nicht gefunden."),
-        Fehler::AbhaengigkeitenKonflikt(t) => format!("Abhängigkeiten im Konflikt: {t}"),
+        Fehler::SperreBelegt(wer) => gettext_f(
+            "The package manager is busy right now ({program}).",
+            &[("program", wer)],
+        ),
+        Fehler::NetzFehlt => gettext("No network connection."),
+        Fehler::PaketNichtGefunden(p) => {
+            gettext_f("The package “{package}” was not found.", &[("package", p)])
+        }
+        Fehler::AbhaengigkeitenKonflikt(t) => {
+            gettext_f("Conflicting dependencies: {details}", &[("details", t)])
+        }
         Fehler::DaemonWeg => {
-            "Die Paketverwaltung (PackageKit) wurde während des Vorgangs beendet.".into()
+            gettext("The package manager (PackageKit) was stopped during the operation.")
         }
-        Fehler::Abgebrochen => "Der Vorgang wurde abgebrochen.".into(),
+        Fehler::Abgebrochen => gettext("The operation was cancelled."),
         Fehler::Sonstiges { code, text } => format!("{text} ({code})"),
     }
 }
@@ -433,7 +444,7 @@ mod tests {
         assert!(zeilen.iter().all(|z| z.installiert));
         assert!(zeilen
             .iter()
-            .all(|z| z.knopf() == "Entfernen" || z.knopf() == "Aktualisieren"));
+            .all(|z| z.knopf() == "Remove" || z.knopf() == "Update"));
     }
 
     #[test]
@@ -443,10 +454,8 @@ mod tests {
         assert_eq!(zeilen.len(), 3);
         assert!(zeilen
             .iter()
-            .all(|z| z.aktualisierbar && z.knopf() == "Aktualisieren"));
-        assert!(zeilen
-            .iter()
-            .all(|z| z.zustand() == "Aktualisierung verfügbar"));
+            .all(|z| z.aktualisierbar && z.knopf() == "Update"));
+        assert!(zeilen.iter().all(|z| z.zustand() == "Update available"));
     }
 
     #[test]
@@ -570,11 +579,12 @@ mod tests {
     }
 
     #[test]
-    fn groesse_text_deutsch() {
-        assert_eq!(groesse_text(512), "512 Byte");
-        assert_eq!(groesse_text(1536), "1,5 KiB");
-        assert_eq!(groesse_text(5 * 1024 * 1024), "5,0 MiB");
-        assert_eq!(groesse_text(3 * 1024 * 1024 * 1024), "3,0 GiB");
+    fn groesse_text_ohne_katalog_englisch() {
+        assert_eq!(groesse_text(1), "1 byte");
+        assert_eq!(groesse_text(512), "512 bytes");
+        assert_eq!(groesse_text(1536), "1.5 KiB");
+        assert_eq!(groesse_text(5 * 1024 * 1024), "5.0 MiB");
+        assert_eq!(groesse_text(3 * 1024 * 1024 * 1024), "3.0 GiB");
     }
 
     #[test]
@@ -582,14 +592,14 @@ mod tests {
         let (katalog, stand) = aufbau();
         let zeilen = zeilen_fuer(Ansicht::Alle, &katalog, &stand);
         let frei = zeilen.iter().find(|z| !z.installiert).unwrap();
-        assert_eq!(frei.zustand(), "Verfügbar");
-        assert_eq!(frei.knopf(), "Installieren");
+        assert_eq!(frei.zustand(), "Available");
+        assert_eq!(frei.knopf(), "Install");
         let inst = zeilen
             .iter()
             .find(|z| z.installiert && !z.aktualisierbar)
             .unwrap();
-        assert_eq!(inst.zustand(), "Installiert");
-        assert_eq!(inst.knopf(), "Entfernen");
+        assert_eq!(inst.zustand(), "Installed");
+        assert_eq!(inst.knopf(), "Remove");
     }
 
     #[test]
@@ -668,9 +678,9 @@ mod tests {
     }
 
     #[test]
-    fn fehlertexte_deutsch_mit_hinweis() {
-        assert!(fehlertext(&Fehler::KeinAgent).contains("polkit-Agent"));
-        assert!(fehlertext(&Fehler::SperreBelegt("apt".into())).contains("belegt"));
+    fn fehlertexte_mit_hinweis() {
+        assert!(fehlertext(&Fehler::KeinAgent).contains("polkit agent"));
+        assert!(fehlertext(&Fehler::SperreBelegt("apt".into())).contains("busy right now (apt)"));
         let t = fehlertext(&Fehler::Sonstiges {
             code: "internal-error".into(),
             text: "kaputt".into(),

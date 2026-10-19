@@ -1,0 +1,21 @@
+[Desktop Entry]
+# Querencia Software (SW-5, 2026-10-18). Desktop-ID = GApplication-ID
+# org.querencia.Software (SCHNITTSTELLEN.md, Oberfläche SW-3), damit labwc und
+# die Fensterliste Titelleistensymbol und Namen zuordnen. Categories
+# Settings;System; → Panel-Menü System → Systemverwaltung (apps.rs,
+# system_section: Settings mit System = Administration). Exec ist der
+# Platzhalter für die spätere Ablage; vorschlag-erzeugen.sh setzt den
+# absoluten Pfad des Programm-Links ~/opt/querencia/bin/querencia-software.
+Type=Application
+Version=1.5
+Name=Software
+GenericName=Software Manager
+Comment=Install, remove and update programs
+Exec=querencia-software
+TryExec=querencia-software
+Icon=org.querencia.Software
+Terminal=false
+Categories=GTK;System;PackageManager;Settings;
+Keywords=software;packages;install;remove;update;apps;store;
+StartupNotify=true
+StartupWMClass=org.querencia.Software

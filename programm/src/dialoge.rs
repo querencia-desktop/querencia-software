@@ -10,6 +10,7 @@ use gtk::{gdk, gio, glib};
 use qs_typen::Paket;
 
 use crate::debug;
+use crate::i18n::{gettext, gettext_f, ngettext_f};
 use crate::schnittstellen::Simulation;
 use crate::APP_NAME;
 
@@ -134,7 +135,11 @@ const LOGO_64: &[u8] = include_bytes!("../data/logo/querencia-logo-64.png");
 /// Der Schließen-Knopf hat den Tastaturfokus; Escape und Eingabetaste
 /// schließen.
 pub fn about(parent: &impl IsA<gtk::Window>) {
-    let window = modal_window(parent, &format!("Info zu {APP_NAME}"), "info");
+    let window = modal_window(
+        parent,
+        &gettext_f("About {name}", &[("name", APP_NAME)]),
+        "info",
+    );
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     body.set_halign(gtk::Align::Center);
     // Programmsymbol (SW-5) neben dem Querencia-Q.
@@ -161,11 +166,11 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         "<b><big>{APP_NAME} {}</big></b>",
         env!("CARGO_PKG_VERSION")
     ));
-    let text = gtk::Label::new(Some(
-        "Programme für Querencia Desktop installieren,\n\
-         aktualisieren und entfernen.\n\n\
-         Grundlage: PackageKit und AppStream.",
-    ));
+    let text = gtk::Label::new(Some(&gettext(
+        "Install, update and remove\n\
+         applications for Querencia Desktop.\n\n\
+         Based on PackageKit and AppStream.",
+    )));
     text.set_justify(gtk::Justification::Center);
     let tech = gtk::Label::new(Some(&format!(
         "GTK {}.{}.{}",
@@ -174,13 +179,13 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         gtk::micro_version()
     )));
     tech.add_css_class("dim-label");
-    let license = gtk::Label::new(Some("Lizenz: GNU GPL, Version 3 oder neuer"));
+    let license = gtk::Label::new(Some(&gettext("License: GNU GPL, version 3 or later")));
     license.add_css_class("dim-label");
     body.append(&name);
     body.append(&text);
     body.append(&tech);
     body.append(&license);
-    let close = knopf_schliesst(&window, "_Schließen", None);
+    let close = knopf_schliesst(&window, &gettext("_Close"), None);
     window.set_child(Some(&rahmen(&body, &[&close])));
     window.set_default_widget(Some(&close));
     close_on_escape(&window, None);
@@ -201,7 +206,7 @@ pub fn meldung(parent: &impl IsA<gtk::Window>, titel: &str, text: &str, kennung:
     label.set_xalign(0.0);
     body.append(&ueberschrift);
     body.append(&label);
-    let close = knopf_schliesst(&window, "_Schließen", None);
+    let close = knopf_schliesst(&window, &gettext("_Close"), None);
     window.set_child(Some(&rahmen(&body, &[&close])));
     window.set_default_widget(Some(&close));
     close_on_escape(&window, None);
@@ -270,27 +275,33 @@ pub fn bestaetigen_entfernen(
     entfernen: Box<dyn Fn()>,
     abbrechen: Box<dyn Fn()>,
 ) {
-    let window = modal_window(parent, "Entfernen bestätigen", "entfernen");
+    let window = modal_window(parent, &gettext("Confirm Removal"), "entfernen");
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     let frage = gtk::Label::new(None);
     frage.set_markup(&format!(
-        "<b>Soll „{}“ wirklich entfernt werden?</b>",
-        glib::markup_escape_text(name)
+        "<b>{}</b>",
+        gettext_f(
+            "Do you really want to remove “{name}”?",
+            &[("name", &glib::markup_escape_text(name))]
+        )
     ));
     frage.set_xalign(0.0);
     body.append(&frage);
     let mitgehend: Vec<Paket> = simulation.entfernen.clone();
-    let hinweis = gtk::Label::new(Some(&format!(
-        "Folgende Pakete werden mit entfernt ({}):",
-        mitgehend.len()
+    let hinweis = gtk::Label::new(Some(&ngettext_f(
+        "The following package will be removed as well ({n}):",
+        "The following packages will be removed as well ({n}):",
+        mitgehend.len() as u32,
+        &[],
     )));
     hinweis.set_xalign(0.0);
     body.append(&hinweis);
     body.append(&paketliste(&mitgehend));
     let abbruch_rc = std::rc::Rc::new(abbrechen);
     let a1 = abbruch_rc.clone();
-    let knopf_abbrechen = knopf_schliesst(&window, "_Abbrechen", Some(Box::new(move || a1())));
-    let knopf_entfernen = knopf_schliesst(&window, "_Entfernen", Some(entfernen));
+    let knopf_abbrechen =
+        knopf_schliesst(&window, &gettext("_Cancel"), Some(Box::new(move || a1())));
+    let knopf_entfernen = knopf_schliesst(&window, &gettext("_Remove"), Some(entfernen));
     knopf_entfernen.add_css_class("destructive-action");
     window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_entfernen])));
     window.set_default_widget(Some(&knopf_entfernen));
@@ -311,22 +322,34 @@ pub fn bestaetigen_installieren(
     installieren: Box<dyn Fn()>,
     abbrechen: Box<dyn Fn()>,
 ) {
-    let window = modal_window(parent, "Installation bestätigen", "installieren");
+    let window = modal_window(parent, &gettext("Confirm Installation"), "installieren");
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     let frage = gtk::Label::new(None);
     frage.set_markup(&format!(
-        "<b>Soll „{}“ installiert werden?</b>",
-        glib::markup_escape_text(name)
+        "<b>{}</b>",
+        gettext_f(
+            "Do you want to install “{name}”?",
+            &[("name", &glib::markup_escape_text(name))]
+        )
     ));
     frage.set_xalign(0.0);
     body.append(&frage);
     let mut zusatz: Vec<Paket> = simulation.installieren.clone();
     zusatz.extend(simulation.aktualisieren.iter().cloned());
-    let mut text = format!("Zusätzlich werden installiert ({}):", zusatz.len());
+    let mut text = ngettext_f(
+        "The following additional package will be installed ({n}):",
+        "The following additional packages will be installed ({n}):",
+        zusatz.len() as u32,
+        &[],
+    );
     if simulation.download_bytes > 0 {
-        text.push_str(&format!(
-            "\nHerunterzuladen: {}",
-            crate::logik::groesse_text(simulation.download_bytes)
+        text.push('\n');
+        text.push_str(&gettext_f(
+            "Download size: {size}",
+            &[(
+                "size",
+                &crate::logik::groesse_text(simulation.download_bytes),
+            )],
         ));
     }
     let hinweis = gtk::Label::new(Some(&text));
@@ -334,9 +357,11 @@ pub fn bestaetigen_installieren(
     body.append(&hinweis);
     body.append(&paketliste(&zusatz));
     if !simulation.entfernen.is_empty() {
-        let warnung = gtk::Label::new(Some(&format!(
-            "Dafür werden entfernt ({}):",
-            simulation.entfernen.len()
+        let warnung = gtk::Label::new(Some(&ngettext_f(
+            "To do this, the following package will be removed ({n}):",
+            "To do this, the following packages will be removed ({n}):",
+            simulation.entfernen.len() as u32,
+            &[],
         )));
         warnung.set_xalign(0.0);
         body.append(&warnung);
@@ -344,8 +369,9 @@ pub fn bestaetigen_installieren(
     }
     let abbruch_rc = std::rc::Rc::new(abbrechen);
     let a1 = abbruch_rc.clone();
-    let knopf_abbrechen = knopf_schliesst(&window, "_Abbrechen", Some(Box::new(move || a1())));
-    let knopf_ok = knopf_schliesst(&window, "_Installieren", Some(installieren));
+    let knopf_abbrechen =
+        knopf_schliesst(&window, &gettext("_Cancel"), Some(Box::new(move || a1())));
+    let knopf_ok = knopf_schliesst(&window, &gettext("_Install"), Some(installieren));
     knopf_ok.add_css_class("suggested-action");
     window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_ok])));
     window.set_default_widget(Some(&knopf_ok));
@@ -364,13 +390,21 @@ pub fn nachfrage(
     warten: Box<dyn Fn()>,
     abbrechen: Box<dyn Fn()>,
 ) {
-    let window = modal_window(parent, "Vorgang dauert lange", "nachfrage");
+    let window = modal_window(
+        parent,
+        &gettext("Operation Is Taking a Long Time"),
+        "nachfrage",
+    );
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     let ueberschrift = gtk::Label::new(None);
-    ueberschrift.set_markup("<b>Der Vorgang meldet keinen Fortschritt</b>");
+    ueberschrift.set_markup(&format!(
+        "<b>{}</b>",
+        glib::markup_escape_text(&gettext("The operation reports no progress"))
+    ));
     ueberschrift.set_xalign(0.0);
-    let label = gtk::Label::new(Some(&format!(
-        "{text}\n\nSie können weiter warten oder den Vorgang abbrechen."
+    let label = gtk::Label::new(Some(&gettext_f(
+        "{status}\n\nYou can keep waiting or cancel the operation.",
+        &[("status", text)],
     )));
     label.set_wrap(true);
     label.set_max_width_chars(60);
@@ -379,8 +413,10 @@ pub fn nachfrage(
     body.append(&label);
     let abbruch_rc = std::rc::Rc::new(abbrechen);
     let a1 = abbruch_rc.clone();
-    let knopf_abbrechen = knopf_schliesst(&window, "_Abbrechen", Some(Box::new(move || a1())));
-    let knopf_warten = knopf_schliesst(&window, "_Weiter warten", Some(warten));
+    let knopf_abbrechen =
+        knopf_schliesst(&window, &gettext("_Cancel"), Some(Box::new(move || a1())));
+    // TRANSLATORS: button; its access key must differ from “_Cancel”
+    let knopf_warten = knopf_schliesst(&window, &gettext("_Keep Waiting"), Some(warten));
     window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_warten])));
     window.set_default_widget(Some(&knopf_warten));
     let a2 = abbruch_rc.clone();
@@ -397,15 +433,18 @@ pub fn sperre_belegt(
     warten: Box<dyn Fn()>,
     abbrechen: Box<dyn Fn()>,
 ) {
-    let window = modal_window(parent, "Paketverwaltung belegt", "sperre");
+    let window = modal_window(parent, &gettext("Package Manager Busy"), "sperre");
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     let ueberschrift = gtk::Label::new(None);
-    ueberschrift.set_markup("<b>Die Paketverwaltung ist gerade belegt</b>");
+    ueberschrift.set_markup(&format!(
+        "<b>{}</b>",
+        glib::markup_escape_text(&gettext("The package manager is busy right now"))
+    ));
     ueberschrift.set_xalign(0.0);
-    let label = gtk::Label::new(Some(&format!(
-        "{text}\n\nEin anderes Programm (zum Beispiel eine Aktualisierung im Hintergrund) \
-         hält die Paketsperre. Sie können warten und es erneut versuchen oder den \
-         Vorgang abbrechen."
+    let label = gtk::Label::new(Some(&gettext_f(
+        "{reason}\n\nAnother program (for example an update in the background) holds the \
+         package lock. You can wait and try again, or cancel the operation.",
+        &[("reason", text)],
     )));
     label.set_wrap(true);
     label.set_max_width_chars(60);
@@ -414,8 +453,10 @@ pub fn sperre_belegt(
     body.append(&label);
     let abbruch_rc = std::rc::Rc::new(abbrechen);
     let a1 = abbruch_rc.clone();
-    let knopf_abbrechen = knopf_schliesst(&window, "_Abbrechen", Some(Box::new(move || a1())));
-    let knopf_warten = knopf_schliesst(&window, "_Warten", Some(warten));
+    let knopf_abbrechen =
+        knopf_schliesst(&window, &gettext("_Cancel"), Some(Box::new(move || a1())));
+    // TRANSLATORS: button; its access key must differ from “_Cancel”
+    let knopf_warten = knopf_schliesst(&window, &gettext("_Wait"), Some(warten));
     window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_warten])));
     window.set_default_widget(Some(&knopf_warten));
     let a2 = abbruch_rc.clone();

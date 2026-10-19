@@ -152,6 +152,12 @@ box.qs-status {
   padding: 3px 10px;
 }
 
+/* Zwei Frames nach einem neuen Statustext (fenster.rs, ganz_neu_zeichnen):
+   ein Farbwert Unterschied, damit GTK die ganze Leiste neu zeichnet. */
+box.qs-status.qs-neu {
+  background-color: #f2f1f1;
+}
+
 label.qs-status-text {
   color: #3c3c3c;
   font-size: 9pt;

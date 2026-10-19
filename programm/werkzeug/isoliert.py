@@ -79,7 +79,8 @@ def main() -> int:
         "XDG_CURRENT_DESKTOP": "X-Querencia",
         "XDG_SESSION_TYPE": "wayland",
         "WLR_BACKENDS": "headless",
-        "WLR_RENDERER": "pixman",
+        # QS_GPU=1: GPU-Renderer (gles2 über den Render-Knoten), sonst pixman.
+        "WLR_RENDERER": "gles2" if os.environ.get("QS_GPU") == "1" else "pixman",
         "WLR_HEADLESS_OUTPUTS": "1",
         "WLR_LIBINPUT_NO_DEVICES": "1",
         "XKB_DEFAULT_LAYOUT": "de",

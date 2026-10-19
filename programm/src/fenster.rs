@@ -24,6 +24,8 @@ use qs_typen::{Fehler, Paket, Vorgang};
 
 use crate::debug;
 use crate::dialoge;
+use crate::fremdtexte;
+use crate::i18n::{gettext, gettext_f, ngettext_f, pgettext};
 use crate::logik::{self, fehlertext, Ansicht, Paketstand, SymbolWahl, Zeile};
 use crate::schnittstellen::{
     Auftrag, Katalog, Simulation, TransaktionsGriff, Transaktionsmonitor, Zustand,
@@ -62,32 +64,39 @@ pub fn install_accels(app: &gtk::Application) {
 fn menu_model() -> gio::Menu {
     let datei = gio::Menu::new();
     let s1 = gio::Menu::new();
-    s1.append(Some("Aktualisierungen _prüfen"), Some("win.pruefen"));
+    s1.append(Some(&gettext("_Check for Updates")), Some("win.pruefen"));
     datei.append_section(None, &s1);
     let s2 = gio::Menu::new();
-    s2.append(Some("_Beenden"), Some("win.quit"));
+    s2.append(Some(&gettext("_Quit")), Some("win.quit"));
     datei.append_section(None, &s2);
 
     let bearbeiten = gio::Menu::new();
-    bearbeiten.append(Some("_Suchen"), Some("win.suchen"));
+    bearbeiten.append(Some(&gettext("_Find")), Some("win.suchen"));
 
+    // TRANSLATORS: View menu; access keys must be unique within the menu
     let ansicht = gio::Menu::new();
-    ansicht.append(Some("_Alle Programme"), Some("win.ansicht::alle"));
-    ansicht.append(Some("_Installiert"), Some("win.ansicht::installiert"));
+    ansicht.append(Some(&gettext("_All Software")), Some("win.ansicht::alle"));
     ansicht.append(
-        Some("A_ktualisierungen"),
+        Some(&gettext("_Installed")),
+        Some("win.ansicht::installiert"),
+    );
+    ansicht.append(
+        Some(&gettext("_Updates")),
         Some("win.ansicht::aktualisierungen"),
     );
-    ansicht.append(Some("_Expertenliste"), Some("win.ansicht::experten"));
+    ansicht.append(
+        Some(&gettext("_Expert List")),
+        Some("win.ansicht::experten"),
+    );
 
     let hilfe = gio::Menu::new();
-    hilfe.append(Some("_Info"), Some("win.about"));
+    hilfe.append(Some(&gettext("_About")), Some("win.about"));
 
     let bar = gio::Menu::new();
-    bar.append_submenu(Some("_Datei"), &datei);
-    bar.append_submenu(Some("_Bearbeiten"), &bearbeiten);
-    bar.append_submenu(Some("_Ansicht"), &ansicht);
-    bar.append_submenu(Some("_Hilfe"), &hilfe);
+    bar.append_submenu(Some(&gettext("_File")), &datei);
+    bar.append_submenu(Some(&gettext("_Edit")), &bearbeiten);
+    bar.append_submenu(Some(&gettext("_View")), &ansicht);
+    bar.append_submenu(Some(&gettext("_Help")), &hilfe);
     bar
 }
 
@@ -184,6 +193,7 @@ pub struct Fenster {
     detail_zeile: RefCell<Option<Zeile>>,
     fortschritt: Fortschrittsleiste,
     transaktion: RefCell<Option<Transaktion>>,
+    status_box: gtk::Box,
     status: gtk::Label,
     letzte_pruefung: RefCell<Option<String>>,
     letzte_meldung: RefCell<Option<String>>,
@@ -278,13 +288,13 @@ impl Fenster {
         // ---------------------------------------------------- Kopf mit Suchfeld
         let kopf = gtk::Box::new(gtk::Orientation::Horizontal, 8);
         kopf.add_css_class("qs-kopf");
-        let ueberschrift = gtk::Label::new(Some("Alle Programme"));
+        let ueberschrift = gtk::Label::new(Some(&Ansicht::Alle.titel()));
         ueberschrift.add_css_class("qs-ueberschrift");
         ueberschrift.set_xalign(0.0);
         ueberschrift.set_hexpand(true);
         ueberschrift.set_ellipsize(gtk::pango::EllipsizeMode::End);
         let suchfeld = gtk::SearchEntry::new();
-        suchfeld.set_placeholder_text(Some("Programme suchen …"));
+        suchfeld.set_placeholder_text(Some(&gettext("Search software…")));
         suchfeld.set_search_delay(300);
         suchfeld.set_width_chars(28);
         kopf.append(&ueberschrift);
@@ -301,7 +311,7 @@ impl Fenster {
         liste_scroll.set_policy(gtk::PolicyType::Never, gtk::PolicyType::Automatic);
         liste_scroll.set_child(Some(&listview));
         liste_scroll.set_vexpand(true);
-        let leer = gtk::Label::new(Some("Keine Programme gefunden."));
+        let leer = gtk::Label::new(Some(&gettext("No applications found.")));
         leer.add_css_class("qs-leer");
         leer.set_margin_top(24);
         leer.set_visible(false);
@@ -374,6 +384,7 @@ impl Fenster {
             detail_zeile: RefCell::new(None),
             fortschritt,
             transaktion: RefCell::new(None),
+            status_box,
             status,
             letzte_pruefung: RefCell::new(None),
             letzte_meldung: RefCell::new(None),
@@ -414,7 +425,7 @@ impl Fenster {
             return;
         };
         self.katalog_laedt.set(true);
-        self.melde("Katalog wird geladen …");
+        self.melde(&gettext("Loading catalog…"));
         self.aktualisiere_liste();
         let weak = Rc::downgrade(self);
         glib::MainContext::default().spawn_local(async move {
@@ -439,8 +450,11 @@ impl Fenster {
                     *s.backends.katalog.borrow_mut() = Rc::new(katalog);
                     *s.letzte_meldung.borrow_mut() = None;
                 }
-                Ok(Err(e)) => s.melde(&format!("Katalog nicht ladbar: {e}")),
-                Err(_) => s.melde("Katalog nicht ladbar: Lesefehler"),
+                Ok(Err(e)) => s.melde(&gettext_f(
+                    "The catalog could not be loaded: {error}",
+                    &[("error", &e)],
+                )),
+                Err(_) => s.melde(&gettext("The catalog could not be loaded: read error")),
             }
             s.aktualisiere_liste();
             s.paketstand_laden(true);
@@ -450,7 +464,7 @@ impl Fenster {
     fn baue_details() -> Detailseite {
         let seite = gtk::Box::new(gtk::Orientation::Vertical, 12);
         seite.add_css_class("qs-details");
-        let zurueck = gtk::Button::with_mnemonic("← _Zurück");
+        let zurueck = gtk::Button::with_mnemonic(&gettext("← _Back"));
         zurueck.set_halign(gtk::Align::Start);
         seite.append(&zurueck);
 
@@ -473,7 +487,7 @@ impl Fenster {
         texte.append(&name);
         texte.append(&zusammenfassung);
         texte.append(&zustand);
-        let knopf = gtk::Button::with_label("Installieren");
+        let knopf = gtk::Button::with_label(&gettext("Install"));
         knopf.set_valign(gtk::Align::Start);
         knopf.set_size_request(120, -1);
         kopf.append(&symbol);
@@ -514,10 +528,10 @@ impl Fenster {
             fakten.attach(&w, 1, zeile, 1, 1);
             w
         };
-        let version = fakt(0, "Version");
-        let groesse = fakt(1, "Größe");
-        let lizenz = fakt(2, "Lizenz");
-        let hp_titel = gtk::Label::new(Some("Homepage"));
+        let version = fakt(0, &gettext("Version"));
+        let groesse = fakt(1, &gettext("Size"));
+        let lizenz = fakt(2, &gettext("License"));
+        let hp_titel = gtk::Label::new(Some(&gettext("Website")));
         hp_titel.add_css_class("qs-fakt-name");
         hp_titel.set_xalign(0.0);
         fakten.attach(&hp_titel, 0, 3, 1, 1);
@@ -570,7 +584,8 @@ impl Fenster {
         texte.append(&vorgang);
         texte.append(&balken);
         texte.append(&status);
-        let abbrechen = gtk::Button::with_mnemonic("Ab_brechen");
+        // TRANSLATORS: progress bar button; German keeps its old access key
+        let abbrechen = gtk::Button::with_mnemonic(&pgettext("progress bar", "_Cancel"));
         abbrechen.set_valign(gtk::Align::Center);
         leiste.append(&texte);
         leiste.append(&abbrechen);
@@ -614,7 +629,7 @@ impl Fenster {
             texte.append(&name);
             texte.append(&zusammenfassung);
             texte.append(&zustand);
-            let knopf = gtk::Button::with_label("Installieren");
+            let knopf = gtk::Button::with_label(&gettext("Install"));
             knopf.add_css_class("qs-knopf");
             knopf.set_valign(gtk::Align::Center);
             knopf.set_size_request(110, -1);
@@ -667,10 +682,10 @@ impl Fenster {
                 z.set_text(&zeile.zusammenfassung);
             }
             if let Some(z) = zustand {
-                z.set_text(zeile.zustand());
+                z.set_text(&zeile.zustand());
             }
             if let Some(k) = knopf {
-                k.set_label(zeile.knopf());
+                k.set_label(&zeile.knopf());
                 k.set_sensitive(zeile.paket.is_some());
             }
         });
@@ -872,12 +887,19 @@ impl Fenster {
                     }
                     if s.pruefung_melden.replace(false) {
                         let n = s.stand.borrow().aktualisierungen.len();
-                        *s.letzte_meldung.borrow_mut() =
-                            Some(format!("Aktualisierungen geprüft: {n} verfügbar"));
+                        *s.letzte_meldung.borrow_mut() = Some(ngettext_f(
+                            "Checked for updates: {n} available",
+                            "Checked for updates: {n} available",
+                            n as u32,
+                            &[],
+                        ));
                     }
                 }
                 (Err(e), _) | (_, Err(e)) => {
-                    s.melde(&format!("Paketquelle nicht erreichbar: {}", fehlertext(&e)));
+                    s.melde(&gettext_f(
+                        "Package source not reachable: {error}",
+                        &[("error", &fehlertext(&e))],
+                    ));
                 }
             }
             s.aktualisiere_seitenleiste();
@@ -889,7 +911,7 @@ impl Fenster {
 
     fn aktualisierungen_pruefen(self: &Rc<Self>) {
         self.pruefung_melden.set(true);
-        self.melde("Prüfe auf Aktualisierungen …");
+        self.melde(&gettext("Checking for updates…"));
         self.paketstand_laden(true);
     }
 
@@ -926,8 +948,9 @@ impl Fenster {
     /// Pakete (ab `EXPERTEN_MINDESTLAENGE` Zeichen), Ergebnis zwischengespeichert.
     fn experten_zeilen(self: &Rc<Self>, text: &str) -> Vec<Zeile> {
         if text.chars().count() < EXPERTEN_MINDESTLAENGE {
-            self.leer
-                .set_text("Bitte mindestens zwei Zeichen eingeben, um alle Pakete zu durchsuchen.");
+            self.leer.set_text(&gettext(
+                "Type at least two characters to search all packages.",
+            ));
             return Vec::new();
         }
         let gespeichert = self.experten.borrow().clone();
@@ -943,17 +966,19 @@ impl Fenster {
                 zeilen
             }
             Some((t, Ok(None))) if t == text => {
-                self.leer.set_text("Suche läuft …");
+                self.leer.set_text(&gettext("Searching…"));
                 Vec::new()
             }
             Some((t, Err(e))) if t == text => {
-                self.leer
-                    .set_text(&format!("Suche fehlgeschlagen: {}", fehlertext(&e)));
+                self.leer.set_text(&gettext_f(
+                    "Search failed: {error}",
+                    &[("error", &fehlertext(&e))],
+                ));
                 Vec::new()
             }
             _ => {
                 *self.experten.borrow_mut() = Some((text.to_string(), Ok(None)));
-                self.leer.set_text("Suche läuft …");
+                self.leer.set_text(&gettext("Searching…"));
                 let weak = Rc::downgrade(self);
                 let quelle = self.backends.quelle.clone();
                 let text = text.to_string();
@@ -978,10 +1003,10 @@ impl Fenster {
     }
 
     fn aktualisiere_liste(self: &Rc<Self>) {
-        self.leer.set_text(if self.katalog_laedt.get() {
-            "Katalog wird geladen …"
+        self.leer.set_text(&if self.katalog_laedt.get() {
+            gettext("Loading catalog…")
         } else {
-            "Keine Programme gefunden."
+            gettext("No applications found.")
         });
         let zeilen = self.aktuelle_zeilen();
         let n = zeilen.len();
@@ -1011,15 +1036,28 @@ impl Fenster {
         self.leer.set_visible(n == 0);
         let ansicht = self.ansicht.get();
         let titel = ansicht.titel();
-        let einheit = if ansicht == Ansicht::Expertenliste {
-            "Pakete"
+        let anzahl = n as u32;
+        self.ueberschrift.set_text(&if !suchtext.trim().is_empty() {
+            ngettext_f(
+                "{view} – Search “{text}”: {n} result",
+                "{view} – Search “{text}”: {n} results",
+                anzahl,
+                &[("view", &titel), ("text", suchtext.trim())],
+            )
+        } else if ansicht == Ansicht::Expertenliste {
+            ngettext_f(
+                "{view} – {n} package",
+                "{view} – {n} packages",
+                anzahl,
+                &[("view", &titel)],
+            )
         } else {
-            "Programme"
-        };
-        self.ueberschrift.set_text(&if suchtext.trim().is_empty() {
-            format!("{titel} – {n} {einheit}")
-        } else {
-            format!("{titel} – Suche „{}“: {n} Treffer", suchtext.trim())
+            ngettext_f(
+                "{view} – {n} application",
+                "{view} – {n} applications",
+                anzahl,
+                &[("view", &titel)],
+            )
         });
         if self.debug {
             debug(&format!(
@@ -1035,7 +1073,8 @@ impl Fenster {
         let n = self.stand.borrow().aktualisierungen.len();
         for (a, _, label) in self.seiten_zeilen.borrow().iter() {
             if *a == Ansicht::Aktualisierungen {
-                label.set_text(&format!("Aktualisierungen ({n})"));
+                // TRANSLATORS: sidebar entry with the number of available updates
+                label.set_text(&gettext_f("Updates ({n})", &[("n", &n.to_string())]));
                 debug(&format!("seitentext\taktualisierungen\t{n}"));
             }
         }
@@ -1055,19 +1094,29 @@ impl Fenster {
                     .is_some_and(|p| p.installiert)
             })
             .count();
-        let pruefung = self
-            .letzte_pruefung
-            .borrow()
-            .clone()
-            .map(|t| format!("letzte Aktualisierungsprüfung {t}"))
-            .unwrap_or_else(|| "noch keine Aktualisierungsprüfung".into());
-        let mut text =
-            format!("Katalog: {programme} Programme, {installiert} installiert · {pruefung}");
+        let installiert = installiert.to_string();
+        let mut text = match self.letzte_pruefung.borrow().as_deref() {
+            Some(zeit) => ngettext_f(
+                "Catalog: {n} application, {installed} installed · last check for updates {time}",
+                "Catalog: {n} applications, {installed} installed · last check for updates {time}",
+                programme as u32,
+                &[("installed", &installiert), ("time", zeit)],
+            ),
+            None => ngettext_f(
+                "Catalog: {n} application, {installed} installed · no check for updates yet",
+                "Catalog: {n} applications, {installed} installed · no check for updates yet",
+                programme as u32,
+                &[("installed", &installiert)],
+            ),
+        };
         if let Some(m) = self.letzte_meldung.borrow().as_ref() {
             text.push_str(" · ");
             text.push_str(m);
         }
-        self.status.set_text(&text);
+        if self.status.text() != text {
+            self.status.set_text(&text);
+            ganz_neu_zeichnen(&self.status_box);
+        }
         debug(&format!("status\t{text}"));
     }
 
@@ -1111,8 +1160,8 @@ impl Fenster {
         self.setze_symbol(&d.symbol, &zeile, 64);
         d.name.set_text(&zeile.titel);
         d.zusammenfassung.set_text(&zeile.zusammenfassung);
-        d.zustand.set_text(zeile.zustand());
-        d.knopf.set_label(zeile.knopf());
+        d.zustand.set_text(&zeile.zustand());
+        d.knopf.set_label(&zeile.knopf());
         d.knopf.set_sensitive(zeile.paket.is_some());
         let (beschreibung, lizenz, homepage) = match &zeile.anwendung {
             Some(a) => (
@@ -1235,9 +1284,11 @@ impl Fenster {
         if self.transaktion.borrow().is_some() {
             dialoge::meldung(
                 &self.window,
-                "Vorgang läuft",
-                "Es läuft bereits ein Vorgang. Bitte warten Sie, bis er abgeschlossen ist, \
-                 oder brechen Sie ihn ab.",
+                &gettext("Operation in Progress"),
+                &gettext(
+                    "Another operation is already running. Please wait until it has finished, \
+                     or cancel it.",
+                ),
                 "laeuft",
             );
             return;
@@ -1265,15 +1316,12 @@ impl Fenster {
             pakete: vec![paket.clone()],
             anwendung: zeile.anwendung.clone(),
         };
-        self.fortschritt.vorgang.set_text(&format!(
-            "{}: {} ({})",
-            vorgang_text(&vorgang),
-            zeile.titel,
-            paket.name
-        ));
+        self.fortschritt
+            .vorgang
+            .set_text(&vorgang_titel(&vorgang, &zeile.titel, &paket.name));
         self.fortschritt.balken.set_fraction(0.0);
         self.fortschritt.balken.set_text(Some("0 %"));
-        self.fortschritt.status.set_text("Wird vorbereitet …");
+        self.fortschritt.status.set_text(&gettext("Preparing…"));
         self.fortschritt.leiste.set_visible(true);
         self.fortschritt.abbrechen.set_sensitive(true);
         let generation = self.naechste_generation();
@@ -1362,11 +1410,12 @@ impl Fenster {
                 }
                 if !eigener_vorgang {
                     let f = &self.fortschritt;
-                    f.vorgang
-                        .set_text("Wieder angebunden: laufender Vorgang der Paketverwaltung");
+                    f.vorgang.set_text(&gettext(
+                        "Reattached: package manager operation in progress",
+                    ));
                     f.balken.set_fraction(0.0);
                     f.balken.set_text(Some("…"));
-                    f.status.set_text(&status);
+                    f.status.set_text(&fremdtexte::status(&status));
                     f.leiste.set_visible(true);
                     f.abbrechen.set_sensitive(true);
                 }
@@ -1387,7 +1436,9 @@ impl Fenster {
                 if !eigener_vorgang {
                     self.fortschritt.leiste.set_visible(false);
                 }
-                self.melde("Früherer Vorgang der Paketverwaltung beendet.");
+                self.melde(&gettext(
+                    "An earlier package manager operation has finished.",
+                ));
                 self.paketstand_laden(false);
             }
         }
@@ -1396,11 +1447,11 @@ impl Fenster {
     fn abbrechen(&self) {
         if let Some(t) = self.transaktion.borrow().as_ref() {
             self.fortschritt.abbrechen.set_sensitive(false);
-            self.fortschritt.status.set_text("Wird abgebrochen …");
+            self.fortschritt.status.set_text(&gettext("Cancelling…"));
             t.griff.abbrechen();
         } else if let Some((_, griff, true)) = self.beobachter.borrow().as_ref() {
             self.fortschritt.abbrechen.set_sensitive(false);
-            self.fortschritt.status.set_text("Wird abgebrochen …");
+            self.fortschritt.status.set_text(&gettext("Cancelling…"));
             griff.abbrechen();
         }
     }
@@ -1438,7 +1489,7 @@ impl Fenster {
                     t.simulation = Some(sim);
                 }
                 f.status
-                    .set_text("Simulation abgeschlossen, warte auf Bestätigung …");
+                    .set_text(&gettext("Simulation finished, waiting for confirmation…"));
             }
             Zustand::WartetAufBestaetigung => {
                 debug("transaktion\twartet-auf-bestaetigung");
@@ -1454,10 +1505,10 @@ impl Fenster {
                 let bestaetigt: Box<dyn Fn()> = Box::new(move || {
                     if let Some(s) = w1.upgrade() {
                         if let Some(t) = s.transaktion.borrow().as_ref() {
-                            s.fortschritt.status.set_text(if entfernen {
-                                "Bestätigt, entferne …"
+                            s.fortschritt.status.set_text(&if entfernen {
+                                gettext("Confirmed, removing…")
                             } else {
-                                "Bestätigt, installiere …"
+                                gettext("Confirmed, installing…")
                             });
                             t.griff.bestaetigen();
                         }
@@ -1495,7 +1546,7 @@ impl Fenster {
                     }
                     None => f.balken.set_text(Some("…")),
                 }
-                f.status.set_text(&status);
+                f.status.set_text(&fremdtexte::status(&status));
                 debug(&format!(
                     "transaktion\tlaeuft\t{}\t{status}",
                     prozent.map(|p| p.to_string()).unwrap_or_else(|| "-".into())
@@ -1516,7 +1567,7 @@ impl Fenster {
                     let w2 = Rc::downgrade(self);
                     dialoge::nachfrage(
                         &self.window,
-                        &status,
+                        &fremdtexte::status(&status),
                         Box::new(move || {
                             if let Some(s) = w1.upgrade() {
                                 if let Some(t) = s.transaktion.borrow_mut().as_mut() {
@@ -1534,7 +1585,7 @@ impl Fenster {
             }
             Zustand::WartetAufSperre { .. } => {
                 debug("transaktion\twartet-auf-sperre");
-                f.status.set_text("Wartet auf die Paketsperre …");
+                f.status.set_text(&gettext("Waiting for the package lock…"));
                 let schon_offen = self
                     .transaktion
                     .borrow_mut()
@@ -1546,12 +1597,12 @@ impl Fenster {
                     let w2 = Rc::downgrade(self);
                     dialoge::sperre_belegt(
                         &self.window,
-                        "Ein anderes Programm verwendet gerade die Paketverwaltung.",
+                        &gettext("Another program is using the package manager right now."),
                         Box::new(move || {
                             if let Some(s) = w1.upgrade() {
                                 if let Some(t) = s.transaktion.borrow_mut().as_mut() {
                                     t.sperrdialog_offen = false;
-                                    s.fortschritt.status.set_text("Erneuter Versuch …");
+                                    s.fortschritt.status.set_text(&gettext("Trying again…"));
                                     t.griff.sperre_erneut_versuchen();
                                 }
                             }
@@ -1578,18 +1629,10 @@ impl Fenster {
                     })
                     .unwrap_or_default();
                 self.beende_transaktion();
-                let was = match vorgang {
-                    Some(Vorgang::Installieren) => "installiert",
-                    Some(Vorgang::Entfernen) => "entfernt",
-                    Some(Vorgang::Aktualisieren) => "aktualisiert",
-                    _ => "abgeschlossen",
-                };
-                let text = if neustart {
+                if neustart {
                     debug("transaktion\tneustart");
-                    format!("{titel} wurde {was}. Ein Neustart ist nötig.")
-                } else {
-                    format!("{titel} wurde {was}.")
-                };
+                }
+                let text = fertig_text(vorgang.as_ref(), neustart, &titel);
                 self.benachrichtigen(&text);
                 self.melde(&text);
                 self.paketstand_laden(false);
@@ -1597,10 +1640,10 @@ impl Fenster {
             Zustand::Fehlgeschlagen(e) => {
                 debug(&format!("transaktion\tfehler\t{e:?}"));
                 self.beende_transaktion();
-                self.benachrichtigen(&format!("{titel}: Vorgang fehlgeschlagen"));
+                self.benachrichtigen(&gettext_f("{name}: operation failed", &[("name", &titel)]));
                 self.melde(&format!("{titel}: {}", fehlertext(&e)));
-                // Dialogtexte von SW-4 (Überschrift, Erklärung, Handlung).
-                let text = qs_transaktion::fehlertexte::fehlertext(&e);
+                // Dialogtexte von SW-4 (Überschrift, Erklärung, Handlung), übersetzt.
+                let text = fremdtexte::fehlerdialog(&e);
                 let kennung = match e {
                     Fehler::KeinAgent => "kein-agent",
                     Fehler::NichtBerechtigt => "nicht-berechtigt",
@@ -1611,7 +1654,10 @@ impl Fenster {
             Zustand::Abgebrochen => {
                 debug("transaktion\tabgebrochen");
                 self.beende_transaktion();
-                self.melde(&format!("{titel}: Vorgang abgebrochen."));
+                self.melde(&gettext_f(
+                    "{name}: operation cancelled.",
+                    &[("name", &titel)],
+                ));
                 self.paketstand_laden(false);
             }
         }
@@ -1723,6 +1769,7 @@ impl Fenster {
             rechteck("homepage", self.details.homepage.upcast_ref());
         }
         rechteck("abbrechen", self.fortschritt.abbrechen.upcast_ref());
+        rechteck("statuszeile", self.status_box.upcast_ref());
         debug(&format!("fenster\t{}\t{}", w.width(), w.height()));
         for t in gtk::Window::list_toplevels() {
             if let Ok(t) = t.downcast::<gtk::Window>() {
@@ -1740,13 +1787,74 @@ impl Fenster {
     }
 }
 
-fn vorgang_text(v: &Vorgang) -> &'static str {
+fn vorgang_text(v: &Vorgang) -> String {
     match v {
-        Vorgang::Installieren => "Installieren",
-        Vorgang::Entfernen => "Entfernen",
-        Vorgang::Aktualisieren => "Aktualisieren",
-        Vorgang::QuellenAuffrischen => "Quellen auffrischen",
+        Vorgang::Installieren => gettext("Install"),
+        Vorgang::Entfernen => gettext("Remove"),
+        Vorgang::Aktualisieren => gettext("Update"),
+        Vorgang::QuellenAuffrischen => gettext("Refresh software sources"),
     }
+}
+
+/// Erste Zeile der Fortschrittsleiste: „Installieren: GIMP (gimp)“.
+fn vorgang_titel(v: &Vorgang, name: &str, paket: &str) -> String {
+    let args = [("name", name), ("package", paket)];
+    match v {
+        Vorgang::Installieren => gettext_f("Install: {name} ({package})", &args),
+        Vorgang::Entfernen => gettext_f("Remove: {name} ({package})", &args),
+        Vorgang::Aktualisieren => gettext_f("Update: {name} ({package})", &args),
+        Vorgang::QuellenAuffrischen => {
+            gettext_f("Refresh software sources: {name} ({package})", &args)
+        }
+    }
+}
+
+/// Meldung nach einem erfolgreichen Vorgang (Statuszeile, Benachrichtigung).
+fn fertig_text(v: Option<&Vorgang>, neustart: bool, name: &str) -> String {
+    let args = [("name", name)];
+    match (v, neustart) {
+        (Some(Vorgang::Installieren), false) => gettext_f("{name} was installed.", &args),
+        (Some(Vorgang::Entfernen), false) => gettext_f("{name} was removed.", &args),
+        (Some(Vorgang::Aktualisieren), false) => gettext_f("{name} was updated.", &args),
+        (_, false) => gettext_f("{name} was completed.", &args),
+        (Some(Vorgang::Installieren), true) => {
+            gettext_f("{name} was installed. A restart is required.", &args)
+        }
+        (Some(Vorgang::Entfernen), true) => {
+            gettext_f("{name} was removed. A restart is required.", &args)
+        }
+        (Some(Vorgang::Aktualisieren), true) => {
+            gettext_f("{name} was updated. A restart is required.", &args)
+        }
+        (_, true) => gettext_f("{name} was completed. A restart is required.", &args),
+    }
+}
+
+/// Lässt die Statusleiste nach einem neuen Text vollständig neu zeichnen und
+/// nicht nur den Bereich des Texts (Werkstatt QREL-05 W.5).
+///
+/// Mit den GPU-Renderern von GTK 4.22 (Vulkan, NGL; live über die GPU der VM)
+/// blieb nach einem Textwechsel manchmal die oberste Bildpunktzeile des alten
+/// Texts stehen: i-Punkte, Umlaute, Oberlängen (verwandt: GTK-Issue 6531).
+/// Mit `GSK_DEBUG=full-redraw` oder dem Cairo-Renderer tritt das nicht auf.
+/// Abhilfe: zwei Frames lang trägt die Leiste die Klasse `qs-neu`, deren
+/// Hintergrund sich um einen Farbwert unterscheidet (style.css). Der
+/// geänderte Farbknoten umfasst die ganze Leiste, also zeichnet GTK sie in
+/// beiden Frames vollständig neu; danach gilt wieder die normale Farbe.
+/// Eine Deckkraft knapp unter 1 statt der Farbe hat im Versuch nicht gereicht.
+fn ganz_neu_zeichnen(leiste: &gtk::Box) {
+    leiste.add_css_class("qs-neu");
+    // Der erste Tick fällt in den Frame, der schon mit `qs-neu` zeichnet;
+    // erst der zweite nimmt die Klasse wieder weg.
+    let ticks = Cell::new(0u8);
+    leiste.add_tick_callback(move |w, _| {
+        ticks.set(ticks.get() + 1);
+        if ticks.get() < 2 {
+            return glib::ControlFlow::Continue;
+        }
+        w.remove_css_class("qs-neu");
+        glib::ControlFlow::Break
+    });
 }
 
 fn uhrzeit() -> String {

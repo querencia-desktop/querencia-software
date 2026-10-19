@@ -182,7 +182,8 @@ if [ -f "$XDG_DATA_HOME/icons/hicolor/scalable/apps/org.querencia.Software.svg" 
     ok "U2 Symbolthema im Profil: org.querencia.Software.svg, keine 48x48-Stufe (Symbolregel)"
 else nok "U2 Symbolthema im Profil"; fi
 vtext=$("$BIN" --version 2>&1); rc=$?
-[ $rc = 0 ] && case $vtext in *"Querencia Software 0.1.0"*) ok "F30 --version: „$vtext“" ;; *) nok "F30 --version: $vtext" ;; esac || nok "F30 --version Exit $rc"
+VERSION=$(sed -n 's/^version = "\(.*\)"$/\1/p' "$E/programm/Cargo.toml" | head -1)
+[ $rc = 0 ] && case $vtext in *"Querencia Software $VERSION"*) ok "F30 --version: „$vtext“" ;; *) nok "F30 --version: $vtext (erwartet $VERSION)" ;; esac || nok "F30 --version Exit $rc"
 
 # Keine schreibenden Aufrufe ------------------------------------------------------------
 fall "Nur lesend: keine Transaktion gestartet, kein Simulieren/Ausführen versucht" \

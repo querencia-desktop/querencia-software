@@ -1,6 +1,6 @@
 [package]
 name = "querencia-software"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.92"
 description = "Querencia Software: grafischer Software-Installer für Querencia Desktop (Oberfläche, SW-3)"
@@ -18,6 +18,9 @@ qs_typen.workspace = true
 qs_paketkit.workspace = true
 qs_katalog.workspace = true
 qs_transaktion.workspace = true
+# Übersetzungen über GNU gettext (po/, .mo unter share/locale). Feature
+# gettext-system: das gettext der glibc statt eines mitgebauten libintl.
+gettext-rs = { version = "0.8", features = ["gettext-system"] }
 
 [lints.rust]
 unsafe_code = "forbid"
