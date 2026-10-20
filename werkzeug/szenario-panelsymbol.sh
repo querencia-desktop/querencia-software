@@ -16,7 +16,7 @@ symbol_ablegen() {
 }
 for g in 16 22 24 32 64 128 256; do mkdir -p "$ICONS/${g}x${g}/apps"; done; mkdir -p "$ICONS/scalable/apps"   # wie live: alle Größenordner gibt es schon
 [ "$PANEL_FALL" = vorher ] && symbol_ablegen
-~/opt/querencia/bin/querencia-panel >"$OUT/panel.log" 2>&1 &
+"${QS_PANEL:-$HOME/opt/querencia/bin/querencia-panel}" >"$OUT/panel.log" 2>&1 &
 PANEL=$!; sleep 5
 if [ "$PANEL_FALL" != vorher ]; then symbol_ablegen; sleep 1; fi
 if [ "$PANEL_FALL" = beruehrt ]; then touch "$ICONS"; sleep 7; fi

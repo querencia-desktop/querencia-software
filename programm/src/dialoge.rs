@@ -18,8 +18,8 @@ use crate::APP_NAME;
 ///
 /// Bewusst ein eigener, **nur als SVG** eingebetteter Name statt der App-ID
 /// (Symbolregel: nie 48x48 zusammen mit Scalable; sonst stürzt GTK 4.22 beim
-/// Schließen eines fokussierten Dialogs ab, siehe
-/// ). Das endgültige
+/// Schließen eines fokussierten Dialogs ab, Befund W5-Editor „Symbolabsturz“).
+/// Das endgültige
 /// App-Symbol liefert SW-5.
 pub const WINDOW_ICON: &str = "org.querencia.Software-fenster";
 

@@ -12,7 +12,7 @@ aufloesung
 case ${QS_PK_BUS:-} in unix:path=/tmp/qs-pk-sw6/*) ;; *) nok "Schutz: QS_PK_BUS zeigt nicht auf den Prüfbus ($QS_PK_BUS) – Abbruch"; abschluss; exit 0 ;; esac
 
 # Benachrichtigungsdienst auf dem isolierten Bus, Nicht stören an ---------------
-BN=~/opt/querencia/bin/querencia-benachrichtigungen
+BN=${QS_BENACHRICHTIGUNGEN:-$HOME/opt/querencia/bin/querencia-benachrichtigungen}
 bn_zustand() { timeout 10 gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.querencia.Benachrichtigungen.Zustand 2>&1; }
 if [ -x "$BN" ]; then
     "$BN" >"$OUT/benachrichtigungen.log" 2>&1 &

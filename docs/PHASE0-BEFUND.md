@@ -1,6 +1,6 @@
 # Phase 0 für Querencia Software: aktualisierter Befund (SW-6)
 
-Stand 18.10.2026, 22:06, lesend gemessen auf entwicklungs-vm. Grundlage:
+Stand 18.10.2026, 22:06, lesend gemessen auf der Entwicklungs-VM. Grundlage:
 `~/projects/querencia-software-paket/phase0/PHASE0-CHECKLISTE.md` (SW-5, 21:00).
 Diese Datei ersetzt die Checkliste nicht, sie hält den Stand vor der Live-Ablage fest.
 

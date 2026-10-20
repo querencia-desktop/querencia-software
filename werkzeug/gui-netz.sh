@@ -7,14 +7,14 @@
 #
 # Fall (QS_NETZ_ATTRAPPE = PackageKit, Netzwerkmonitor, Archiv; als Datei
 # $PROFIL/netz-attrappe, damit das Szenario den Zustand umschalten kann):
-#   online       online,online,online     Stufe 1 genügt (wie entwicklungs-vm)
+#   online       online,online,online     Stufe 1 genügt (wie die Entwicklungs-VM)
 #   nm-archiv    offline,offline,online   Pflichtprobe B2: NetworkManager verwaltet
 #                                          eth0 nicht, das Archiv ist erreichbar
 #   offline      offline,offline,offline  alle Stufen offline: Frage „Trotzdem versuchen“,
 #                                          30-s-Neuprüfung, Wechsel zurück auf online
 #
 # Ergebnis: nachweis/gui/netz-<Fall>-<Auflösung>/ (ergebnis.txt, Bilder,
-# software.log); Bilder zusätzlich nach .
+# software.log); Bilder zusätzlich nach $HOME/review/software-013-bilder/<Fall>-<Auflösung>/.
 set -euo pipefail
 E=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
 P=$E/programm/werkzeug

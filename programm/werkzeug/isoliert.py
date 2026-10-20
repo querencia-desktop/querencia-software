@@ -21,7 +21,11 @@ import sys
 import tempfile
 import time
 
-LABWC = "~/opt/labwc-0.9.8/bin/labwc"
+# labwc 0.9.8 unter ~/opt wie auf der Entwicklungs-VM; QS_LABWC setzt einen anderen Pfad.
+HEIM = os.path.expanduser("~")
+LABWC = os.environ.get("QS_LABWC") or os.path.join(HEIM, "opt/labwc-0.9.8/bin/labwc")
+
+
 def _session_labwc(pid: str) -> bool:
     """labwc der echten Sitzung (XDG_RUNTIME_DIR unter /run/user), nicht die
     isolierten Testsitzungen anderer Worker, die jederzeit enden dürfen."""
@@ -69,7 +73,7 @@ def main() -> int:
     env = {k: v for k, v in os.environ.items()
            if not k.startswith(("WAYLAND", "DBUS", "DISPLAY", "XDG_", "LABWC", "SWAYSOCK"))}
     env.update({
-        "HOME": "~",
+        "HOME": HEIM,
         "XDG_RUNTIME_DIR": runtime,
         "XDG_CONFIG_HOME": os.path.join(profile, "config"),
         "XDG_DATA_HOME": os.path.join(profile, "data"),
@@ -90,7 +94,8 @@ def main() -> int:
     })
     # User directories as on the VM (the profile has no user-dirs.dirs of
     # its own unless the caller made one).
-    real_dirs = "~/.config/user-dirs.dirs"
+    real_dirs = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HEIM, ".config"),
+                             "user-dirs.dirs")
     own_dirs = os.path.join(profile, "config/user-dirs.dirs")
     if os.path.exists(real_dirs) and not os.path.exists(own_dirs):
         shutil.copy2(real_dirs, own_dirs)

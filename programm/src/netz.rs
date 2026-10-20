@@ -1044,7 +1044,7 @@ Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
             .collect()
     }
 
-    /// entwicklungs-vm: eine Fremdquelle sortiert vor ubuntu.sources.
+    /// Wie auf der Entwicklungs-VM: eine Fremdquelle sortiert vor ubuntu.sources.
     #[test]
     fn distribution_vor_fremdquelle() {
         let d = dateien(&[
