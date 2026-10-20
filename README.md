@@ -13,14 +13,13 @@ Pfad-Abhängigkeiten eingebunden.
 
 | Pfad | Inhalt |
 |---|---|
-| `programm/` | Oberfläche: Quellen, `po/`, Starter-Vorlage, README, CHANGELOG, LICENSE, BUILDING, TESTING, INTEGRATION |
-| `SCHNITTSTELLEN.md` | Vertrag zwischen Oberfläche und Bausteinen |
+| `programm/` | Oberfläche: Quellen, `po/`, Starter-Vorlage, README, CHANGELOG, LICENSE |
+| `docs/` | `SCHNITTSTELLEN.md` (Vertrag Oberfläche–Bausteine), `BUILDING.md`, `TESTING.md`, `INTEGRATION.md` (Oberfläche), `PHASE0-BEFUND.md` |
 | `werkzeug/` | isolierte GUI-Prüfung gegen echte Backends (`gui-echt.sh <Modus>`) |
 | `integration/` | Integrationsskripte mit Vorlagen und Proben (0.1.0: `software-integrieren.sh`, 0.1.1: `software-011-integrieren.sh`) |
-| `doku/` | Phase-0-Befund |
 | `nachweis/` | Prüfprotokolle und Belegbilder |
 
-Bauen und Prüfen: `programm/BUILDING.md`, `programm/TESTING.md`. Formatieren
+Bauen und Prüfen: `docs/BUILDING.md`, `docs/TESTING.md`. Formatieren
 nur mit `rustfmt --edition 2021 programm/src/main.rs` (`cargo fmt` würde die
 Bausteine mitformatieren).
 

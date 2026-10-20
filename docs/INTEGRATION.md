@@ -1,5 +1,7 @@
 # Integration: wo die Attrappen ausgetauscht werden
 
+*Seit 0.1.1 unter `docs/` (Doku-Standard, ENTSCHEIDUNGEN Nr. 17); Pfade wie `werkzeug/…`, `data/…`, `src/…` gelten relativ zu `programm/`.*
+
 Die Oberfläche spricht nur über `Rc<dyn Paketquelle>`, `Rc<dyn Katalog>` und
 `Rc<dyn Transaktionsmonitor>` (alle aus `qs_typen`, SW-1). Stand 0.1.0 laufen
 immer die Attrappen. Diese Stellen ändert die Integration:

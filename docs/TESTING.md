@@ -1,5 +1,7 @@
 # Testen
 
+*Seit 0.1.1 unter `docs/` (Doku-Standard, ENTSCHEIDUNGEN Nr. 17); Pfade wie `werkzeug/…`, `data/…`, `src/…` gelten relativ zu `programm/`.*
+
 ```bash
 rustfmt --edition 2021 --check src/main.rs
 cargo clippy --all-targets --locked --offline -- -D warnings

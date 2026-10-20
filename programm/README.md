@@ -4,7 +4,7 @@ Grafischer Software-Installer für Querencia Desktop, Teilprojekt SW-3:
 Fenster, Ansichten und Dialoge. Rust + GTK 4 ohne libadwaita,
 Server-Fensterrahmen von labwc, Menüleiste, Oberfläche Deutsch und
 Englisch (GNU gettext, ab 0.1.1), App-ID `org.querencia.Software`. Verbindliche Schnittstellen:
-`~/projects/querencia-software/SCHNITTSTELLEN.md`; Typen und Traits aus
+`../docs/SCHNITTSTELLEN.md`; Typen und Traits aus
 `qs_typen` (SW-1).
 
 **Umfang 0.1.0:** Menüleiste Datei/Bearbeiten/Ansicht/Hilfe; Seitenleiste mit
@@ -20,7 +20,7 @@ ohne (vorhandenes) Symbol. Tastatur: Strg+F, Escape, Eingabetaste,
 F5, Strg+Q.
 
 **Backends:** Stand 0.1.0 nur Attrappen (`src/attrappen.rs`, 30 Anwendungen,
-simulierte Transaktionen 2 s). Austauschstellen: `INTEGRATION.md`.
+simulierte Transaktionen 2 s). Austauschstellen: `../docs/INTEGRATION.md`.
 
 | Datei | Inhalt |
 |---|---|
@@ -36,7 +36,7 @@ simulierte Transaktionen 2 s). Austauschstellen: `INTEGRATION.md`.
 | `src/dialoge.rs` | Info, Bestätigung, Meldungen, Fenstersymbol |
 | `src/style.css` | klassische Optik, Orange nur für Auswahl und Fortschritt |
 | `data/resource/` | eingebettete Symbole (SW-5-Programmsymbol, Ersatzsymbol), `HERKUNFT` |
-| `werkzeug/` | isolierte GUI-Prüfung (TESTING.md) |
+| `werkzeug/` | isolierte GUI-Prüfung (`../docs/TESTING.md`) |
 | `nachweis/` | Release-Binary mit SHA256, Prüf- und GUI-Protokolle |
 
 Desktop-Datei, Themen-Symbol für Starter und Panel und MetaInfo liefert SW-5;
