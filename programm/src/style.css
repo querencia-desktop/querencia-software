@@ -17,7 +17,7 @@ window.qs-window menubar > item {
 window.qs-window menubar > item:hover,
 window.qs-window menubar > item:selected {
   background-image: linear-gradient(to bottom, #f6a179, #f07746);
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 window.qs-window popover.menu contents {
@@ -35,7 +35,7 @@ window.qs-window popover.menu modelbutton {
 window.qs-window popover.menu modelbutton:hover,
 window.qs-window popover.menu modelbutton:selected {
   background-image: linear-gradient(to bottom, #f6a179, #f07746);
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 /* Seitenleiste */
@@ -55,11 +55,11 @@ list.qs-seite > row {
 
 list.qs-seite > row:selected {
   background-image: linear-gradient(to bottom, #f6a179, #f07746);
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 list.qs-seite > row:selected label {
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 /* Suchzeile und Überschrift */
@@ -86,13 +86,13 @@ listview.qs-liste > row {
 
 listview.qs-liste > row:selected {
   background-color: #f07746;
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 listview.qs-liste > row:selected label.qs-name,
 listview.qs-liste > row:selected label.qs-zusammenfassung,
 listview.qs-liste > row:selected label.qs-zustand {
-  color: #ffffff;
+  color: #1a1a1a;
 }
 
 box.qs-zeile {

@@ -1,5 +1,16 @@
 # Änderungen
 
+## 0.1.2 – 2026-10-20
+
+### Geändert
+- Dunkle Auswahlschrift (CSS-Welle, passend zum GTK-Thema
+  Querencia-Klassisch, Entscheidung 20.10.): Menüleiste, Menüeinträge, die
+  gewählte Kategorie der Seitenleiste und die gewählte Zeile der
+  Programmliste (Name, Zusammenfassung, Zustand) schreiben `#1a1a1a` statt
+  `#ffffff` auf Orange. Kontrast 6,2:1 (`#f07746`) bis 8,5:1 (`#f6a179`);
+  mit Weiß waren es 2,8:1 bzw. 2,0:1. Farben der Flächen und alles Übrige
+  unverändert; Texte und Katalog unverändert.
+
 ## 0.1.1 – 2026-10-20
 
 ### Hinzugefügt
