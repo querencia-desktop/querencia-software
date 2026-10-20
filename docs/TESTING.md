@@ -52,13 +52,37 @@ Tab-getrennte Zeilen auf stdout, Koordinaten relativ zum Fensterinhalt
 | `detailsymbol titel quelle`, `zeilensymbol i titel quelle` | Bildquelle `thema:<name>`, `datei:<pfad>` |
 | `paketdetails name bytes` | Paketdetails nachgeladen |
 | `transaktion gestartet vorgang paket` / `laeuft prozent status` / `simuliert pakete` / `wartet-auf-bestaetigung` / `wartet-auf-sperre` / `fertig paket` / `abgebrochen` / `fehler Fehler` / `wieder-angebunden n` | Transaktionszustände |
-| `dialog kennung` / `dialog zu kennung` | `info`, `entfernen`, `sperre`, `kein-agent`, `nicht-berechtigt`, `fehler`, `laeuft` |
+| `dialog kennung` / `dialog zu kennung` | `info`, `entfernen`, `sperre`, `kein-agent`, `nicht-berechtigt`, `fehler`, `laeuft`, ab 0.1.3 `netz-offline`, `netz-pk` |
+| `netz pruefe` / `netz online/offline stufe pk monitor archiv host` / `netz vor-vorgang` | Erreichbarkeitsprüfung (0.1.3): Start, Ergebnis (`stufe` = `packagekit`, `netzmonitor`, `archiv` oder `-`; `monitor` `an`/`aus`/`-`; `archiv` `erreichbar`/`nicht-erreichbar`/`-`), frische Prüfung vor einem Vorgang |
+| `netzstatus text` | Netzwerktext rechts in der Statuszeile |
+| `transaktion gesperrt offline` | Installieren/Aktualisieren gesperrt, weil alle Stufen offline sagen |
 | `info-symbole programmsymbol querencia-q` | Inhalt des Info-Dialogs |
 | `fokus suche` | Suchfeld hat den Fokus |
 | `zeiger x y` | Zeigerbewegung (Kalibrierung) |
-| `layout anfang` … `layout ende` | Block mit `menue i …`, `seite kennung …`, `suche …`, `liste …`, `zeile i titel …`, `knopf i text …`, `zurueck …`, `aktion text …`, `homepage …`, `abbrechen …`, `fenster w h`, `toplevel typ titel sichtbar w h` |
+| `layout anfang` … `layout ende` | Block mit `menue i …`, `seite kennung …`, `suche …`, `liste …`, `zeile i titel …`, `knopf i text …`, `zurueck …`, `aktion text …`, `homepage …`, `abbrechen …`, `statuszeile …`, `netzfeld …`, `netzknopf …`, `fenster w h`, `toplevel typ titel sichtbar w h` |
 
 SW-5 hat in `~/projects/querencia-software-paket/werkzeug/faelle/FAELLE.md`
 ein eigenes Format für seinen Platzhalter vorgeschlagen. Laut FAELLE.md gilt
 das Format von SW-3; die Angleichung der SW-5-Fälle an diese Tabelle ist
 Sache der Integration.
+
+## Erreichbarkeitsprüfung (0.1.3, QD-067)
+
+Unit-Tests in `src/netz.rs`: Stufenlogik mit Attrappen (welche Stufe gefragt
+wird, Entscheidung, Texte), Quellenwahl aus `sources.list`/`*.list`/deb822
+`*.sources` (Distribution vor Fremdquelle, `Enabled: no`, `deb-src`),
+URI-Zerlegung, `os-release`, HTTP-Statuszeile.
+
+Isoliert mit Attrappen (`QS_ATTRAPPE=1`, `QS_NETZ_ATTRAPPE`), aus dem
+Workspace-Wurzelverzeichnis:
+
+```bash
+bash werkzeug/gui-netz.sh online    1024x768   # online,online,online
+bash werkzeug/gui-netz.sh nm-archiv 1024x768   # offline,offline,online (Pflichtprobe B2)
+bash werkzeug/gui-netz.sh offline   1024x768   # offline,offline,offline
+```
+
+Ergebnis in `nachweis/gui/netz-<Fall>-<Auflösung>/`, Bilder zusätzlich unter
+. Echte Stufen ohne Fenster:
+`querencia-software --netz-pruefen` (fragt alle drei Stufen, nur lesend;
+`QS_APT_QUELLE=http://192.0.2.1/ubuntu` prüft das Zeitlimit).

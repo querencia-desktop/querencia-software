@@ -380,6 +380,12 @@ impl Paketquelle for AttrappeQuelle {
             melden(Fortschritt::Fehler(Fehler::KeinAgent));
             return Box::new(KeinAbbruch);
         }
+        // QD-067: PackageKit-Attrappe offline → Downloads scheitern wie beim
+        // apt-Backend; Entfernen braucht kein Netz.
+        if vorgang != Vorgang::Entfernen && crate::netz::attrappe_pk_offline() {
+            melden(Fortschritt::Fehler(Fehler::NetzFehlt));
+            return Box::new(KeinAbbruch);
+        }
         if namen.iter().any(|n| n == PAKET_NICHT_BERECHTIGT) {
             melden(Fortschritt::Status("Warte auf Berechtigung …".into()));
             melden(Fortschritt::Fehler(Fehler::NichtBerechtigt));

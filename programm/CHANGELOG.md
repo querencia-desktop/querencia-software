@@ -1,5 +1,32 @@
 # Änderungen
 
+## 0.1.3 – 2026-10-20
+
+### Hinzugefügt
+- Eigene Erreichbarkeitsprüfung (QD-067, Befund B2 der Pflichtprobe): Auf
+  Servern mit netplan/systemd-networkd, auf denen NetworkManager installiert
+  ist, die Verbindung aber nicht verwaltet, meldet PackageKit „offline“.
+  Die Oberfläche prüft deshalb in drei Stufen: PackageKit `NetworkState`,
+  dann GNetworkMonitor (GLib), zuletzt ein HTTP-`HEAD` auf die APT-Quelle
+  der Distribution (aus `/etc/apt/sources.list` bzw. `sources.list.d/`,
+  Zeitlimit 3 s). Offline gilt nur, wenn keine Stufe online sagt.
+- Statuszeile rechts: „Netzwerk: online (PackageKit | Netzwerk verfügbar |
+  Archiv erreichbar)“ bzw. „Netzwerk: offline: <Host> nicht erreichbar
+  (<Grund>)“; die Kurzinfo nennt jede gefragte Stufe und die geprüfte Quelle.
+  Knopf „Erneut prüfen“; im Offline-Zustand prüft das Programm alle 30 s
+  neu, im echten Betrieb zusätzlich 2 s nach jeder Netzänderung, die GLib meldet.
+- Installieren und Aktualisieren sperrt das Programm nur, wenn eine frische
+  Prüfung in allen Stufen offline sagt (Dialog „Keine Netzwerkverbindung“
+  mit der geprüften Quelle). Entfernen bleibt immer möglich.
+- Meldet PackageKit `no-network`, obwohl die Quelle erreichbar ist, erklärt
+  der Dialog „PackageKit meldet kein Netzwerk“ Ursache und Abhilfe
+  (NetworkManager verwaltet die Verbindung nicht).
+- Diagnose auf der Konsole: `querencia-software --netz-pruefen` fragt alle
+  drei Stufen (Exit 0 online, 1 offline); `QS_APT_QUELLE=<uri>` setzt die
+  geprüfte Quelle. Attrappen für die GUI-Prüfung:
+  `QS_NETZ_ATTRAPPE=<pk>,<monitor>,<archiv>` (je `online`/`offline`).
+- 30 neue Texte in `po/de.po` (229 insgesamt).
+
 ## 0.1.2 – 2026-10-20
 
 ### Geändert

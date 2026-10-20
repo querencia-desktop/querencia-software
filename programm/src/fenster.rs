@@ -1,7 +1,9 @@
 //! Das Hauptfenster: Menüleiste Datei/Bearbeiten/Ansicht/Hilfe, links die
 //! Seitenleiste (Alle, 10 Kategorien, Installiert, Aktualisierungen (n),
 //! Expertenliste), rechts Suchfeld, Liste oder Detailseite, darunter die
-//! Fortschrittsleiste (nur während eines Vorgangs) und die Statuszeile.
+//! Fortschrittsleiste (nur während eines Vorgangs) und die Statuszeile mit
+//! dem Netzwerkzustand rechts (`netz`, QD-067: Ergebnis der Stufenprüfung,
+//! Knopf „Erneut prüfen“, im Offline-Zustand alle 30 s neu).
 //! Keine eigene Titelleiste: labwc zeichnet den klassischen Rahmen.
 //!
 //! Tastatur: Strg+F Suche · Escape zurück (Details → Liste, sonst Suche
@@ -11,9 +13,11 @@
 //! Debug-Ausgabe (`QS_DEBUG=1`, Tab-getrennt, für `werkzeug/szenario.sh`):
 //! `ansicht <kennung> <zeilen> <suchtext>` · `details <titel> <zustand> <knopf>`
 //! · `transaktion <zustand> …` · `status <text>` · `dialog <kennung>` ·
-//! `zeiger x y` · Layout: `fenster w h`, `menue i x y w h`,
+//! `netz pruefe` · `netz <online|offline> <stufe> …` (`netz::Ergebnis`) ·
+//! `netzstatus <text>` · `zeiger x y` · Layout: `fenster w h`, `menue i x y w h`,
 //! `seite <kennung> x y w h`, `suche x y w h`, `zeile i <titel> x y w h`,
-//! `knopf i <text> x y w h`, `zurueck …`, `aktion <text> …`, `abbrechen …`.
+//! `knopf i <text> x y w h`, `zurueck …`, `aktion <text> …`, `abbrechen …`,
+//! `netzknopf …`, `netzfeld …`.
 
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
@@ -27,6 +31,7 @@ use crate::dialoge;
 use crate::fremdtexte;
 use crate::i18n::{gettext, gettext_f, ngettext_f, pgettext};
 use crate::logik::{self, fehlertext, Ansicht, Paketstand, SymbolWahl, Zeile};
+use crate::netz;
 use crate::schnittstellen::{
     Auftrag, Katalog, Simulation, TransaktionsGriff, Transaktionsmonitor, Zustand,
 };
@@ -36,6 +41,9 @@ const CSS: &str = include_str!("style.css");
 
 /// Rückruf einer Fensteraktion.
 type ActionFn = Box<dyn Fn(&Rc<Fenster>)>;
+
+/// Wartet auf das Ergebnis der laufenden Netzwerkprüfung.
+type NetzFn = Box<dyn FnOnce(&Rc<Fenster>, &netz::Ergebnis)>;
 
 const FALLBACK_SYMBOL: &str = logik::ERSATZSYMBOL;
 
@@ -195,6 +203,15 @@ pub struct Fenster {
     transaktion: RefCell<Option<Transaktion>>,
     status_box: gtk::Box,
     status: gtk::Label,
+    netz_label: gtk::Label,
+    netz_knopf: gtk::Button,
+    /// Letztes Ergebnis der Netzwerkprüfung (`None`: noch keines).
+    netz: RefCell<Option<netz::Ergebnis>>,
+    netz_laeuft: Cell<bool>,
+    netz_warten: RefCell<Vec<NetzFn>>,
+    /// Nächste Neuprüfung (30 s im Offline-Zustand, 2 s nach einer
+    /// Netzänderung).
+    netz_timer: RefCell<Option<glib::SourceId>>,
     letzte_pruefung: RefCell<Option<String>>,
     letzte_meldung: RefCell<Option<String>>,
     /// Nach dem nächsten Laden „Aktualisierungen geprüft“ melden.
@@ -340,6 +357,17 @@ impl Fenster {
         status.set_hexpand(true);
         status.set_ellipsize(gtk::pango::EllipsizeMode::End);
         status_box.append(&status);
+        let netz_label = gtk::Label::new(None);
+        netz_label.add_css_class("qs-status-text");
+        netz_label.add_css_class("qs-netz");
+        netz_label.set_margin_start(12);
+        let netz_knopf = gtk::Button::with_label(&gettext("Check Again"));
+        netz_knopf.add_css_class("qs-netz-knopf");
+        netz_knopf.set_tooltip_text(Some(&gettext("Check the network connection again")));
+        netz_knopf.set_margin_start(6);
+        netz_knopf.set_valign(gtk::Align::Center);
+        status_box.append(&netz_label);
+        status_box.append(&netz_knopf);
 
         let rechts = gtk::Box::new(gtk::Orientation::Vertical, 0);
         rechts.set_hexpand(true);
@@ -386,6 +414,12 @@ impl Fenster {
             transaktion: RefCell::new(None),
             status_box,
             status,
+            netz_label,
+            netz_knopf,
+            netz: RefCell::new(None),
+            netz_laeuft: Cell::new(false),
+            netz_warten: RefCell::new(Vec::new()),
+            netz_timer: RefCell::new(None),
             letzte_pruefung: RefCell::new(None),
             letzte_meldung: RefCell::new(None),
             pruefung_melden: Cell::new(false),
@@ -407,6 +441,7 @@ impl Fenster {
             .seitenleiste
             .select_row(fenster.seiten_zeilen.borrow().first().map(|(_, r, _)| r));
         fenster.katalog_laden();
+        fenster.netz_pruefen(None);
         fenster.paketstand_laden(true);
         fenster.wieder_anbinden();
         fenster
@@ -744,6 +779,22 @@ impl Fenster {
     }
 
     fn install_signale(self: &Rc<Self>) {
+        // Netzwerk: Knopf „Erneut prüfen“; im echten Betrieb zusätzlich nach
+        // jeder Änderung, die GLib meldet (Routen, NetworkManager).
+        let weak = Rc::downgrade(self);
+        self.netz_knopf.connect_clicked(move |_| {
+            if let Some(s) = weak.upgrade() {
+                s.netz_pruefen(None);
+            }
+        });
+        if self.backends.echt {
+            let weak = Rc::downgrade(self);
+            gio::NetworkMonitor::default().connect_network_changed(move |_, _| {
+                if let Some(s) = weak.upgrade() {
+                    s.netz_spaeter_pruefen(std::time::Duration::from_secs(2));
+                }
+            });
+        }
         // Seitenleiste
         let weak = Rc::downgrade(self);
         self.seitenleiste.connect_row_selected(move |_, row| {
@@ -1126,6 +1177,98 @@ impl Fenster {
         self.aktualisiere_status();
     }
 
+    // ------------------------------------------------------------ Netzwerk
+
+    /// Stufenprüfung starten (`netz::pruefen`); `danach` läuft mit dem
+    /// Ergebnis. Läuft schon eine, wartet `danach` auf deren Ergebnis.
+    fn netz_pruefen(self: &Rc<Self>, danach: Option<NetzFn>) {
+        if let Some(f) = danach {
+            self.netz_warten.borrow_mut().push(f);
+        }
+        if self.netz_laeuft.replace(true) {
+            return;
+        }
+        if let Some(id) = self.netz_timer.borrow_mut().take() {
+            id.remove();
+        }
+        self.netz_knopf.set_sensitive(false);
+        self.setze_netztext(&gettext("checking…"), None, false);
+        debug("netz\tpruefe");
+        let sonden = self.backends.netz.clone();
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            let e = netz::pruefen(sonden.as_ref(), netz::system_quelle(), false).await;
+            if let Some(s) = weak.upgrade() {
+                s.netz_gemeldet(e);
+            }
+        });
+    }
+
+    fn netz_gemeldet(self: &Rc<Self>, e: netz::Ergebnis) {
+        self.netz_laeuft.set(false);
+        self.netz_knopf.set_sensitive(true);
+        debug(&e.debug_zeile());
+        self.setze_netztext(&e.kurztext(), Some(&e.hinweis()), !e.ist_online());
+        if !e.ist_online() {
+            self.netz_spaeter_pruefen(netz::NEUPRUEFUNG);
+        }
+        *self.netz.borrow_mut() = Some(e.clone());
+        let warten: Vec<NetzFn> = self.netz_warten.borrow_mut().drain(..).collect();
+        for f in warten {
+            f(self, &e);
+        }
+    }
+
+    /// Neuprüfung nach `frist`; ersetzt eine schon geplante.
+    fn netz_spaeter_pruefen(self: &Rc<Self>, frist: std::time::Duration) {
+        if let Some(id) = self.netz_timer.borrow_mut().take() {
+            id.remove();
+        }
+        let weak = Rc::downgrade(self);
+        let id = glib::timeout_add_local_once(frist, move || {
+            if let Some(s) = weak.upgrade() {
+                // Die Quelle ist mit diesem Aufruf verbraucht, nicht entfernen.
+                s.netz_timer.borrow_mut().take();
+                s.netz_pruefen(None);
+            }
+        });
+        *self.netz_timer.borrow_mut() = Some(id);
+    }
+
+    /// „Netzwerk: …“ rechts in der Statuszeile, Kurzinfo mit allen Stufen.
+    fn setze_netztext(&self, zustand: &str, hinweis: Option<&str>, offline: bool) {
+        let text = gettext_f("Network: {state}", &[("state", zustand)]);
+        if offline {
+            self.netz_label.add_css_class("qs-netz-offline");
+        } else {
+            self.netz_label.remove_css_class("qs-netz-offline");
+        }
+        if hinweis.is_some() {
+            self.netz_label.set_tooltip_text(hinweis);
+        }
+        if self.netz_label.text() != text {
+            self.netz_label.set_text(&text);
+            ganz_neu_zeichnen(&self.status_box);
+        }
+        debug(&format!("netzstatus\t{text}"));
+    }
+
+    /// Nach `no-network` von PackageKit: neu prüfen, dann erklären – entweder
+    /// wirklich offline (geprüfte Quelle nennen) oder PackageKit widerspricht
+    /// der erreichbaren Quelle (NetworkManager verwaltet die Verbindung nicht).
+    fn netz_fehler_erklaeren(self: &Rc<Self>) {
+        self.netz_pruefen(Some(Box::new(|s, e| {
+            let (titel, text, kennung) = if e.ist_online() {
+                let (t, x) = netz::pk_widerspruch_dialog(e);
+                (t, x, "netz-pk")
+            } else {
+                let (t, x) = netz::offline_dialog(e);
+                (t, x, "netz-offline")
+            };
+            dialoge::meldung(&s.window, &titel, &text, kennung);
+        })));
+    }
+
     // ------------------------------------------------------------ Details
 
     fn zeige_liste(&self) {
@@ -1311,6 +1454,23 @@ impl Fenster {
         } else {
             (Vorgang::Installieren, paket)
         };
+        // QD-067: Installieren und Aktualisieren nur sperren, wenn die letzte
+        // Prüfung in allen Stufen offline sagte – und erst nach einer frischen
+        // Prüfung. Entfernen braucht kein Netz.
+        let offline = self.netz.borrow().as_ref().is_some_and(|e| !e.ist_online());
+        if vorgang != Vorgang::Entfernen && offline {
+            debug("netz\tvor-vorgang");
+            self.netz_pruefen(Some(Box::new(move |s, e| {
+                if e.ist_online() {
+                    s.aktion(zeile);
+                } else {
+                    debug("transaktion\tgesperrt\toffline");
+                    let (titel, text) = netz::offline_dialog(e);
+                    dialoge::meldung(&s.window, &titel, &text, "netz-offline");
+                }
+            })));
+            return;
+        }
         let auftrag = Auftrag {
             vorgang: vorgang.clone(),
             pakete: vec![paket.clone()],
@@ -1642,6 +1802,10 @@ impl Fenster {
                 self.beende_transaktion();
                 self.benachrichtigen(&gettext_f("{name}: operation failed", &[("name", &titel)]));
                 self.melde(&format!("{titel}: {}", fehlertext(&e)));
+                if e == Fehler::NetzFehlt {
+                    self.netz_fehler_erklaeren();
+                    return;
+                }
                 // Dialogtexte von SW-4 (Überschrift, Erklärung, Handlung), übersetzt.
                 let text = fremdtexte::fehlerdialog(&e);
                 let kennung = match e {
@@ -1770,6 +1934,8 @@ impl Fenster {
         }
         rechteck("abbrechen", self.fortschritt.abbrechen.upcast_ref());
         rechteck("statuszeile", self.status_box.upcast_ref());
+        rechteck("netzfeld", self.netz_label.upcast_ref());
+        rechteck("netzknopf", self.netz_knopf.upcast_ref());
         debug(&format!("fenster\t{}\t{}", w.width(), w.height()));
         for t in gtk::Window::list_toplevels() {
             if let Ok(t) = t.downcast::<gtk::Window>() {

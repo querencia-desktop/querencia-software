@@ -163,6 +163,17 @@ label.qs-status-text {
   font-size: 9pt;
 }
 
+/* Netzwerkzustand rechts in der Statuszeile (QD-067) */
+label.qs-netz.qs-netz-offline {
+  color: #a51d2d;
+}
+
+box.qs-status button.qs-netz-knopf {
+  min-height: 0;
+  padding: 0 8px;
+  font-size: 9pt;
+}
+
 /* Knöpfe mit Text, eckig */
 window.qs-window button,
 window.qs-dialog button {

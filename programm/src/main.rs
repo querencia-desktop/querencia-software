@@ -24,6 +24,7 @@ mod fenster;
 mod fremdtexte;
 mod i18n;
 mod logik;
+mod netz;
 mod schnittstellen;
 
 use std::cell::RefCell;
@@ -73,6 +74,8 @@ pub struct Backends {
     pub katalog_laden: RefCell<Option<qs_katalog::Konfiguration>>,
     /// Echter Betrieb (PackageKit/AppStream) statt Attrappen.
     pub echt: bool,
+    /// Stufen der Erreichbarkeitsprüfung (`netz`, QD-067).
+    pub netz: Rc<dyn netz::Sonden>,
 }
 
 /// `QS_ATTRAPPE=1`: Attrappen von SW-3 (30 Beispielanwendungen, simulierte
@@ -100,11 +103,16 @@ pub fn backends() -> Backends {
             monitor,
             katalog_laden: RefCell::new(None),
             echt: false,
+            netz: Rc::new(netz::AttrappeSonden::aus_umgebung()),
         };
     }
+    let mut verbindung = None;
     let (quelle, aufloeser): (Rc<dyn Paketquelle>, Rc<dyn echt::Aufloeser>) =
         match qs_paketkit::PaketKit::neu_blockierend() {
-            Ok(pk) => (Rc::new(pk.clone()), Rc::new(echt::PaketKitAufloeser(pk))),
+            Ok(pk) => {
+                verbindung = Some(pk.verbindung().clone());
+                (Rc::new(pk.clone()), Rc::new(echt::PaketKitAufloeser(pk)))
+            }
             Err(e) => {
                 eprintln!("querencia-software: keine Verbindung zu PackageKit: {e:?}");
                 (
@@ -131,6 +139,7 @@ pub fn backends() -> Backends {
         aufloeser,
         katalog_laden: RefCell::new(Some(echt::katalog_konfiguration())),
         echt: true,
+        netz: Rc::new(netz::EchteSonden { verbindung }),
     }
 }
 
@@ -153,6 +162,9 @@ fn main() -> glib::ExitCode {
         println!("{APP_NAME} {}", env!("CARGO_PKG_VERSION"));
         return glib::ExitCode::SUCCESS;
     }
+    if std::env::args().nth(1).as_deref() == Some("--netz-pruefen") {
+        return netz_pruefen();
+    }
     let app = gtk::Application::builder()
         .application_id(APP_ID)
         .flags(gio::ApplicationFlags::default())
@@ -164,4 +176,37 @@ fn main() -> glib::ExitCode {
     });
     app.connect_activate(|app| fenster::Fenster::get(app).present());
     app.run()
+}
+
+/// `--netz-pruefen`: alle drei Stufen der Erreichbarkeitsprüfung auf der
+/// Konsole (Diagnose, z. B. auf einem Server ohne NetworkManager). Exit 0
+/// online, 1 offline. `QS_ATTRAPPE=1` nimmt die Attrappen-Stufen.
+fn netz_pruefen() -> glib::ExitCode {
+    // gtk_init setzt die Locale (setlocale) vor dem Öffnen der Anzeige; ohne
+    // Anzeige (Konsole, SSH) scheitert nur das, die Übersetzung gilt trotzdem.
+    let _ = gtk::init();
+    let sonden: Rc<dyn netz::Sonden> = if std::env::var_os("QS_ATTRAPPE").is_some() {
+        Rc::new(netz::AttrappeSonden::aus_umgebung())
+    } else {
+        let verbindung = qs_paketkit::PaketKit::neu_blockierend()
+            .ok()
+            .map(|pk| pk.verbindung().clone());
+        Rc::new(netz::EchteSonden { verbindung })
+    };
+    let e = glib::MainContext::default().block_on(netz::pruefen(
+        sonden.as_ref(),
+        netz::system_quelle(),
+        true,
+    ));
+    println!(
+        "{}",
+        i18n::gettext_f("Network: {state}", &[("state", &e.kurztext())])
+    );
+    println!("{}", e.hinweis());
+    println!("{}", e.debug_zeile().replace('\t', " "));
+    if e.ist_online() {
+        glib::ExitCode::SUCCESS
+    } else {
+        glib::ExitCode::FAILURE
+    }
 }

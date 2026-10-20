@@ -74,7 +74,7 @@ msgid_plural "The following packages will be removed as well ({n}):"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/dialoge.rs:303 src/dialoge.rs:373 src/dialoge.rs:413 src/dialoge.rs:453
+#: src/dialoge.rs:303 src/dialoge.rs:373 src/dialoge.rs:417 src/dialoge.rs:457
 msgid "_Cancel"
 msgstr ""
 
@@ -114,15 +114,15 @@ msgstr[1] ""
 msgid "_Install"
 msgstr ""
 
-#: src/dialoge.rs:393
+#: src/dialoge.rs:395
 msgid "Operation Is Taking a Long Time"
 msgstr ""
 
-#: src/dialoge.rs:398
+#: src/dialoge.rs:402
 msgid "The operation reports no progress"
 msgstr ""
 
-#: src/dialoge.rs:401
+#: src/dialoge.rs:405
 #, no-c-format
 msgid ""
 "{status}\n"
@@ -131,19 +131,19 @@ msgid ""
 msgstr ""
 
 #. TRANSLATORS: button; its access key must differ from “_Cancel”
-#: src/dialoge.rs:415
+#: src/dialoge.rs:419
 msgid "_Keep Waiting"
 msgstr ""
 
-#: src/dialoge.rs:432
+#: src/dialoge.rs:436
 msgid "Package Manager Busy"
 msgstr ""
 
-#: src/dialoge.rs:437
+#: src/dialoge.rs:441
 msgid "The package manager is busy right now"
 msgstr ""
 
-#: src/dialoge.rs:440
+#: src/dialoge.rs:444
 #, no-c-format
 msgid ""
 "{reason}\n"
@@ -152,7 +152,7 @@ msgid ""
 msgstr ""
 
 #. TRANSLATORS: button; its access key must differ from “_Cancel”
-#: src/dialoge.rs:455
+#: src/dialoge.rs:459
 msgid "_Wait"
 msgstr ""
 
@@ -166,149 +166,157 @@ msgid ""
 "Read-only mode (QS_NUR_LESEN): operations that change the system are disabled"
 msgstr ""
 
-#: src/fenster.rs:67
+#: src/fenster.rs:75
 msgid "_Check for Updates"
 msgstr ""
 
-#: src/fenster.rs:70
+#: src/fenster.rs:78
 msgid "_Quit"
 msgstr ""
 
-#: src/fenster.rs:74
+#: src/fenster.rs:82
 msgid "_Find"
 msgstr ""
 
-#: src/fenster.rs:78
+#: src/fenster.rs:86
 msgid "_All Software"
 msgstr ""
 
-#: src/fenster.rs:80
+#: src/fenster.rs:88
 msgid "_Installed"
 msgstr ""
 
-#: src/fenster.rs:84
+#: src/fenster.rs:92
 msgid "_Updates"
 msgstr ""
 
-#: src/fenster.rs:88
+#: src/fenster.rs:96
 msgid "_Expert List"
 msgstr ""
 
-#: src/fenster.rs:93
+#: src/fenster.rs:101
 msgid "_About"
 msgstr ""
 
-#: src/fenster.rs:96
+#: src/fenster.rs:104
 msgid "_File"
 msgstr ""
 
-#: src/fenster.rs:97
+#: src/fenster.rs:105
 msgid "_Edit"
 msgstr ""
 
-#: src/fenster.rs:98
+#: src/fenster.rs:106
 msgid "_View"
 msgstr ""
 
-#: src/fenster.rs:99
+#: src/fenster.rs:107
 msgid "_Help"
 msgstr ""
 
-#: src/fenster.rs:297
+#: src/fenster.rs:314
 msgid "Search software…"
 msgstr ""
 
-#: src/fenster.rs:314 src/fenster.rs:1009
+#: src/fenster.rs:331 src/fenster.rs:1060
 msgid "No applications found."
 msgstr ""
 
-#: src/fenster.rs:428 src/fenster.rs:1007
+#: src/fenster.rs:364
+msgid "Check Again"
+msgstr ""
+
+#: src/fenster.rs:366
+msgid "Check the network connection again"
+msgstr ""
+
+#: src/fenster.rs:463 src/fenster.rs:1058
 msgid "Loading catalog…"
 msgstr ""
 
-#: src/fenster.rs:453
+#: src/fenster.rs:488
 #, no-c-format
 msgid "The catalog could not be loaded: {error}"
 msgstr ""
 
-#: src/fenster.rs:457
+#: src/fenster.rs:492
 msgid "The catalog could not be loaded: read error"
 msgstr ""
 
-#: src/fenster.rs:467
+#: src/fenster.rs:502
 msgid "← _Back"
 msgstr ""
 
-#: src/fenster.rs:490 src/fenster.rs:632 src/fenster.rs:1792 src/logik.rs:105
+#: src/fenster.rs:525 src/fenster.rs:667 src/fenster.rs:1958 src/logik.rs:105
 msgid "Install"
 msgstr ""
 
-#: src/fenster.rs:531
+#: src/fenster.rs:566
 msgid "Version"
 msgstr ""
 
-#: src/fenster.rs:532
+#: src/fenster.rs:567
 msgid "Size"
 msgstr ""
 
-#: src/fenster.rs:533
+#: src/fenster.rs:568
 msgid "License"
 msgstr ""
 
-#: src/fenster.rs:534
+#: src/fenster.rs:569
 msgid "Website"
 msgstr ""
 
 #. TRANSLATORS: progress bar button; German keeps its old access key
-#: src/fenster.rs:588
+#: src/fenster.rs:623
 msgctxt "progress bar"
 msgid "_Cancel"
 msgstr ""
 
-#: src/fenster.rs:890
+#: src/fenster.rs:941
 #, no-c-format
 msgid "Checked for updates: {n} available"
 msgid_plural "Checked for updates: {n} available"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/fenster.rs:899
+#: src/fenster.rs:950
 #, no-c-format
 msgid "Package source not reachable: {error}"
 msgstr ""
 
-#: src/fenster.rs:914
+#: src/fenster.rs:965
 msgid "Checking for updates…"
 msgstr ""
 
-#: src/fenster.rs:951
+#: src/fenster.rs:1002
 msgid "Type at least two characters to search all packages."
 msgstr ""
 
-#: src/fenster.rs:969 src/fenster.rs:981
+#: src/fenster.rs:1020 src/fenster.rs:1032
 msgid "Searching…"
 msgstr ""
 
-#: src/fenster.rs:973
+#: src/fenster.rs:1024
 #, no-c-format
 msgid "Search failed: {error}"
 msgstr ""
 
-#: src/fenster.rs:1041
+#: src/fenster.rs:1092
 #, no-c-format
 msgid "{view} – Search “{text}”: {n} result"
 msgid_plural "{view} – Search “{text}”: {n} results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/fenster.rs:1048 src/i18n.rs:136 src/i18n.rs:145
+#: src/fenster.rs:1099 src/i18n.rs:136 src/i18n.rs:145
 #, no-c-format
 msgid "{view} – {n} package"
 msgid_plural "{view} – {n} packages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/fenster.rs:1055
+#: src/fenster.rs:1106
 #, no-c-format
 msgid "{view} – {n} application"
 msgid_plural "{view} – {n} applications"
@@ -316,12 +324,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: sidebar entry with the number of available updates
-#: src/fenster.rs:1077
+#: src/fenster.rs:1128
 #, no-c-format
 msgid "Updates ({n})"
 msgstr ""
 
-#: src/fenster.rs:1099
+#: src/fenster.rs:1150
 #, no-c-format
 msgid ""
 "Catalog: {n} application, {installed} installed · last check for updates {time}"
@@ -330,7 +338,7 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/fenster.rs:1105
+#: src/fenster.rs:1156
 #, no-c-format
 msgid ""
 "Catalog: {n} application, {installed} installed · no check for updates yet"
@@ -339,133 +347,142 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/fenster.rs:1287
+#: src/fenster.rs:1195
+msgid "checking…"
+msgstr ""
+
+#: src/fenster.rs:1240 src/main.rs:203
+#, no-c-format
+msgid "Network: {state}"
+msgstr ""
+
+#: src/fenster.rs:1430
 msgid "Operation in Progress"
 msgstr ""
 
-#: src/fenster.rs:1288
+#: src/fenster.rs:1431
 msgid ""
 "Another operation is already running. Please wait until it has finished, or cancel it."
 msgstr ""
 
-#: src/fenster.rs:1324 src/fremdtexte.rs:54
+#: src/fenster.rs:1484 src/fremdtexte.rs:54
 msgid "Preparing…"
 msgstr ""
 
-#: src/fenster.rs:1413
+#: src/fenster.rs:1573
 msgid "Reattached: package manager operation in progress"
 msgstr ""
 
-#: src/fenster.rs:1439
+#: src/fenster.rs:1599
 msgid "An earlier package manager operation has finished."
 msgstr ""
 
-#: src/fenster.rs:1450 src/fenster.rs:1454 src/fremdtexte.rs:55
+#: src/fenster.rs:1610 src/fenster.rs:1614 src/fremdtexte.rs:55
 msgid "Cancelling…"
 msgstr ""
 
-#: src/fenster.rs:1492
+#: src/fenster.rs:1652
 msgid "Simulation finished, waiting for confirmation…"
 msgstr ""
 
-#: src/fenster.rs:1509
+#: src/fenster.rs:1669
 msgid "Confirmed, removing…"
 msgstr ""
 
-#: src/fenster.rs:1511
+#: src/fenster.rs:1671
 msgid "Confirmed, installing…"
 msgstr ""
 
-#: src/fenster.rs:1588
+#: src/fenster.rs:1748
 msgid "Waiting for the package lock…"
 msgstr ""
 
-#: src/fenster.rs:1600
+#: src/fenster.rs:1760
 msgid "Another program is using the package manager right now."
 msgstr ""
 
-#: src/fenster.rs:1605
+#: src/fenster.rs:1765
 msgid "Trying again…"
-msgstr ""
-
-#: src/fenster.rs:1643
-#, no-c-format
-msgid "{name}: operation failed"
-msgstr ""
-
-#: src/fenster.rs:1657
-#, no-c-format
-msgid "{name}: operation cancelled."
-msgstr ""
-
-#: src/fenster.rs:1793 src/logik.rs:103
-msgid "Remove"
-msgstr ""
-
-#: src/fenster.rs:1794 src/logik.rs:101
-msgid "Update"
-msgstr ""
-
-#: src/fenster.rs:1795
-msgid "Refresh software sources"
 msgstr ""
 
 #: src/fenster.rs:1803
 #, no-c-format
-msgid "Install: {name} ({package})"
-msgstr ""
-
-#: src/fenster.rs:1804
-#, no-c-format
-msgid "Remove: {name} ({package})"
-msgstr ""
-
-#: src/fenster.rs:1805
-#, no-c-format
-msgid "Update: {name} ({package})"
-msgstr ""
-
-#: src/fenster.rs:1807
-#, no-c-format
-msgid "Refresh software sources: {name} ({package})"
-msgstr ""
-
-#: src/fenster.rs:1816
-#, no-c-format
-msgid "{name} was installed."
-msgstr ""
-
-#: src/fenster.rs:1817
-#, no-c-format
-msgid "{name} was removed."
-msgstr ""
-
-#: src/fenster.rs:1818
-#, no-c-format
-msgid "{name} was updated."
-msgstr ""
-
-#: src/fenster.rs:1819
-#, no-c-format
-msgid "{name} was completed."
+msgid "{name}: operation failed"
 msgstr ""
 
 #: src/fenster.rs:1821
 #, no-c-format
+msgid "{name}: operation cancelled."
+msgstr ""
+
+#: src/fenster.rs:1959 src/logik.rs:103
+msgid "Remove"
+msgstr ""
+
+#: src/fenster.rs:1960 src/logik.rs:101
+msgid "Update"
+msgstr ""
+
+#: src/fenster.rs:1961
+msgid "Refresh software sources"
+msgstr ""
+
+#: src/fenster.rs:1969
+#, no-c-format
+msgid "Install: {name} ({package})"
+msgstr ""
+
+#: src/fenster.rs:1970
+#, no-c-format
+msgid "Remove: {name} ({package})"
+msgstr ""
+
+#: src/fenster.rs:1971
+#, no-c-format
+msgid "Update: {name} ({package})"
+msgstr ""
+
+#: src/fenster.rs:1973
+#, no-c-format
+msgid "Refresh software sources: {name} ({package})"
+msgstr ""
+
+#: src/fenster.rs:1982
+#, no-c-format
+msgid "{name} was installed."
+msgstr ""
+
+#: src/fenster.rs:1983
+#, no-c-format
+msgid "{name} was removed."
+msgstr ""
+
+#: src/fenster.rs:1984
+#, no-c-format
+msgid "{name} was updated."
+msgstr ""
+
+#: src/fenster.rs:1985
+#, no-c-format
+msgid "{name} was completed."
+msgstr ""
+
+#: src/fenster.rs:1987
+#, no-c-format
 msgid "{name} was installed. A restart is required."
 msgstr ""
 
-#: src/fenster.rs:1824
+#: src/fenster.rs:1990
 #, no-c-format
 msgid "{name} was removed. A restart is required."
 msgstr ""
 
-#: src/fenster.rs:1827
+#: src/fenster.rs:1993
 #, no-c-format
 msgid "{name} was updated. A restart is required."
 msgstr ""
 
-#: src/fenster.rs:1829
+#: src/fenster.rs:1995
 #, no-c-format
 msgid "{name} was completed. A restart is required."
 msgstr ""
@@ -790,7 +807,7 @@ msgid ""
 "Wait until the other program has finished; Querencia Software tries again every 10 seconds (for up to 5 minutes). Or cancel."
 msgstr ""
 
-#: src/fremdtexte.rs:223
+#: src/fremdtexte.rs:223 src/netz.rs:441
 msgid "No Network Connection"
 msgstr ""
 
@@ -970,4 +987,120 @@ msgstr ""
 
 #: src/logik.rs:363
 msgid "The operation was cancelled."
+msgstr ""
+
+#: src/netz.rs:336
+msgid "online (PackageKit)"
+msgstr ""
+
+#: src/netz.rs:337
+msgid "online (network available)"
+msgstr ""
+
+#: src/netz.rs:338
+msgid "online (archive reachable)"
+msgstr ""
+
+#: src/netz.rs:340
+#, no-c-format
+msgid "offline: {host} not reachable ({reason})"
+msgstr ""
+
+#: src/netz.rs:344
+msgid "offline: no network and no APT source to check"
+msgstr ""
+
+#: src/netz.rs:355
+msgid ""
+"PackageKit considers the system offline and may refuse to download packages."
+msgstr ""
+
+#: src/netz.rs:364
+#, no-c-format
+msgid "PackageKit: {state}"
+msgstr ""
+
+#: src/netz.rs:369
+msgid "online"
+msgstr ""
+
+#: src/netz.rs:370
+msgid "offline"
+msgstr ""
+
+#: src/netz.rs:371
+msgid "no answer"
+msgstr ""
+
+#: src/netz.rs:376
+#, no-c-format
+msgid "Network monitor (GLib): {state}"
+msgstr ""
+
+#: src/netz.rs:381
+msgid "network available"
+msgstr ""
+
+#: src/netz.rs:383
+msgid "no network"
+msgstr ""
+
+#: src/netz.rs:389
+#, no-c-format
+msgid "Software source {uri}: reachable ({answer})"
+msgstr ""
+
+#: src/netz.rs:393
+#, no-c-format
+msgid "Software source {uri}: not reachable ({reason})"
+msgstr ""
+
+#: src/netz.rs:397
+msgid "Software source: none found in /etc/apt"
+msgstr ""
+
+#: src/netz.rs:434
+#, no-c-format
+msgid "Querencia Software could not reach the software source {uri}."
+msgstr ""
+
+#: src/netz.rs:438
+msgid "Querencia Software found no software source in /etc/apt to check."
+msgstr ""
+
+#: src/netz.rs:445
+msgid ""
+"Check the network connection. While offline, Querencia Software checks again every 30 seconds; “Check Again” in the status bar checks at once."
+msgstr ""
+
+#: src/netz.rs:461
+msgid "PackageKit Reports No Network"
+msgstr ""
+
+#: src/netz.rs:464
+#, no-c-format
+msgid ""
+"The software source {uri} is reachable, but PackageKit considers the system offline and refuses to download packages. This happens when NetworkManager is installed but does not manage the network connection, for example on a server set up with netplan and systemd-networkd."
+msgstr ""
+
+#: src/netz.rs:472
+msgid ""
+"Let NetworkManager manage the connection (netplan: “renderer: NetworkManager”), or ask your system administrator. PackageKit notices the change by itself; then try again."
+msgstr ""
+
+#: src/netz.rs:516
+msgid "no APT source found"
+msgstr ""
+
+#: src/netz.rs:568 src/netz.rs:692
+#, no-c-format
+msgid "no answer within {seconds} s"
+msgstr ""
+
+#: src/netz.rs:589
+msgid "TCP connection, TLS not checked"
+msgstr ""
+
+#: src/netz.rs:609
+msgid "no HTTP answer"
 msgstr ""

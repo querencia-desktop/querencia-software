@@ -1084,7 +1084,7 @@ dependencies = [
 
 [[package]]
 name = "querencia-software"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "async-trait",
  "gettext-rs",
