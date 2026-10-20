@@ -3,8 +3,10 @@
    Seitenleiste, Liste) und Fortschritt.
    Seit 0.1.4 (CSS-Welle dunkel, QD-081): Farben, die nur Werte von
    Querencia-Klassisch wiederholen (Menüleiste, Menü, Fenstergrund, Schrift),
-   kommen aus dem Thema; die übrigen haben am Ende einen Block
-   @media (prefers-color-scheme: dark). */
+   kommen aus dem Thema; Ansichtsgrund und Ränder über die benannten
+   Themenfarben @theme_base_color und @borders (hell dieselben Werte, dunkel
+   folgen sie dem Thema). Nur Farben ohne Themenwert haben am Ende einen
+   Block @media (prefers-color-scheme: dark). */
 
 window.qs-window menubar {
   padding: 1px 2px;
@@ -39,7 +41,7 @@ window.qs-window popover.menu modelbutton:selected {
 
 /* Seitenleiste */
 scrolledwindow.qs-seite {
-  border-right: 1px solid #c7c2be;
+  border-right: 1px solid @borders;
   background-color: #f5f4f2;
 }
 
@@ -63,7 +65,7 @@ list.qs-seite > row:selected label {
 
 /* Suchzeile und Überschrift */
 box.qs-kopf {
-  border-bottom: 1px solid #c7c2be;
+  border-bottom: 1px solid @borders;
   padding: 6px 8px;
 }
 
@@ -73,7 +75,7 @@ label.qs-ueberschrift {
 
 /* Liste */
 listview.qs-liste {
-  background-color: #ffffff;
+  background-color: @theme_base_color;
 }
 
 listview.qs-liste > row {
@@ -113,7 +115,7 @@ label.qs-leer {
 
 /* Detailseite */
 box.qs-details {
-  background-color: #ffffff;
+  background-color: @theme_base_color;
   padding: 12px 16px;
 }
 
@@ -128,7 +130,7 @@ grid.qs-fakten label.qs-fakt-name {
 
 /* Fortschrittsleiste über der Statuszeile */
 box.qs-fortschritt {
-  border-top: 1px solid #c7c2be;
+  border-top: 1px solid @borders;
   background-color: #f5f4f2;
   padding: 6px 10px;
 }
@@ -145,7 +147,7 @@ box.qs-fortschritt progressbar > trough {
 
 /* Statuszeile */
 box.qs-status {
-  border-top: 1px solid #c7c2be;
+  border-top: 1px solid @borders;
   padding: 3px 10px;
 }
 
@@ -187,56 +189,46 @@ window.qs-dialog button {
 }
 
 window.qs-dialog scrolledwindow.qs-rahmen {
-  border: 1px solid #c7c2be;
-  background-color: #ffffff;
+  border: 1px solid @borders;
+  background-color: @theme_base_color;
 }
 
 window.qs-dialog list.qs-paketliste {
-  background-color: #ffffff;
+  background-color: @theme_base_color;
 }
 
-/* Dunkle Darstellung (Thema 0.2, Werte aus dessen dunkel-zuordnung.txt:
-   Rand #c7c2be -> #2b2a27, Ansicht #ffffff -> #2b2a27, Menü/Seitenleiste
-   #f5f4f2 -> #353430). Greift nur, weil fenster::load_css den Provider an
-   gtk-interface-color-scheme bindet. */
+/* Dunkle Darstellung (Thema 0.2): nur Farben ohne Themenwert, Werte aus
+   dessen dunkel-zuordnung.txt (Seitenleiste/Menü #f5f4f2 -> #353430).
+   Greift nur, weil fenster::load_css den Provider an
+   gtk-interface-color-scheme bindet. Schrift auf den eigenen Gründen ist
+   hier fest gesetzt, damit sie auch unter einem Thema ohne dunkle Fassung
+   lesbar bleibt; gedimmte Schrift wird aus Themenfarben gemischt. */
 @media (prefers-color-scheme: dark) {
-  scrolledwindow.qs-seite {
-    border-right-color: #2b2a27;
-    background-color: #353430;
-  }
-
+  scrolledwindow.qs-seite,
   list.qs-seite {
     background-color: #353430;
   }
 
-  box.qs-kopf {
-    border-bottom-color: #2b2a27;
-  }
-
-  listview.qs-liste {
-    background-color: #2b2a27;
+  list.qs-seite > row label {
+    color: #dfdbd2;
   }
 
   listview.qs-liste > row {
-    border-bottom-color: #3c3b37;
+    border-bottom-color: @theme_bg_color;
   }
 
   label.qs-leer,
   grid.qs-fakten label.qs-fakt-name {
-    color: #b3aea7;
-  }
-
-  box.qs-details {
-    background-color: #2b2a27;
+    color: mix(@theme_fg_color, @theme_base_color, 0.2);
   }
 
   box.qs-fortschritt {
-    border-top-color: #2b2a27;
     background-color: #353430;
   }
 
-  box.qs-status {
-    border-top-color: #2b2a27;
+  box.qs-fortschritt label,
+  box.qs-fortschritt progressbar > text {
+    color: #dfdbd2;
   }
 
   box.qs-status.qs-neu {
@@ -249,14 +241,5 @@ window.qs-dialog list.qs-paketliste {
 
   label.qs-netz.qs-netz-warnung {
     color: #fa8800;
-  }
-
-  window.qs-dialog scrolledwindow.qs-rahmen {
-    border-color: #2b2a27;
-    background-color: #2b2a27;
-  }
-
-  window.qs-dialog list.qs-paketliste {
-    background-color: #2b2a27;
   }
 }

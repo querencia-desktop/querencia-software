@@ -88,8 +88,10 @@ Ergebnis in `nachweis/gui/netz-<Fall>-<Auflösung>/`, Bilder zusätzlich unter
 
 ## Dunkle Darstellung (0.1.4, QD-081)
 
-`src/style.css` setzt nur noch Farben, die das Thema nicht hat; dunkle Werte
-stehen im Block `@media (prefers-color-scheme: dark)` am Ende. Damit der Block
+`src/style.css` setzt nur noch Farben, die das Thema nicht hat; Ansichtsgrund
+und Ränder kommen über `@theme_base_color` und `@borders` aus dem Thema, die
+übrigen dunklen Werte stehen im Block `@media (prefers-color-scheme: dark)` am
+Ende. Damit der Block
 greift, bindet `fenster::load_css` den eigenen `GtkCssProvider` an
 `gtk-interface-color-scheme`; `main` meldet die Einstellung nach dem Start
 einmal (GTK 4.22 wendet das dunkle Thema beim Start sonst nicht an).

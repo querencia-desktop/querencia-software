@@ -11,10 +11,13 @@
   gestartetes Programm bliebe hell.
 - Programm-CSS: Farben, die nur Werte von Querencia-Klassisch wiederholen
   (Menüleiste, Menü, Fenstergrund von Kopf- und Statuszeile, Schrift der
-  Statuszeile), kommen aus dem Thema. Eigene Farben (Seitenleiste, Liste,
-  Detailseite, Fortschritt, Ränder, Netzwerkzustand, gedimmte Texte,
-  Paketliste im Dialog) haben einen Block `@media (prefers-color-scheme: dark)`
-  mit den Werten der dunklen Fassung.
+  Statuszeile), kommen aus dem Thema. Ansichtsgrund (Liste, Detailseite,
+  Paketliste im Dialog) und Ränder nehmen die benannten Themenfarben
+  `@theme_base_color` und `@borders`; sie folgen dem Thema ohne Weiteres und
+  bleiben unter einem Thema ohne dunkle Fassung hell. Nur Farben ohne
+  Themenwert (Seitenleiste, Fortschritt, Netzwerkzustand, gedimmte Texte,
+  Zeilentrenner) haben einen Block `@media (prefers-color-scheme: dark)`; die
+  Schrift auf Seitenleiste und Fortschritt ist dort fest gesetzt.
 - Der eigene `GtkCssProvider` ist an `gtk-interface-color-scheme` gebunden;
   ohne Bindung greift der Dunkelblock nicht (isoliert gemessen).
 
