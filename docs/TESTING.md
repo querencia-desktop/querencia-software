@@ -85,3 +85,20 @@ Ergebnis in `nachweis/gui/netz-<Fall>-<Auflösung>/`, Bilder zusätzlich unter
 . Echte Stufen ohne Fenster:
 `querencia-software --netz-pruefen` (fragt alle drei Stufen, nur lesend;
 `QS_APT_QUELLE=http://192.0.2.1/ubuntu` prüft das Zeitlimit).
+
+## Dunkle Darstellung (0.1.4, QD-081)
+
+`src/style.css` setzt nur noch Farben, die das Thema nicht hat; dunkle Werte
+stehen im Block `@media (prefers-color-scheme: dark)` am Ende. Damit der Block
+greift, bindet `fenster::load_css` den eigenen `GtkCssProvider` an
+`gtk-interface-color-scheme`; `main` meldet die Einstellung nach dem Start
+einmal (GTK 4.22 wendet das dunkle Thema beim Start sonst nicht an).
+
+Geprüft wird isoliert mit einem Ersatz für das Settings-Portal
+(`org.freedesktop.appearance color-scheme` 0 bzw. 1, im Lauf umschaltbar),
+eigenem HOME, Bus und labwc: Bilder hell gegen die Live-Ablage (pixelgleich,
+de/en, 1024×768 und 1920×1080), dunkel beim Start und nach einem Wechsel im
+Lauf, Kontrast dunkel AA. Werkzeuge und Ergebnisse liegen im
+Integrationsordner der Version (`werkzeug/gui-dunkel.sh`,
+`szenario-dunkel.sh`, `regression.sh`, `vergleich.py`,
+`kontrast-software.py`, `messung-bindung.sh`).

@@ -1,17 +1,18 @@
 /* Querencia Software – klassische Optik (Ambiance-Farbwerte wie Panel, Editor,
    Bilder und Rechner). Querencia-Orange #F07746 nur für Auswahl (Menü,
-   Seitenleiste, Liste) und Fortschritt. */
+   Seitenleiste, Liste) und Fortschritt.
+   Seit 0.1.4 (CSS-Welle dunkel, QD-081): Farben, die nur Werte von
+   Querencia-Klassisch wiederholen (Menüleiste, Menü, Fenstergrund, Schrift),
+   kommen aus dem Thema; die übrigen haben am Ende einen Block
+   @media (prefers-color-scheme: dark). */
 
 window.qs-window menubar {
-  background-color: #f2f1f0;
-  border-bottom: 1px solid #c7c2be;
   padding: 1px 2px;
 }
 
 window.qs-window menubar > item {
   padding: 3px 8px;
   border-radius: 0;
-  color: #3c3c3c;
 }
 
 window.qs-window menubar > item:hover,
@@ -23,8 +24,6 @@ window.qs-window menubar > item:selected {
 window.qs-window popover.menu contents {
   border-radius: 0;
   padding: 2px 0;
-  background-color: #f5f4f2;
-  border: 1px solid #c7c2be;
 }
 
 window.qs-window popover.menu modelbutton {
@@ -66,7 +65,6 @@ list.qs-seite > row:selected label {
 box.qs-kopf {
   border-bottom: 1px solid #c7c2be;
   padding: 6px 8px;
-  background-color: #f2f1f0;
 }
 
 label.qs-ueberschrift {
@@ -148,18 +146,17 @@ box.qs-fortschritt progressbar > trough {
 /* Statuszeile */
 box.qs-status {
   border-top: 1px solid #c7c2be;
-  background-color: #f2f1f0;
   padding: 3px 10px;
 }
 
 /* Zwei Frames nach einem neuen Statustext (fenster.rs, ganz_neu_zeichnen):
-   ein Farbwert Unterschied, damit GTK die ganze Leiste neu zeichnet. */
+   ein Farbwert Unterschied zum Fenstergrund, damit GTK die ganze Leiste neu
+   zeichnet. */
 box.qs-status.qs-neu {
   background-color: #f2f1f1;
 }
 
 label.qs-status-text {
-  color: #3c3c3c;
   font-size: 9pt;
 }
 
@@ -196,4 +193,70 @@ window.qs-dialog scrolledwindow.qs-rahmen {
 
 window.qs-dialog list.qs-paketliste {
   background-color: #ffffff;
+}
+
+/* Dunkle Darstellung (Thema 0.2, Werte aus dessen dunkel-zuordnung.txt:
+   Rand #c7c2be -> #2b2a27, Ansicht #ffffff -> #2b2a27, Menü/Seitenleiste
+   #f5f4f2 -> #353430). Greift nur, weil fenster::load_css den Provider an
+   gtk-interface-color-scheme bindet. */
+@media (prefers-color-scheme: dark) {
+  scrolledwindow.qs-seite {
+    border-right-color: #2b2a27;
+    background-color: #353430;
+  }
+
+  list.qs-seite {
+    background-color: #353430;
+  }
+
+  box.qs-kopf {
+    border-bottom-color: #2b2a27;
+  }
+
+  listview.qs-liste {
+    background-color: #2b2a27;
+  }
+
+  listview.qs-liste > row {
+    border-bottom-color: #3c3b37;
+  }
+
+  label.qs-leer,
+  grid.qs-fakten label.qs-fakt-name {
+    color: #b3aea7;
+  }
+
+  box.qs-details {
+    background-color: #2b2a27;
+  }
+
+  box.qs-fortschritt {
+    border-top-color: #2b2a27;
+    background-color: #353430;
+  }
+
+  box.qs-status {
+    border-top-color: #2b2a27;
+  }
+
+  box.qs-status.qs-neu {
+    background-color: #3c3b38;
+  }
+
+  label.qs-netz.qs-netz-offline {
+    color: #ea8a95;
+  }
+
+  label.qs-netz.qs-netz-warnung {
+    color: #fa8800;
+  }
+
+  window.qs-dialog scrolledwindow.qs-rahmen {
+    border-color: #2b2a27;
+    background-color: #2b2a27;
+  }
+
+  window.qs-dialog list.qs-paketliste {
+    background-color: #2b2a27;
+  }
 }
