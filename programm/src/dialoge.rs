@@ -194,6 +194,36 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
 }
 
 /// Einfache Meldung mit Schließen-Knopf.
+/// Keine Netzwerkverbindung vor dem Installieren/Aktualisieren (QD-067):
+/// „Abbrechen“ (Vorgabe) oder „Trotzdem versuchen“ – Pakete aus dem
+/// apt-Zwischenspeicher gehen auch ohne Netz.
+pub fn offline_frage(
+    parent: &impl IsA<gtk::Window>,
+    titel: &str,
+    text: &str,
+    versuchen: Box<dyn Fn()>,
+) {
+    let window = modal_window(parent, titel, "netz-offline-frage");
+    let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
+    let ueberschrift = gtk::Label::new(None);
+    ueberschrift.set_markup(&format!("<b>{}</b>", glib::markup_escape_text(titel)));
+    ueberschrift.set_xalign(0.0);
+    let label = gtk::Label::new(Some(text));
+    label.set_wrap(true);
+    label.set_max_width_chars(60);
+    label.set_xalign(0.0);
+    body.append(&ueberschrift);
+    body.append(&label);
+    let knopf_abbrechen = knopf_schliesst(&window, &gettext("_Cancel"), None);
+    // TRANSLATORS: button; its access key must differ from “_Cancel”
+    let knopf_versuchen = knopf_schliesst(&window, &gettext("_Try Anyway"), Some(versuchen));
+    window.set_child(Some(&rahmen(&body, &[&knopf_abbrechen, &knopf_versuchen])));
+    window.set_default_widget(Some(&knopf_abbrechen));
+    close_on_escape(&window, None);
+    window.present();
+    knopf_abbrechen.grab_focus();
+}
+
 pub fn meldung(parent: &impl IsA<gtk::Window>, titel: &str, text: &str, kennung: &'static str) {
     let window = modal_window(parent, titel, kennung);
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);

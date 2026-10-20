@@ -335,6 +335,9 @@ impl Ergebnis {
         match self.online {
             Some(Stufe::PackageKit) => gettext("online (PackageKit)"),
             Some(Stufe::Netzmonitor) => gettext("online (network available)"),
+            Some(Stufe::Archiv) if self.pk_widerspricht() => {
+                gettext("online (archive reachable), PackageKit: offline")
+            }
             Some(Stufe::Archiv) => gettext("online (archive reachable)"),
             None => match (&self.quelle, &self.archiv) {
                 (Some(q), Some(Err(grund))) => gettext_f(
@@ -350,13 +353,36 @@ impl Ergebnis {
     /// PackageKit der erreichbaren Quelle widerspricht.
     pub fn hinweis(&self) -> String {
         let mut text = self.stufen();
-        if self.pk_widerspricht() {
-            text.push('\n');
-            text.push_str(&gettext(
-                "PackageKit considers the system offline and may refuse to download packages.",
-            ));
+        if let Some(warnung) = self.pk_warnung() {
+            text.push_str("\n\n");
+            text.push_str(&warnung);
         }
         text
+    }
+
+    /// Ursache und Abhilfe, wenn PackageKit „offline“ meldet, die Quelle aber
+    /// erreichbar ist. Sagt auch der Netzwerkmonitor „kein Netz“ (Stufe 3
+    /// entschied), ist die Ursache NetworkManager ohne Verwaltung der
+    /// Verbindung (Pflichtprobe B2, Entscheidung der Startsession 20.10.).
+    pub fn pk_warnung(&self) -> Option<String> {
+        if !self.pk_widerspricht() {
+            return None;
+        }
+        Some(if self.online == Some(Stufe::Archiv) {
+            format!(
+                "{} {}",
+                gettext(
+                    "PackageKit considers the system offline because NetworkManager is \
+                     installed but does not manage the network."
+                ),
+                gettext(
+                    "Remedy: set the netplan renderer to NetworkManager, or remove \
+                     NetworkManager."
+                )
+            )
+        } else {
+            gettext("PackageKit considers the system offline and may refuse to download packages.")
+        })
     }
 
     /// Alle gefragten Stufen, eine je Zeile. Nennt die geprüfte Quelle.
@@ -427,9 +453,11 @@ impl Ergebnis {
     }
 }
 
-/// Dialog, wenn alle Stufen offline sagen (Installieren, Aktualisieren):
-/// Überschrift und Text.
-pub fn offline_dialog(e: &Ergebnis) -> (String, String) {
+/// Dialog, wenn alle Stufen offline sagen: Überschrift und Text. `vorab`:
+/// vor dem Installieren/Aktualisieren mit „Trotzdem versuchen“ (Pakete aus
+/// dem apt-Zwischenspeicher gehen auch ohne Netz, NM-b S1); sonst nach einem
+/// `no-network` von PackageKit.
+pub fn offline_dialog(e: &Ergebnis, vorab: bool) -> (String, String) {
     let quelle = match &e.quelle {
         Some(q) => gettext_f(
             "Querencia Software could not reach the software source {uri}.",
@@ -442,10 +470,18 @@ pub fn offline_dialog(e: &Ergebnis) -> (String, String) {
         format!(
             "{quelle}\n\n{}\n\n{}",
             e.stufen(),
-            gettext(
-                "Check the network connection. While offline, Querencia Software checks \
-                 again every 30 seconds; “Check Again” in the status bar checks at once."
-            )
+            if vorab {
+                gettext(
+                    "Packages that are already in the apt cache can be installed without a \
+                     network; “Try Anyway” starts the operation. While offline, Querencia \
+                     Software checks again every 30 seconds.",
+                )
+            } else {
+                gettext(
+                    "Check the network connection. While offline, Querencia Software checks \
+                     again every 30 seconds; “Check Again” in the status bar checks at once.",
+                )
+            }
         ),
     )
 }
@@ -457,23 +493,21 @@ pub fn pk_widerspruch_dialog(e: &Ergebnis) -> (String, String) {
         .as_ref()
         .map(|q| q.uri.clone())
         .unwrap_or_else(|| "–".into());
+    let warnung = e.pk_warnung().unwrap_or_else(|| {
+        gettext("PackageKit considers the system offline and may refuse to download packages.")
+    });
     (
         gettext("PackageKit Reports No Network"),
         format!(
-            "{}\n\n{}\n\n{}",
+            "{}\n\n{}\n\n{}\n\n{}",
             gettext_f(
-                "The software source {uri} is reachable, but PackageKit considers the system \
-                 offline and refuses to download packages. This happens when NetworkManager is \
-                 installed but does not manage the network connection, for example on a server \
-                 set up with netplan and systemd-networkd.",
+                "The software source {uri} is reachable, but PackageKit refuses to download \
+                 packages.",
                 &[("uri", &uri)],
             ),
+            warnung,
             e.stufen(),
-            gettext(
-                "Let NetworkManager manage the connection (netplan: “renderer: \
-                 NetworkManager”), or ask your system administrator. PackageKit notices the \
-                 change by itself; then try again."
-            )
+            gettext("PackageKit notices the change by itself; then try again.")
         ),
     )
 }
@@ -625,7 +659,9 @@ fn statuszeile(antwort: &[u8]) -> Option<String> {
 
 /// Feste Antworten der drei Stufen. `QS_NETZ_ATTRAPPE=<pk>,<monitor>,<archiv>`
 /// mit je `online` oder `offline` (pk zusätzlich `unbekannt`), Standard
-/// `online,online,online`. Stufe 3 antwortet nach 400 ms (die Statuszeile
+/// `online,online,online`; `QS_NETZ_ATTRAPPE=@<datei>` liest denselben Text
+/// aus der Datei (GUI-Prüfung des Wechsels offline → online, siehe
+/// [`AttrappeAusUmgebung`]). Stufe 3 antwortet nach 400 ms (die Statuszeile
 /// zeigt kurz „wird geprüft“).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AttrappeSonden {
@@ -660,8 +696,7 @@ impl AttrappeSonden {
     }
 
     pub fn aus_umgebung() -> Self {
-        std::env::var("QS_NETZ_ATTRAPPE")
-            .ok()
+        attrappe_text()
             .and_then(|t| Self::aus_text(&t))
             .unwrap_or(AttrappeSonden {
                 pk: PkNetz::Online,
@@ -669,6 +704,38 @@ impl AttrappeSonden {
                 archiv: true,
                 verzoegerung: Duration::from_millis(400),
             })
+    }
+}
+
+/// Text von `QS_NETZ_ATTRAPPE`, bei `@<datei>` der Inhalt der Datei.
+fn attrappe_text() -> Option<String> {
+    attrappe_text_aus(&std::env::var("QS_NETZ_ATTRAPPE").ok()?)
+}
+
+fn attrappe_text_aus(wert: &str) -> Option<String> {
+    match wert.strip_prefix('@') {
+        Some(datei) => std::fs::read_to_string(datei)
+            .ok()
+            .map(|t| t.trim().to_string()),
+        None => Some(wert.to_string()),
+    }
+}
+
+/// Attrappen-Betrieb: liest `QS_NETZ_ATTRAPPE` bei jeder Prüfung neu.
+pub struct AttrappeAusUmgebung;
+
+#[async_trait::async_trait(?Send)]
+impl Sonden for AttrappeAusUmgebung {
+    async fn packagekit(&self) -> PkNetz {
+        AttrappeSonden::aus_umgebung().pk
+    }
+
+    fn netzmonitor(&self) -> bool {
+        AttrappeSonden::aus_umgebung().monitor
+    }
+
+    async fn archiv(&self, quelle: &Quelle) -> Result<String, String> {
+        AttrappeSonden::aus_umgebung().archiv(quelle).await
     }
 }
 
@@ -702,8 +769,7 @@ impl Sonden for AttrappeSonden {
 /// Aktualisieren der `AttrappeQuelle` mit `no-network` wie beim echten
 /// apt-Backend („Cannot download packages whilst offline“).
 pub fn attrappe_pk_offline() -> bool {
-    std::env::var("QS_NETZ_ATTRAPPE")
-        .ok()
+    attrappe_text()
         .and_then(|t| AttrappeSonden::aus_text(&t))
         .is_some_and(|s| s.pk == PkNetz::Offline)
 }
@@ -776,6 +842,10 @@ mod tests {
         assert_eq!(e.online, Some(Stufe::Netzmonitor));
         assert_eq!((z.monitor.get(), z.archiv.get()), (1, 0));
         assert!(e.pk_widerspricht());
+        // Netzwerkmonitor sagt online: Ursache unbekannt, keine NM-Behauptung.
+        let w = e.pk_warnung().unwrap();
+        assert!(w.contains("may refuse") && !w.contains("NetworkManager"));
+        assert_eq!(e.kurztext(), "online (network available)");
     }
 
     /// Pflichtprobe B2: NetworkManager installiert, verwaltet eth0 nicht.
@@ -787,19 +857,28 @@ mod tests {
         assert_eq!((z.pk.get(), z.monitor.get(), z.archiv.get()), (1, 1, 1));
         assert_eq!(e.archiv, Some(Ok("HTTP 200".into())));
         assert!(e.pk_widerspricht());
-        assert_eq!(e.kurztext(), "online (archive reachable)");
+        assert_eq!(
+            e.kurztext(),
+            "online (archive reachable), PackageKit: offline"
+        );
         assert!(e
             .hinweis()
             .contains("http://archive.ubuntu.com/ubuntu: reachable (HTTP 200)"));
-        assert!(e
-            .hinweis()
-            .contains("PackageKit considers the system offline"));
+        // Hinweisfall (Startsession 20.10.): Ursache und Abhilfe, Knopf bleibt frei.
+        let ursache = "PackageKit considers the system offline because NetworkManager is \
+                       installed but does not manage the network.";
+        let abhilfe =
+            "Remedy: set the netplan renderer to NetworkManager, or remove NetworkManager.";
+        assert_eq!(e.pk_warnung(), Some(format!("{ursache} {abhilfe}")));
+        assert!(e.hinweis().ends_with(abhilfe));
         let (titel, text) = pk_widerspruch_dialog(&e);
         assert_eq!(titel, "PackageKit Reports No Network");
         assert!(text.contains("The software source http://archive.ubuntu.com/ubuntu is reachable"));
-        assert!(
-            !text.contains("may refuse"),
-            "Warnung nicht doppelt im Dialog"
+        assert!(text.contains(ursache) && text.contains(abhilfe));
+        assert_eq!(
+            text.matches(abhilfe).count(),
+            1,
+            "Abhilfe nur einmal im Dialog"
         );
     }
 
@@ -818,11 +897,18 @@ mod tests {
         assert!(h.contains("PackageKit: offline"));
         assert!(h.contains("Network monitor (GLib): no network"));
         assert!(h.contains("http://archive.ubuntu.com/ubuntu: not reachable"));
-        let (titel, text) = offline_dialog(&e);
+        let (titel, text) = offline_dialog(&e, true);
         assert_eq!(titel, "No Network Connection");
         assert!(
             text.contains("could not reach the software source http://archive.ubuntu.com/ubuntu.")
         );
+        assert!(
+            text.contains("apt cache") && text.contains("Try Anyway"),
+            "NM-b S1"
+        );
+        let (_, text) = offline_dialog(&e, false);
+        assert!(!text.contains("Try Anyway") && text.contains("Check Again"));
+        assert_eq!(e.pk_warnung(), None);
     }
 
     #[test]
@@ -878,6 +964,28 @@ mod tests {
             assert_eq!(PkNetz::aus_wert(w), PkNetz::Online);
         }
         assert_eq!(PkNetz::aus_wert(9), PkNetz::Unbekannt);
+    }
+
+    #[test]
+    fn attrappe_umschaltbar_ueber_datei() {
+        let d = std::env::temp_dir().join(format!("qs-netz-attrappe-{}", std::process::id()));
+        let wert = format!("@{}", d.display());
+        std::fs::write(&d, "offline,offline,online\n").unwrap();
+        assert_eq!(
+            attrappe_text_aus(&wert).as_deref(),
+            Some("offline,offline,online")
+        );
+        std::fs::write(&d, "online,online,online").unwrap();
+        assert_eq!(
+            attrappe_text_aus(&wert).as_deref(),
+            Some("online,online,online")
+        );
+        std::fs::remove_file(&d).unwrap();
+        assert_eq!(attrappe_text_aus(&wert), None, "fehlende Datei: Standard");
+        assert_eq!(
+            attrappe_text_aus("offline,online,online").as_deref(),
+            Some("offline,online,online")
+        );
     }
 
     #[test]

@@ -212,6 +212,11 @@ pub struct Fenster {
     /// Nächste Neuprüfung (30 s im Offline-Zustand, 2 s nach einer
     /// Netzänderung).
     netz_timer: RefCell<Option<glib::SourceId>>,
+    /// Die letzte Meldung der Statuszeile ist ein `no-network`-Fehler; sie
+    /// verschwindet, sobald die Prüfung wieder online meldet (NM-b S3).
+    netz_meldung: Cell<bool>,
+    /// „Trotzdem versuchen“: der nächste Vorgang startet ohne Netzprüfung.
+    netz_trotzdem: Cell<bool>,
     letzte_pruefung: RefCell<Option<String>>,
     letzte_meldung: RefCell<Option<String>>,
     /// Nach dem nächsten Laden „Aktualisierungen geprüft“ melden.
@@ -420,6 +425,8 @@ impl Fenster {
             netz_laeuft: Cell::new(false),
             netz_warten: RefCell::new(Vec::new()),
             netz_timer: RefCell::new(None),
+            netz_meldung: Cell::new(false),
+            netz_trotzdem: Cell::new(false),
             letzte_pruefung: RefCell::new(None),
             letzte_meldung: RefCell::new(None),
             pruefung_melden: Cell::new(false),
@@ -1173,6 +1180,7 @@ impl Fenster {
 
     /// Kurze Meldung in der Statuszeile.
     fn melde(&self, text: &str) {
+        self.netz_meldung.set(false);
         *self.letzte_meldung.borrow_mut() = Some(text.to_string());
         self.aktualisiere_status();
     }
@@ -1192,7 +1200,7 @@ impl Fenster {
             id.remove();
         }
         self.netz_knopf.set_sensitive(false);
-        self.setze_netztext(&gettext("checking…"), None, false);
+        self.setze_netztext(&gettext("checking…"), None, None);
         debug("netz\tpruefe");
         let sonden = self.backends.netz.clone();
         let weak = Rc::downgrade(self);
@@ -1208,9 +1216,22 @@ impl Fenster {
         self.netz_laeuft.set(false);
         self.netz_knopf.set_sensitive(true);
         debug(&e.debug_zeile());
-        self.setze_netztext(&e.kurztext(), Some(&e.hinweis()), !e.ist_online());
+        let klasse = if !e.ist_online() {
+            Some("qs-netz-offline")
+        } else if e.pk_widerspricht() {
+            Some("qs-netz-warnung")
+        } else {
+            None
+        };
+        self.setze_netztext(&e.kurztext(), Some(&e.hinweis()), klasse);
         if !e.ist_online() {
             self.netz_spaeter_pruefen(netz::NEUPRUEFUNG);
+        }
+        let war_offline = self.netz.borrow().as_ref().is_some_and(|v| !v.ist_online());
+        if war_offline && e.ist_online() && self.netz_meldung.replace(false) {
+            debug("netz\tmeldung-entfernt");
+            *self.letzte_meldung.borrow_mut() = None;
+            self.aktualisiere_status();
         }
         *self.netz.borrow_mut() = Some(e.clone());
         let warten: Vec<NetzFn> = self.netz_warten.borrow_mut().drain(..).collect();
@@ -1235,13 +1256,17 @@ impl Fenster {
         *self.netz_timer.borrow_mut() = Some(id);
     }
 
-    /// „Netzwerk: …“ rechts in der Statuszeile, Kurzinfo mit allen Stufen.
-    fn setze_netztext(&self, zustand: &str, hinweis: Option<&str>, offline: bool) {
+    /// „Netzwerk: …“ rechts in der Statuszeile, Kurzinfo mit allen Stufen;
+    /// `klasse`: `qs-netz-offline` (rot) oder `qs-netz-warnung` (PackageKit
+    /// widerspricht der erreichbaren Quelle).
+    fn setze_netztext(&self, zustand: &str, hinweis: Option<&str>, klasse: Option<&str>) {
         let text = gettext_f("Network: {state}", &[("state", zustand)]);
-        if offline {
-            self.netz_label.add_css_class("qs-netz-offline");
-        } else {
-            self.netz_label.remove_css_class("qs-netz-offline");
+        for k in ["qs-netz-offline", "qs-netz-warnung"] {
+            if Some(k) == klasse {
+                self.netz_label.add_css_class(k);
+            } else {
+                self.netz_label.remove_css_class(k);
+            }
         }
         if hinweis.is_some() {
             self.netz_label.set_tooltip_text(hinweis);
@@ -1262,7 +1287,7 @@ impl Fenster {
                 let (t, x) = netz::pk_widerspruch_dialog(e);
                 (t, x, "netz-pk")
             } else {
-                let (t, x) = netz::offline_dialog(e);
+                let (t, x) = netz::offline_dialog(e, false);
                 (t, x, "netz-offline")
             };
             dialoge::meldung(&s.window, &titel, &text, kennung);
@@ -1424,6 +1449,7 @@ impl Fenster {
 
     /// Knopf in Liste oder Detailseite: Installieren / Entfernen / Aktualisieren.
     fn aktion(self: &Rc<Self>, zeile: Zeile) {
+        let trotzdem = self.netz_trotzdem.replace(false);
         if self.transaktion.borrow().is_some() {
             dialoge::meldung(
                 &self.window,
@@ -1454,20 +1480,35 @@ impl Fenster {
         } else {
             (Vorgang::Installieren, paket)
         };
-        // QD-067: Installieren und Aktualisieren nur sperren, wenn die letzte
-        // Prüfung in allen Stufen offline sagte – und erst nach einer frischen
-        // Prüfung. Entfernen braucht kein Netz.
+        // QD-067: Sagte die letzte Prüfung in allen Stufen offline, vor dem
+        // Installieren/Aktualisieren frisch prüfen und, wenn es dabei bleibt,
+        // fragen statt sperren: Pakete aus dem apt-Zwischenspeicher gehen auch
+        // ohne Netz (NM-b S1). Entfernen braucht kein Netz. Meldet nur
+        // PackageKit offline, läuft der Versuch ohne Rückfrage.
         let offline = self.netz.borrow().as_ref().is_some_and(|e| !e.ist_online());
-        if vorgang != Vorgang::Entfernen && offline {
+        if vorgang != Vorgang::Entfernen && offline && !trotzdem {
             debug("netz\tvor-vorgang");
             self.netz_pruefen(Some(Box::new(move |s, e| {
                 if e.ist_online() {
                     s.aktion(zeile);
-                } else {
-                    debug("transaktion\tgesperrt\toffline");
-                    let (titel, text) = netz::offline_dialog(e);
-                    dialoge::meldung(&s.window, &titel, &text, "netz-offline");
+                    return;
                 }
+                debug("netz\tfrage-offline");
+                let (titel, text) = netz::offline_dialog(e, true);
+                let w = Rc::downgrade(s);
+                let zeile = zeile.clone();
+                dialoge::offline_frage(
+                    &s.window,
+                    &titel,
+                    &text,
+                    Box::new(move || {
+                        if let Some(s) = w.upgrade() {
+                            debug("netz\ttrotzdem");
+                            s.netz_trotzdem.set(true);
+                            s.aktion(zeile.clone());
+                        }
+                    }),
+                );
             })));
             return;
         }
@@ -1803,6 +1844,7 @@ impl Fenster {
                 self.benachrichtigen(&gettext_f("{name}: operation failed", &[("name", &titel)]));
                 self.melde(&format!("{titel}: {}", fehlertext(&e)));
                 if e == Fehler::NetzFehlt {
+                    self.netz_meldung.set(true);
                     self.netz_fehler_erklaeren();
                     return;
                 }

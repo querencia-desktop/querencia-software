@@ -15,17 +15,25 @@
   (<Grund>)“; die Kurzinfo nennt jede gefragte Stufe und die geprüfte Quelle.
   Knopf „Erneut prüfen“; im Offline-Zustand prüft das Programm alle 30 s
   neu, im echten Betrieb zusätzlich 2 s nach jeder Netzänderung, die GLib meldet.
-- Installieren und Aktualisieren sperrt das Programm nur, wenn eine frische
-  Prüfung in allen Stufen offline sagt (Dialog „Keine Netzwerkverbindung“
-  mit der geprüften Quelle). Entfernen bleibt immer möglich.
-- Meldet PackageKit `no-network`, obwohl die Quelle erreichbar ist, erklärt
-  der Dialog „PackageKit meldet kein Netzwerk“ Ursache und Abhilfe
-  (NetworkManager verwaltet die Verbindung nicht).
+- Nichts wird gesperrt. Sagen alle Stufen offline, fragt das Programm vor
+  dem Installieren/Aktualisieren nach einer frischen Prüfung („Keine
+  Netzwerkverbindung“ mit der geprüften Quelle, Knöpfe „Abbrechen“ und
+  „Trotzdem versuchen“ – Pakete aus dem apt-Zwischenspeicher gehen auch
+  ohne Netz). Entfernen läuft immer ohne Rückfrage.
+- PackageKit „offline“, Quelle erreichbar (NetworkManager installiert,
+  verwaltet das Netzwerk nicht): Statuszeile „online (Archiv erreichbar),
+  PackageKit: offline“ in Warnfarbe, Kurzinfo mit Ursache und Abhilfe
+  („netplan-Renderer auf NetworkManager stellen oder NetworkManager
+  entfernen“). Der Versuch läuft; den `no-network`-Fehler erklärt der Dialog
+  „PackageKit meldet kein Netzwerk“. Software ändert nichts am System.
+- Kommt das Netz zurück, verschwindet die veraltete Meldung „Keine
+  Netzwerkverbindung“ aus der Statuszeile.
 - Diagnose auf der Konsole: `querencia-software --netz-pruefen` fragt alle
   drei Stufen (Exit 0 online, 1 offline); `QS_APT_QUELLE=<uri>` setzt die
   geprüfte Quelle. Attrappen für die GUI-Prüfung:
-  `QS_NETZ_ATTRAPPE=<pk>,<monitor>,<archiv>` (je `online`/`offline`).
-- 30 neue Texte in `po/de.po` (229 insgesamt).
+  `QS_NETZ_ATTRAPPE=<pk>,<monitor>,<archiv>` (je `online`/`offline`) oder
+  `@<datei>` mit demselben Inhalt, bei jeder Prüfung neu gelesen.
+- 35 neue Texte in `po/de.po` (234 insgesamt).
 
 ## 0.1.2 – 2026-10-20
 

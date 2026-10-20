@@ -52,10 +52,9 @@ Tab-getrennte Zeilen auf stdout, Koordinaten relativ zum Fensterinhalt
 | `detailsymbol titel quelle`, `zeilensymbol i titel quelle` | Bildquelle `thema:<name>`, `datei:<pfad>` |
 | `paketdetails name bytes` | Paketdetails nachgeladen |
 | `transaktion gestartet vorgang paket` / `laeuft prozent status` / `simuliert pakete` / `wartet-auf-bestaetigung` / `wartet-auf-sperre` / `fertig paket` / `abgebrochen` / `fehler Fehler` / `wieder-angebunden n` | Transaktionszustände |
-| `dialog kennung` / `dialog zu kennung` | `info`, `entfernen`, `sperre`, `kein-agent`, `nicht-berechtigt`, `fehler`, `laeuft`, ab 0.1.3 `netz-offline`, `netz-pk` |
-| `netz pruefe` / `netz online/offline stufe pk monitor archiv host` / `netz vor-vorgang` | Erreichbarkeitsprüfung (0.1.3): Start, Ergebnis (`stufe` = `packagekit`, `netzmonitor`, `archiv` oder `-`; `monitor` `an`/`aus`/`-`; `archiv` `erreichbar`/`nicht-erreichbar`/`-`), frische Prüfung vor einem Vorgang |
+| `dialog kennung` / `dialog zu kennung` | `info`, `entfernen`, `sperre`, `kein-agent`, `nicht-berechtigt`, `fehler`, `laeuft`, ab 0.1.3 `netz-offline-frage` (vor dem Vorgang, „Trotzdem versuchen“), `netz-offline` (nach `no-network`), `netz-pk` |
+| `netz pruefe` / `netz online/offline stufe pk monitor archiv host` / `netz vor-vorgang` / `netz frage-offline` / `netz trotzdem` / `netz meldung-entfernt` | Erreichbarkeitsprüfung (0.1.3): Start, Ergebnis (`stufe` = `packagekit`, `netzmonitor`, `archiv` oder `-`; `monitor` `an`/`aus`/`-`; `archiv` `erreichbar`/`nicht-erreichbar`/`-`), frische Prüfung vor einem Vorgang, Frage gezeigt, „Trotzdem versuchen“ gewählt, veraltete `no-network`-Meldung nach dem Wechsel auf online entfernt |
 | `netzstatus text` | Netzwerktext rechts in der Statuszeile |
-| `transaktion gesperrt offline` | Installieren/Aktualisieren gesperrt, weil alle Stufen offline sagen |
 | `info-symbole programmsymbol querencia-q` | Inhalt des Info-Dialogs |
 | `fokus suche` | Suchfeld hat den Fokus |
 | `zeiger x y` | Zeigerbewegung (Kalibrierung) |
@@ -79,7 +78,7 @@ Workspace-Wurzelverzeichnis:
 ```bash
 bash werkzeug/gui-netz.sh online    1024x768   # online,online,online
 bash werkzeug/gui-netz.sh nm-archiv 1024x768   # offline,offline,online (Pflichtprobe B2)
-bash werkzeug/gui-netz.sh offline   1024x768   # offline,offline,offline
+bash werkzeug/gui-netz.sh offline   1024x768   # offline,offline,offline, am Ende online
 ```
 
 Ergebnis in `nachweis/gui/netz-<Fall>-<Auflösung>/`, Bilder zusätzlich unter

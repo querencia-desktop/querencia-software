@@ -103,7 +103,7 @@ pub fn backends() -> Backends {
             monitor,
             katalog_laden: RefCell::new(None),
             echt: false,
-            netz: Rc::new(netz::AttrappeSonden::aus_umgebung()),
+            netz: Rc::new(netz::AttrappeAusUmgebung),
         };
     }
     let mut verbindung = None;
@@ -186,7 +186,7 @@ fn netz_pruefen() -> glib::ExitCode {
     // Anzeige (Konsole, SSH) scheitert nur das, die Übersetzung gilt trotzdem.
     let _ = gtk::init();
     let sonden: Rc<dyn netz::Sonden> = if std::env::var_os("QS_ATTRAPPE").is_some() {
-        Rc::new(netz::AttrappeSonden::aus_umgebung())
+        Rc::new(netz::AttrappeAusUmgebung)
     } else {
         let verbindung = qs_paketkit::PaketKit::neu_blockierend()
             .ok()

@@ -168,6 +168,11 @@ label.qs-netz.qs-netz-offline {
   color: #a51d2d;
 }
 
+/* PackageKit meldet offline, die Paketquelle ist erreichbar */
+label.qs-netz.qs-netz-warnung {
+  color: #8a4b00;
+}
+
 box.qs-status button.qs-netz-knopf {
   min-height: 0;
   padding: 0 8px;

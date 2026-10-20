@@ -5,11 +5,13 @@
 #
 #   bash werkzeug/gui-netz.sh <Fall> [BREITExHÖHE] [Binary]
 #
-# Fall (QS_NETZ_ATTRAPPE = PackageKit, Netzwerkmonitor, Archiv):
+# Fall (QS_NETZ_ATTRAPPE = PackageKit, Netzwerkmonitor, Archiv; als Datei
+# $PROFIL/netz-attrappe, damit das Szenario den Zustand umschalten kann):
 #   online       online,online,online     Stufe 1 genügt (wie entwicklungs-vm)
 #   nm-archiv    offline,offline,online   Pflichtprobe B2: NetworkManager verwaltet
 #                                          eth0 nicht, das Archiv ist erreichbar
-#   offline      offline,offline,offline  alle Stufen offline: Sperre, 30-s-Neuprüfung
+#   offline      offline,offline,offline  alle Stufen offline: Frage „Trotzdem versuchen“,
+#                                          30-s-Neuprüfung, Wechsel zurück auf online
 #
 # Ergebnis: nachweis/gui/netz-<Fall>-<Auflösung>/ (ergebnis.txt, Bilder,
 # software.log); Bilder zusätzlich nach .
@@ -52,7 +54,8 @@ cat >"$PROFIL/config/labwc/rc.xml" <<X
 </labwc_config>
 X
 unset QS_PK_BUS QS_NUR_LESEN QS_APT_QUELLE
-export QS_ATTRAPPE=1 QS_NETZ_ATTRAPPE=$NETZ
+echo "$NETZ" >"$PROFIL/netz-attrappe"
+export QS_ATTRAPPE=1 QS_NETZ_ATTRAPPE=@$PROFIL/netz-attrappe
 export QS_LOG=$OUT/protokoll.log
 cat >"$PROFIL/env.sh" <<X
 BIN=$BIN
@@ -62,6 +65,7 @@ OUT=$OUT
 R=$R
 MODUS=netz-$FALL
 FALL=$FALL
+NETZDATEI=$PROFIL/netz-attrappe
 E=$E
 P=$P
 X
