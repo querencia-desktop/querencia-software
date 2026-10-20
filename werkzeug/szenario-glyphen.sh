@@ -48,6 +48,11 @@ TX=$((OX + FW / 2)); TY=$((OY - 14))
 # lag der Rest nur im Bild des Compositors, nicht im Puffer von GTK.
 q "move $TX $TY" "press" "glide $((TX + 60)) $((TY + 40)) 400" "release" "wait 600"
 q "move $((TX + 60)) $((TY + 40))" "press" "glide $TX $TY 400" "release" "wait 600" "move 400 400" "wait 300"
+# Fensterlage neu bestimmen: das Zurückziehen trifft nicht immer genau.
+q "move 400 400" "wait 300" "move 420 410" "wait 400"
+read -r ZX ZY < <(grep '^zeiger' "$LOG" | tail -1 | cut -f2,3)
+[ -n "${ZX:-}" ] && { OX=$((420 - ZX)); OY=$((410 - ZY)); }
+info "Fensterinhalt nach dem Verschieben ab $OX,$OY"
 schritt verschoben
 suche gimp 5
 schritt suche-gimp
@@ -72,7 +77,7 @@ schritt alle
 
 # Bezug: Doppelklick auf die Titelleiste maximiert, ein zweiter stellt wieder her.
 q "move $TX $TY" "dclick" "wait 1500"
-q "move $((TX * 2)) 14" "dclick" "wait 1500" "move 400 400" "wait 300"
+q "move $((W / 2)) 14" "dclick" "wait 1500" "move 400 400" "wait 300"
 sleep 1.2
 shot bezug
 BILD=$(ls "$OUT"/[0-9][0-9]-bezug.png | tail -1)

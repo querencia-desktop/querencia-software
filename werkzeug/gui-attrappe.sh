@@ -16,6 +16,13 @@ OUT=$E/nachweis/gui/attrappe-$R
 case $PROFIL in "$E"/gui-test/?*) rm -rf -- "$PROFIL" ;; *) exit 2 ;; esac
 case $OUT in "$E"/nachweis/gui/?*) rm -rf -- "$OUT" ;; *) exit 2 ;; esac
 mkdir -p "$PROFIL/data" "$PROFIL/config/labwc" "$OUT"
+# Kataloge (ab 0.1.1): neben der Binary oder frisch aus programm/po/; Sprache
+# wie live (SW-3s Fälle erwarten die deutschen Texte).
+if [ ! -d "$(dirname "$BIN")/share/locale" ]; then
+    (cd "$E/programm" && python3 -I werkzeug/i18n.py mo "$PROFIL/locale" >/dev/null)
+    export QUERENCIA_SOFTWARE_LOCALEDIR=$PROFIL/locale
+fi
+export LANG=en_US.UTF-8 LANGUAGE=de
 cat >"$PROFIL/config/labwc/rc.xml" <<X
 <?xml version="1.0"?>
 <labwc_config>
