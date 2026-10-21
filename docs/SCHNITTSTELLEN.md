@@ -1,9 +1,8 @@
 # Querencia Software – Schnittstellen zwischen den Teilprojekten (verbindlich)
 
-Stand 18.10.2026, 20:20. Festgelegt von der Status-Session nach dem G2-I-Bericht
-(, Abschnitt 5). Fünf Sessions bauen
-parallel; damit es am Ende zusammenpasst, gelten diese Signaturen. Änderungen nur nach Absprache
-über die Status-Session „Worker 1-6 Status“ (Nachricht mit Begründung und Vorschlag).
+Stand 18.10.2026, 20:20. Die Teilprojekte entstanden parallel; damit sie am Ende
+zusammenpassen, gelten diese Signaturen. Änderungen nur nach Absprache (Issue mit Begründung
+und Vorschlag).
 
 ## Aufteilung
 
@@ -185,12 +184,10 @@ Umschaltung echte/Attrappen-Backends über Umgebungsvariable `QS_ATTRAPPE=1`.
 
 ## Gemeinsame Regeln
 
-- Jede Session: Git von Anfang an im eigenen Ordner, kein Push, `cargo build -j2` unter `nice`,
+- Jedes Teilprojekt: Git von Anfang an im eigenen Ordner, kein Push, `cargo build -j2` unter `nice`,
   `df -h /` vorher, `target/` nach Abschluss leeren. Nichts live installieren; **keine
   Paketinstallation** (auch nicht als Test über PackageKit!) – Transaktionen nur gegen PackageKits
   `test_succeed`/`test_fail`/`test_spawn`-Backends einer privaten `packagekitd`-Instanz auf eigenem
   Bus (SW-1 baut dieses Prüfgerüst und beschreibt es in `PRUEFGERUEST.md`, SW-4 nutzt es) oder gegen
   die Attrappen. Lesende Aufrufe (Suche, Details, GetUpdates) gegen den echten PackageKit sind erlaubt.
 - Symbolregel: nie 48x48 zusammen mit Scalable installieren.
-- Am Ende jeder Session: Bericht , Übergabe
-   mit sieben Abschnitten, Meldung an „Worker 1-6 Status“, anhalten.

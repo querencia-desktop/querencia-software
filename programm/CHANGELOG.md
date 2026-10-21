@@ -3,7 +3,7 @@
 ## 0.1.4 – 2026-10-21
 
 ### Geändert
-- Dunkle Darstellung (QD-081, CSS-Welle dunkel für Thema 0.2): Software folgt
+- Dunkle Darstellung (CSS-Welle dunkel für Thema 0.2): Software folgt
   „Dunkle Darstellung bevorzugen“ beim Start und beim Wechsel im laufenden
   Programm. Hell bleibt pixelgleich mit 0.1.3.
 - Beim Start meldet das Programm einmal `gtk-interface-color-scheme`; GTK 4.22
@@ -24,7 +24,7 @@
 ## 0.1.3 – 2026-10-20
 
 ### Hinzugefügt
-- Eigene Erreichbarkeitsprüfung (QD-067, Befund B2 der Pflichtprobe): Auf
+- Eigene Erreichbarkeitsprüfung (Befund B2 der Pflichtprobe): Auf
   Servern mit netplan/systemd-networkd, auf denen NetworkManager installiert
   ist, die Verbindung aber nicht verwaltet, meldet PackageKit „offline“.
   Die Oberfläche prüft deshalb in drei Stufen: PackageKit `NetworkState`,
@@ -89,7 +89,7 @@
 
 ### Behoben
 - Statuszeile behielt nach dem Laden des Katalogs und nach Ansichtswechseln
-  Glyphenreste des vorigen Texts (Werkstatt QREL-05 W.5). Ursache: Die
+  Glyphenreste des vorigen Texts. Ursache: Die
   GPU-Renderer von GTK 4.22 zeichnen beim Textwechsel einen zu kleinen
   Bereich neu. Die Statusleiste wird jetzt bei jedem neuen Text vollständig
   neu gezeichnet.

@@ -20,6 +20,6 @@ Diese Datei ersetzt die Checkliste nicht, sie hält den Stand vor der Live-Ablag
 
 ## Nachtrag 22:21
 
-Der Besitzer hat den Agenten um 22:20:24 neu gestartet (`querencia-polkit-agent`, PID 1288664). Damit
-erscheint bei einer Installation der Passwortdialog statt „Berechtigungsdialog fehlt“. Die Status-Session
+Der Agent wurde um 22:20:24 neu gestartet (`querencia-polkit-agent`, PID 1288664). Damit
+erscheint bei einer Installation der Passwortdialog statt „Berechtigungsdialog fehlt“. Eine Nachprüfung
 hat bestätigt, dass `apt-config-icons` und `language-pack-gnome-de-base` nicht installiert sind.

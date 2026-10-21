@@ -2,8 +2,10 @@
 
 Grafischer Software-Installer für alle, die Querencia Desktop benutzen
 (PackageKit/apt und AppStream). Teil von
-[Querencia Desktop](https://github.com/querencia-desktop/querencia) – einer
+[Querencia Desktop](https://querencialinux.org) – einer
 klassischen Desktopumgebung im GNOME-2-Stil für Wayland (labwc, Rust, GTK 4).
+Installiert wird es zusammen mit Querencia Desktop aus der APT-Quelle;
+Anleitung auf <https://querencialinux.org>.
 
 *English summary:* A graphical software installer (PackageKit, AppStream) in
 the spirit of the Ubuntu Software Center. Part of Querencia Desktop, a classic
@@ -113,9 +115,9 @@ des wlroots-Protokolls `virtual-keyboard-unstable-v1.xml` mit eigenem Vermerk
 
 Oberfläche (`programm/`) und Werkzeuge: GPL-3.0-or-later, siehe
 [LICENSE](LICENSE). Copyright 2026 Querencia Desktop contributors;
-Urheberhinweis in [COPYRIGHT](COPYRIGHT). Die Bausteine `qs_typen`,
-`qs_paketkit`, `qs_katalog` und `qs_transaktion` sollen unter MIT OR
-Apache-2.0 stehen und liegen noch in eigenen Repos.
+Urheberhinweis in [COPYRIGHT](COPYRIGHT). Die Bausteine
+(querencia-software-katalog, -paketkit, -transaktion) liegen in eigenen Repos
+und stehen derzeit unter GPL-3.0-or-later.
 
 Name und Logo „Querencia“ sind keine freien Inhalte: [MARKE.md](MARKE.md).
 
