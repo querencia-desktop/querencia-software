@@ -1,17 +1,20 @@
 /* Querencia Software – klassische Optik (Ambiance-Farbwerte wie Panel, Editor,
    Bilder und Rechner). Querencia-Orange #F07746 nur für Auswahl (Menü,
-   Seitenleiste, Liste) und Fortschritt. */
+   Seitenleiste, Liste) und Fortschritt.
+   Seit 0.1.4 (CSS-Welle dunkel, QD-081): Farben, die nur Werte von
+   Querencia-Klassisch wiederholen (Menüleiste, Menü, Fenstergrund, Schrift),
+   kommen aus dem Thema; Ansichtsgrund und Ränder über die benannten
+   Themenfarben @theme_base_color und @borders (hell dieselben Werte, dunkel
+   folgen sie dem Thema). Nur Farben ohne Themenwert haben am Ende einen
+   Block @media (prefers-color-scheme: dark). */
 
 window.qs-window menubar {
-  background-color: #f2f1f0;
-  border-bottom: 1px solid #c7c2be;
   padding: 1px 2px;
 }
 
 window.qs-window menubar > item {
   padding: 3px 8px;
   border-radius: 0;
-  color: #3c3c3c;
 }
 
 window.qs-window menubar > item:hover,
@@ -23,8 +26,6 @@ window.qs-window menubar > item:selected {
 window.qs-window popover.menu contents {
   border-radius: 0;
   padding: 2px 0;
-  background-color: #f5f4f2;
-  border: 1px solid #c7c2be;
 }
 
 window.qs-window popover.menu modelbutton {
@@ -40,7 +41,7 @@ window.qs-window popover.menu modelbutton:selected {
 
 /* Seitenleiste */
 scrolledwindow.qs-seite {
-  border-right: 1px solid #c7c2be;
+  border-right: 1px solid @borders;
   background-color: #f5f4f2;
 }
 
@@ -64,9 +65,8 @@ list.qs-seite > row:selected label {
 
 /* Suchzeile und Überschrift */
 box.qs-kopf {
-  border-bottom: 1px solid #c7c2be;
+  border-bottom: 1px solid @borders;
   padding: 6px 8px;
-  background-color: #f2f1f0;
 }
 
 label.qs-ueberschrift {
@@ -75,7 +75,7 @@ label.qs-ueberschrift {
 
 /* Liste */
 listview.qs-liste {
-  background-color: #ffffff;
+  background-color: @theme_base_color;
 }
 
 listview.qs-liste > row {
@@ -115,7 +115,7 @@ label.qs-leer {
 
 /* Detailseite */
 box.qs-details {
-  background-color: #ffffff;
+  background-color: @theme_base_color;
   padding: 12px 16px;
 }
 
@@ -130,7 +130,7 @@ grid.qs-fakten label.qs-fakt-name {
 
 /* Fortschrittsleiste über der Statuszeile */
 box.qs-fortschritt {
-  border-top: 1px solid #c7c2be;
+  border-top: 1px solid @borders;
   background-color: #f5f4f2;
   padding: 6px 10px;
 }
@@ -147,19 +147,18 @@ box.qs-fortschritt progressbar > trough {
 
 /* Statuszeile */
 box.qs-status {
-  border-top: 1px solid #c7c2be;
-  background-color: #f2f1f0;
+  border-top: 1px solid @borders;
   padding: 3px 10px;
 }
 
 /* Zwei Frames nach einem neuen Statustext (fenster.rs, ganz_neu_zeichnen):
-   ein Farbwert Unterschied, damit GTK die ganze Leiste neu zeichnet. */
+   ein Farbwert Unterschied zum Fenstergrund, damit GTK die ganze Leiste neu
+   zeichnet. */
 box.qs-status.qs-neu {
   background-color: #f2f1f1;
 }
 
 label.qs-status-text {
-  color: #3c3c3c;
   font-size: 9pt;
 }
 
@@ -190,10 +189,57 @@ window.qs-dialog button {
 }
 
 window.qs-dialog scrolledwindow.qs-rahmen {
-  border: 1px solid #c7c2be;
-  background-color: #ffffff;
+  border: 1px solid @borders;
+  background-color: @theme_base_color;
 }
 
 window.qs-dialog list.qs-paketliste {
-  background-color: #ffffff;
+  background-color: @theme_base_color;
+}
+
+/* Dunkle Darstellung (Thema 0.2): nur Farben ohne Themenwert, Werte aus
+   dessen dunkel-zuordnung.txt (Seitenleiste/Menü #f5f4f2 -> #353430).
+   Greift nur, weil fenster::load_css den Provider an
+   gtk-interface-color-scheme bindet. Schrift auf den eigenen Gründen ist
+   hier fest gesetzt, damit sie auch unter einem Thema ohne dunkle Fassung
+   lesbar bleibt; gedimmte Schrift wird aus Themenfarben gemischt. */
+@media (prefers-color-scheme: dark) {
+  scrolledwindow.qs-seite,
+  list.qs-seite {
+    background-color: #353430;
+  }
+
+  list.qs-seite > row label {
+    color: #dfdbd2;
+  }
+
+  listview.qs-liste > row {
+    border-bottom-color: @theme_bg_color;
+  }
+
+  label.qs-leer,
+  grid.qs-fakten label.qs-fakt-name {
+    color: mix(@theme_fg_color, @theme_base_color, 0.2);
+  }
+
+  box.qs-fortschritt {
+    background-color: #353430;
+  }
+
+  box.qs-fortschritt label,
+  box.qs-fortschritt progressbar > text {
+    color: #dfdbd2;
+  }
+
+  box.qs-status.qs-neu {
+    background-color: #3c3b38;
+  }
+
+  label.qs-netz.qs-netz-offline {
+    color: #ea8a95;
+  }
+
+  label.qs-netz.qs-netz-warnung {
+    color: #fa8800;
+  }
 }

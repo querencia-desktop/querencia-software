@@ -1,5 +1,26 @@
 # Änderungen
 
+## 0.1.4 – 2026-10-21
+
+### Geändert
+- Dunkle Darstellung (QD-081, CSS-Welle dunkel für Thema 0.2): Software folgt
+  „Dunkle Darstellung bevorzugen“ beim Start und beim Wechsel im laufenden
+  Programm. Hell bleibt pixelgleich mit 0.1.3.
+- Beim Start meldet das Programm einmal `gtk-interface-color-scheme`; GTK 4.22
+  lädt das dunkle Thema-CSS sonst nur bei einem Wechsel, ein unter „dunkel“
+  gestartetes Programm bliebe hell.
+- Programm-CSS: Farben, die nur Werte von Querencia-Klassisch wiederholen
+  (Menüleiste, Menü, Fenstergrund von Kopf- und Statuszeile, Schrift der
+  Statuszeile), kommen aus dem Thema. Ansichtsgrund (Liste, Detailseite,
+  Paketliste im Dialog) und Ränder nehmen die benannten Themenfarben
+  `@theme_base_color` und `@borders`; sie folgen dem Thema ohne Weiteres und
+  bleiben unter einem Thema ohne dunkle Fassung hell. Nur Farben ohne
+  Themenwert (Seitenleiste, Fortschritt, Netzwerkzustand, gedimmte Texte,
+  Zeilentrenner) haben einen Block `@media (prefers-color-scheme: dark)`; die
+  Schrift auf Seitenleiste und Fortschritt ist dort fest gesetzt.
+- Der eigene `GtkCssProvider` ist an `gtk-interface-color-scheme` gebunden;
+  ohne Bindung greift der Dunkelblock nicht (isoliert gemessen).
+
 ## 0.1.3 – 2026-10-20
 
 ### Hinzugefügt

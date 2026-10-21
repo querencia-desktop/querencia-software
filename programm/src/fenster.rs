@@ -49,6 +49,26 @@ const FALLBACK_SYMBOL: &str = logik::ERSATZSYMBOL;
 
 pub fn load_css() {
     let provider = gtk::CssProvider::new();
+    // QD-081: Ein eigener Provider bleibt bei „prefers-color-scheme“ =
+    // Standard; GTK bindet nur den Themenanbieter an die Einstellung.
+    // Ohne Bindung greift der @media-dark-Block in style.css nie (isoliert
+    // gemessen, Software 0.1.4).
+    if let Some(settings) = gtk::Settings::default() {
+        if settings
+            .find_property("gtk-interface-color-scheme")
+            .is_some()
+            && provider.find_property("prefers-color-scheme").is_some()
+        {
+            settings
+                .bind_property(
+                    "gtk-interface-color-scheme",
+                    &provider,
+                    "prefers-color-scheme",
+                )
+                .sync_create()
+                .build();
+        }
+    }
     provider.load_from_string(CSS);
     if let Some(display) = gdk::Display::default() {
         gtk::style_context_add_provider_for_display(
