@@ -84,8 +84,8 @@
 ### Geändert
 - Deutsche Mehrzahlformen richtig: „1 Programm“, „Folgendes Paket wird mit
   entfernt (1):“, „seit 1 Minute“ (vorher immer Mehrzahl).
-- Lizenzvermerk: Copyright „Querencia Desktop contributors“
-  in README und Kopf der LICENSE.
+- Lizenzvermerk: Copyright „Querencia Desktop contributors“ in README und
+  COPYRIGHT.
 
 ### Behoben
 - Statuszeile behielt nach dem Laden des Katalogs und nach Ansichtswechseln

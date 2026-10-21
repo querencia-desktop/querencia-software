@@ -1,3 +1,6 @@
 /target/
 /gui-test/
-/integration/probe-arbeit/
+# Ausgaben der isolierten Prüfung (nicht einchecken)
+/target
+/nachweis/
+/programm/nachweis/
