@@ -61,6 +61,7 @@ python3 werkzeug/i18n.py pruefen && msgfmt -c -o /dev/null po/de.po
 
 GPL-3.0-or-later (GNU General Public License, Version 3 oder neuer), siehe
 [LICENSE](LICENSE). Copyright 2026 Querencia Desktop contributors. Die
-Bausteine `qs_typen`, `qs_paketkit`, `qs_katalog` und `qs_transaktion` stehen
-unter MIT OR Apache-2.0 (in ihren eigenen Repos).
+Bausteine `qs_typen`, `qs_paketkit`, `qs_katalog` und `qs_transaktion` liegen in
+eigenen Repos und stehen derzeit ebenfalls unter GPL-3.0-or-later; der Wechsel auf
+MIT OR Apache-2.0 ist geplant.
 
