@@ -29,6 +29,7 @@ use qs_typen::{Fehler, Paket, Vorgang};
 use crate::debug;
 use crate::dialoge;
 use crate::fremdtexte;
+use crate::hilfe;
 use crate::i18n::{gettext, gettext_f, ngettext_f, pgettext};
 use crate::logik::{self, fehlertext, Ansicht, Paketstand, SymbolWahl, Zeile};
 use crate::netz;
@@ -118,7 +119,15 @@ fn menu_model() -> gio::Menu {
     );
 
     let hilfe = gio::Menu::new();
-    hilfe.append(Some(&gettext("_About")), Some("win.about"));
+    let h1 = gio::Menu::new();
+    // TRANSLATORS: Help menu; both entries open the web browser. Access keys
+    // must be unique within the menu
+    h1.append(Some(&gettext("Online _Help")), Some("win.online-hilfe"));
+    h1.append(Some(&gettext("_Report a Bug")), Some("win.fehler-melden"));
+    hilfe.append_section(None, &h1);
+    let h2 = gio::Menu::new();
+    h2.append(Some(&gettext("_About")), Some("win.about"));
+    hilfe.append_section(None, &h2);
 
     let bar = gio::Menu::new();
     bar.append_submenu(Some(&gettext("_File")), &datei);
@@ -783,6 +792,14 @@ impl Fenster {
         };
         add("quit", Box::new(|s| s.window.close()));
         add("about", Box::new(|s| dialoge::about(&s.window)));
+        add(
+            "online-hilfe",
+            Box::new(|s| hilfe::oeffnen(&s.window, &hilfe::online_hilfe())),
+        );
+        add(
+            "fehler-melden",
+            Box::new(|s| hilfe::oeffnen(&s.window, &hilfe::fehler_melden())),
+        );
         add(
             "suchen",
             Box::new(|s| {

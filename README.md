@@ -7,9 +7,11 @@ Oberfläche Deutsch und Englisch (GNU gettext).
 
 Dieser Ordner ist der Cargo-Workspace der Integration (SW-6). Einziges
 Mitglied ist die Oberfläche in `programm/`; die Bausteine `qs_typen`,
-`qs_paketkit`, `qs_katalog` und `qs_transaktion` liegen in ihren eigenen Repos
-(`../querencia-software-{paketkit,katalog,transaktion}`) und sind als
-Pfad-Abhängigkeiten eingebunden.
+`qs_paketkit`, `qs_katalog` und `qs_transaktion` liegen in eigenen, seit
+22.10.2026 öffentlichen Repos (`querencia-desktop/querencia-software-paketkit`,
+`-katalog`, `-transaktion` auf GitHub). Der Workspace bindet sie als
+Pfad-Abhängigkeiten aus Nachbarordnern ein
+(`../querencia-software-{paketkit,katalog,transaktion}`).
 
 | Pfad | Inhalt |
 |---|---|

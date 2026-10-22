@@ -1,5 +1,26 @@
 # Änderungen
 
+## 0.1.5 – 2026-10-22
+
+### Hinzugefügt
+- Hilfe-Menü: „Online-Hilfe“ öffnet die Anleitung „Software installieren“ auf
+  querencialinux.org in der Sprache der Oberfläche (`/de/docs/…` bzw.
+  `/en/docs/…`, die Adresse steht im Katalog). „Fehler melden“ öffnet
+  `BUG_REPORT_URL` aus `/usr/share/querencia/release` (Versionsdatei des
+  Metapakets ab Alpha 2.1); fehlt die Datei, die Auswahlseite für neue
+  Meldungen im Repo `querencia-desktop/querencia`. Beides über
+  `gtk::UriLauncher` im Standardprogramm der Sitzung.
+
+### Geändert
+- Info-Dialog einheitlich mit Dokumente, Archiv und Rechner: Hinweis „Alpha –
+  nicht für den Alltag freigegeben.“, Website querencialinux.org als Link,
+  „© 2026 Querencia Desktop contributors“, Lizenz.
+- Fehlerdialog „Berechtigungsdialog fehlt“: Die Erklärung nennt keine interne
+  Kennung mehr („In Querencia Desktop startet die Sitzung ihn als
+  „querencia-polkit-agent“.“). Ein Test stellt sicher, dass kein Nutzertext in
+  `po/` eine interne Kennung enthält.
+- README: Die Bausteine liegen in eigenen, seit 22.10.2026 öffentlichen Repos.
+
 ## 0.1.4 – 2026-10-21
 
 ### Geändert

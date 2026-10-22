@@ -34,6 +34,7 @@ simulierte Transaktionen 2 s). Austauschstellen: `../docs/INTEGRATION.md`.
 | `data/org.querencia.Software.desktop.in` | englische Vorlage des Starters; `…desktop` daraus mit `[de]`-Zeilen |
 | `src/fenster.rs` | Hauptfenster |
 | `src/dialoge.rs` | Info, Bestätigung, Meldungen, Fenstersymbol |
+| `src/hilfe.rs` | Adressen für Info und Hilfe-Menü (Website, Online-Hilfe, „Fehler melden“ aus `/usr/share/querencia/release`), Öffnen über `gtk::UriLauncher` (0.1.5) |
 | `src/style.css` | klassische Optik, Orange nur für Auswahl und Fortschritt; Dunkelblock für Thema 0.2 (0.1.4) |
 | `data/resource/` | eingebettete Symbole (SW-5-Programmsymbol, Ersatzsymbol), `HERKUNFT` |
 | `werkzeug/` | isolierte GUI-Prüfung (`../docs/TESTING.md`) |

@@ -172,7 +172,9 @@ fn pk_status(text: &str) -> Option<String> {
 }
 
 /// Überschrift, Erklärung und Handlung des Fehlerdialogs; Wortlaut wie
-/// `qs_transaktion::fehlertexte::fehlertext` (SW-4).
+/// `qs_transaktion::fehlertexte::fehlertext` (SW-4). Einzige Abweichung: Bei
+/// `KeinAgent` nennt der Text keine interne Kennung (QD-119; Test
+/// `fehlerdialoge_deutsch_wie_sw4`).
 pub fn fehlerdialog(fehler: &Fehler) -> Fehlertext {
     let (ueberschrift, erklaerung, handlung) = match fehler {
         Fehler::NichtBerechtigt => (
@@ -191,8 +193,8 @@ pub fn fehlerdialog(fehler: &Fehler) -> Fehlertext {
             gettext("Authorization Dialog Missing"),
             gettext(
                 "The session’s authorization dialog (polkit agent) is missing. Without it, no \
-                 program can install or remove packages. Querencia Session (G2-K) provides it \
-                 as “querencia-polkit-agent”.",
+                 program can install or remove packages. In Querencia Desktop, the session \
+                 starts it as “querencia-polkit-agent”.",
             ),
             gettext(
                 "Start the authorization dialog from a terminal in the session \
@@ -419,7 +421,15 @@ mod tests {
         }
     }
 
-    /// Jede Fehlervariante: deutscher Katalogtext = Text von SW-4.
+    /// Satz aus dem Text von SW-4 zu `KeinAgent`, den das Programm ohne die
+    /// interne Kennung schreibt (QD-119), und sein Ersatz.
+    const KEIN_AGENT_SW4: (&str, &str) = (
+        "Querencia Sitzung (G2-K) liefert ihn als",
+        "In Querencia Desktop startet die Sitzung ihn als",
+    );
+
+    /// Jede Fehlervariante: deutscher Katalogtext = Text von SW-4 (bis auf
+    /// [`KEIN_AGENT_SW4`]).
     #[test]
     fn fehlerdialoge_deutsch_wie_sw4() {
         let tabelle = deutsch();
@@ -482,8 +492,47 @@ mod tests {
                     .unwrap_or_else(|| panic!("keine msgid für „{en_text}“"))
             };
             assert_eq!(uebersetze(&en.ueberschrift), sw4.ueberschrift, "{f:?}");
-            assert_eq!(zurueck(&en.erklaerung), sw4.erklaerung, "{f:?}");
+            let mut soll = sw4.erklaerung.clone();
+            if f == Fehler::KeinAgent {
+                let (alt, neu) = KEIN_AGENT_SW4;
+                assert!(soll.contains(alt), "SW-4 hat den Satz geändert: {soll}");
+                soll = soll.replace(alt, neu);
+            }
+            assert_eq!(zurueck(&en.erklaerung), soll, "{f:?}");
             assert_eq!(zurueck(&en.handlung), sw4.handlung, "{f:?}");
         }
+    }
+
+    /// Kein Nutzertext (msgid oder msgstr in Vorlage und de.po) enthält eine
+    /// interne Kennung wie QD-119, G2-K, QREL-06, SW-4 oder GH-7 (QD-119).
+    #[test]
+    fn keine_internen_kennungen_in_nutzertexten() {
+        fn kennung(text: &str) -> bool {
+            let b = text.as_bytes();
+            ["QD-", "QF-", "G1-", "G2-", "GH-", "SW-", "QREL"]
+                .iter()
+                .any(|k| {
+                    text.match_indices(k).any(|(i, _)| {
+                        let davor = i.checked_sub(1).map(|j| b[j]);
+                        !davor.is_some_and(|c| c.is_ascii_alphanumeric())
+                    })
+                })
+        }
+        for (datei, inhalt) in [
+            ("de.po", include_str!("../po/de.po")),
+            (
+                "querencia-software.pot",
+                include_str!("../po/querencia-software.pot"),
+            ),
+        ] {
+            for (nr, zeile) in inhalt.lines().enumerate() {
+                if zeile.starts_with('#') {
+                    continue;
+                }
+                assert!(!kennung(zeile), "{datei}:{}: {zeile}", nr + 1);
+            }
+        }
+        assert!(kennung("Querencia Sitzung (G2-K) liefert"));
+        assert!(!kennung("UTF-8, PGP-Schlüssel"));
     }
 }

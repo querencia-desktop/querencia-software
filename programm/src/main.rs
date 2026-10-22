@@ -22,6 +22,7 @@ mod dialoge;
 mod echt;
 mod fenster;
 mod fremdtexte;
+mod hilfe;
 mod i18n;
 mod logik;
 mod netz;

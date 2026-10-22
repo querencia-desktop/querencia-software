@@ -10,6 +10,7 @@ use gtk::{gdk, gio, glib};
 use qs_typen::Paket;
 
 use crate::debug;
+use crate::hilfe;
 use crate::i18n::{gettext, gettext_f, ngettext_f};
 use crate::schnittstellen::Simulation;
 use crate::APP_NAME;
@@ -131,9 +132,10 @@ fn rahmen(inhalt: &gtk::Box, knoepfe: &[&gtk::Button]) -> gtk::Box {
 
 const LOGO_64: &[u8] = include_bytes!("../data/logo/querencia-logo-64.png");
 
-/// „Info“: offizielles Querencia-Logo C2 (das Q), Name, Version, Lizenz.
-/// Der Schließen-Knopf hat den Tastaturfokus; Escape und Eingabetaste
-/// schließen.
+/// „Info“: offizielles Querencia-Logo C2 (das Q), Name, Version, Hinweis
+/// auf die Alpha (wie Dokumente, Archiv und Rechner), Website, Copyright und
+/// Lizenz. Der Schließen-Knopf hat den Tastaturfokus; Escape und
+/// Eingabetaste schließen.
 pub fn about(parent: &impl IsA<gtk::Window>) {
     let window = modal_window(
         parent,
@@ -172,6 +174,7 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
          Based on PackageKit and AppStream.",
     )));
     text.set_justify(gtk::Justification::Center);
+    let alpha = gtk::Label::new(Some(&gettext("Alpha – not released for everyday use.")));
     let tech = gtk::Label::new(Some(&format!(
         "GTK {}.{}.{}",
         gtk::major_version(),
@@ -179,11 +182,29 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         gtk::micro_version()
     )));
     tech.add_css_class("dim-label");
+    let website = gtk::Label::new(None);
+    website.set_markup(&format!(
+        "<a href=\"{}\">querencialinux.org</a>",
+        hilfe::WEBSITE
+    ));
+    // Wie die Einträge im Hilfe-Menü über hilfe::oeffnen.
+    let w = window.downgrade();
+    website.connect_activate_link(move |_, uri| {
+        if let Some(w) = w.upgrade() {
+            hilfe::oeffnen(&w, uri);
+        }
+        glib::Propagation::Stop
+    });
+    let copyright = gtk::Label::new(Some("© 2026 Querencia Desktop contributors"));
+    copyright.add_css_class("dim-label");
     let license = gtk::Label::new(Some(&gettext("License: GNU GPL, version 3 or later")));
     license.add_css_class("dim-label");
     body.append(&name);
     body.append(&text);
+    body.append(&alpha);
     body.append(&tech);
+    body.append(&website);
+    body.append(&copyright);
     body.append(&license);
     let close = knopf_schliesst(&window, &gettext("_Close"), None);
     window.set_child(Some(&rahmen(&body, &[&close])));
