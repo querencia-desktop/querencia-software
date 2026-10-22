@@ -1,6 +1,6 @@
 # Testen
 
-*Seit 0.1.1 unter `docs/` (Doku-Standard, ENTSCHEIDUNGEN Nr. 17); Pfade wie `werkzeug/…`, `data/…`, `src/…` gelten relativ zu `programm/`.*
+*Seit 0.1.1 unter `docs/`; Pfade wie `werkzeug/…`, `data/…`, `src/…` gelten relativ zu `programm/`.*
 
 ```bash
 rustfmt --edition 2021 --check src/main.rs
@@ -34,7 +34,7 @@ Expertenliste mit Suche und Details, Info-Dialog mit Programmsymbol und Q dreima
 geschlossen (Eingabetaste, Escape, Alt+S), zweite Instanz, Strg+Q.
 
 Menüs werden per Maus bedient (Tastaturnavigation in Popover-Menüs ist im
-headless labwc unzuverlässig, Befund G2-H).
+headless labwc unzuverlässig).
 
 ## Prüfprotokoll (`QS_DEBUG=1`)
 
@@ -61,12 +61,12 @@ Tab-getrennte Zeilen auf stdout, Koordinaten relativ zum Fensterinhalt
 | `zeiger x y` | Zeigerbewegung (Kalibrierung) |
 | `layout anfang` … `layout ende` | Block mit `menue i …`, `seite kennung …`, `suche …`, `liste …`, `zeile i titel …`, `knopf i text …`, `zurueck …`, `aktion text …`, `homepage …`, `abbrechen …`, `statuszeile …`, `netzfeld …`, `netzknopf …`, `fenster w h`, `toplevel typ titel sichtbar w h` |
 
-SW-5 hat in `~/projects/querencia-software-paket/werkzeug/faelle/FAELLE.md`
+SW-5 hat in `werkzeug/faelle/FAELLE.md` (Repo `querencia-software-paket`)
 ein eigenes Format für seinen Platzhalter vorgeschlagen. Laut FAELLE.md gilt
 das Format von SW-3; die Angleichung der SW-5-Fälle an diese Tabelle ist
 Sache der Integration.
 
-## Erreichbarkeitsprüfung (0.1.3, QD-067)
+## Erreichbarkeitsprüfung (0.1.3)
 
 Unit-Tests in `src/netz.rs`: Stufenlogik mit Attrappen (welche Stufe gefragt
 wird, Entscheidung, Texte), Quellenwahl aus `sources.list`/`*.list`/deb822
@@ -87,7 +87,7 @@ Ergebnis in `nachweis/gui/netz-<Fall>-<Auflösung>/`, Bilder zusätzlich unter
 `querencia-software --netz-pruefen` (fragt alle drei Stufen, nur lesend;
 `QS_APT_QUELLE=http://192.0.2.1/ubuntu` prüft das Zeitlimit).
 
-## Dunkle Darstellung (0.1.4, QD-081)
+## Dunkle Darstellung (0.1.4)
 
 `src/style.css` setzt nur noch Farben, die das Thema nicht hat; Ansichtsgrund
 und Ränder kommen über `@theme_base_color` und `@borders` aus dem Thema, die

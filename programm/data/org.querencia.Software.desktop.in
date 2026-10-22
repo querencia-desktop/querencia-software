@@ -1,6 +1,6 @@
 [Desktop Entry]
 # Querencia Software (SW-5, 2026-10-18). Desktop-ID = GApplication-ID
-# org.querencia.Software (SCHNITTSTELLEN.md, Oberfläche SW-3), damit labwc und
+# org.querencia.Software (schnittstellen.md, Oberfläche SW-3), damit labwc und
 # die Fensterliste Titelleistensymbol und Namen zuordnen. Categories
 # Settings;System; → Panel-Menü System → Systemverwaltung (apps.rs,
 # system_section: Settings mit System = Administration). Exec ist der

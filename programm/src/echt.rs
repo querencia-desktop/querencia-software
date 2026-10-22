@@ -6,9 +6,9 @@
 //!
 //! * [`Aufloeser`]: Installiert-Zustand vieler Paketnamen in **einem**
 //!   PackageKit-`Resolve` (statt der Leersuche über alle Pakete, die SW-3
-//!   gegen die Attrappe nutzt; INTEGRATION.md Nr. 6). Der Vorschlag, das als
-//!   `Paketquelle::aufloesen` in `qs_typen` aufzunehmen, liegt bei der
-//!   Status-Session; bis dahin baut dieses Modul den Aufruf aus den
+//!   gegen die Attrappe nutzt; integration.md Nr. 6). Der Vorschlag, das als
+//!   `Paketquelle::aufloesen` in `qs_typen` aufzunehmen, ist noch
+//!   offen; bis dahin baut dieses Modul den Aufruf aus den
 //!   öffentlichen Proxys von `qs_paketkit`.
 //! * [`AppKatalog`]: hüllt `AppStreamKatalog` ein. `symbol_pfad` fällt auf den
 //!   swcatalog-Symbolcache zurück, wenn eine Anwendung einen Themennamen
@@ -221,7 +221,7 @@ impl Paketquelle for NurLesen {
     }
 }
 
-/// Katalogkonfiguration: Systempfade nach SCHNITTSTELLEN.md; mit gesetztem
+/// Katalogkonfiguration: Systempfade nach schnittstellen.md; mit gesetztem
 /// `XDG_DATA_HOME` ersetzt `$XDG_DATA_HOME/metainfo` den Ordner
 /// `~/.local/share/metainfo`.
 pub fn katalog_konfiguration() -> Konfiguration {

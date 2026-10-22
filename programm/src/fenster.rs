@@ -489,7 +489,7 @@ impl Fenster {
     }
 
     /// Echter Betrieb: AppStream-Katalog im Hintergrund-Thread laden
-    /// (SCHNITTSTELLEN.md: `laden` darf 1–2 s dauern), danach Liste und
+    /// (schnittstellen.md: `laden` darf 1–2 s dauern), danach Liste und
     /// Paketstand neu aufbauen.
     fn katalog_laden(self: &Rc<Self>) {
         let Some(konfiguration) = self.backends.katalog_laden.borrow_mut().take() else {

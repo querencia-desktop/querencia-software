@@ -363,7 +363,7 @@ impl Ergebnis {
     /// Ursache und Abhilfe, wenn PackageKit „offline“ meldet, die Quelle aber
     /// erreichbar ist. Sagt auch der Netzwerkmonitor „kein Netz“ (Stufe 3
     /// entschied), ist die Ursache NetworkManager ohne Verwaltung der
-    /// Verbindung (Pflichtprobe B2, Entscheidung der Startsession 20.10.).
+    /// Verbindung (Pflichtprobe B2, Entscheidung vom 20.10.2026).
     pub fn pk_warnung(&self) -> Option<String> {
         if !self.pk_widerspricht() {
             return None;
@@ -864,7 +864,7 @@ mod tests {
         assert!(e
             .hinweis()
             .contains("http://archive.ubuntu.com/ubuntu: reachable (HTTP 200)"));
-        // Hinweisfall (Startsession 20.10.): Ursache und Abhilfe, Knopf bleibt frei.
+        // Hinweisfall (Entscheidung vom 20.10.2026): Ursache und Abhilfe, Knopf bleibt frei.
         let ursache = "PackageKit considers the system offline because NetworkManager is \
                        installed but does not manage the network.";
         let abhilfe =

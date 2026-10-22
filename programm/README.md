@@ -4,7 +4,7 @@ Grafischer Software-Installer für Querencia Desktop, Teilprojekt SW-3:
 Fenster, Ansichten und Dialoge. Rust + GTK 4 ohne libadwaita,
 Server-Fensterrahmen von labwc, Menüleiste, Oberfläche Deutsch und
 Englisch (GNU gettext, ab 0.1.1), App-ID `org.querencia.Software`. Verbindliche Schnittstellen:
-`../docs/SCHNITTSTELLEN.md`; Typen und Traits aus
+`../docs/schnittstellen.md`; Typen und Traits aus
 `qs_typen` (SW-1).
 
 **Umfang 0.1.0:** Menüleiste Datei/Bearbeiten/Ansicht/Hilfe; Seitenleiste mit
@@ -20,7 +20,7 @@ ohne (vorhandenes) Symbol. Tastatur: Strg+F, Escape, Eingabetaste,
 F5, Strg+Q.
 
 **Backends:** Stand 0.1.0 nur Attrappen (`src/attrappen.rs`, 30 Anwendungen,
-simulierte Transaktionen 2 s). Austauschstellen: `../docs/INTEGRATION.md`.
+simulierte Transaktionen 2 s). Austauschstellen: `../docs/integration.md`.
 
 | Datei | Inhalt |
 |---|---|
@@ -37,7 +37,7 @@ simulierte Transaktionen 2 s). Austauschstellen: `../docs/INTEGRATION.md`.
 | `src/hilfe.rs` | Adressen für Info und Hilfe-Menü (Website, Online-Hilfe, „Fehler melden“ aus `/usr/share/querencia/release`), Öffnen über `gtk::UriLauncher` (0.1.5) |
 | `src/style.css` | klassische Optik, Orange nur für Auswahl und Fortschritt; Dunkelblock für Thema 0.2 (0.1.4) |
 | `data/resource/` | eingebettete Symbole (SW-5-Programmsymbol, Ersatzsymbol), `HERKUNFT` |
-| `werkzeug/` | isolierte GUI-Prüfung (`../docs/TESTING.md`) |
+| `werkzeug/` | isolierte GUI-Prüfung (`../docs/testing.md`) |
 | `nachweis/` | Release-Binary mit SHA256, Prüf- und GUI-Protokolle |
 
 Desktop-Datei, Themen-Symbol für Starter und Panel und MetaInfo liefert SW-5;
@@ -62,6 +62,7 @@ python3 werkzeug/i18n.py pruefen && msgfmt -c -o /dev/null po/de.po
 
 GPL-3.0-or-later (GNU General Public License, Version 3 oder neuer), siehe
 [LICENSE](LICENSE). Copyright 2026 Querencia Desktop contributors. Die
-Bausteine `qs_typen`, `qs_paketkit`, `qs_katalog` und `qs_transaktion` stehen
-unter MIT OR Apache-2.0 (in ihren eigenen Repos).
+Bausteine `qs_typen`, `qs_paketkit`, `qs_katalog` und `qs_transaktion` liegen in
+eigenen Repos und stehen derzeit ebenfalls unter GPL-3.0-or-later; der Wechsel auf
+MIT OR Apache-2.0 ist geplant.
 

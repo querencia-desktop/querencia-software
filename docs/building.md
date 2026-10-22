@@ -1,6 +1,6 @@
 # Bauen
 
-*Seit 0.1.1 unter `docs/` (Doku-Standard, ENTSCHEIDUNGEN Nr. 17); Pfade wie `werkzeug/…`, `data/…`, `src/…` gelten relativ zu `programm/`.*
+*Seit 0.1.1 unter `docs/`; Pfade wie `werkzeug/…`, `data/…`, `src/…` gelten relativ zu `programm/`.*
 
 Ubuntu 26.04: `cargo`, `rustc` (≥ 1.92, Ubuntu 1.93.1), `pkgconf`,
 `libgtk-4-dev`. `Cargo.lock` stammt vom Querencia Rechner (gtk4 0.11.5,
