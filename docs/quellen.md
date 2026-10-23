@@ -25,6 +25,7 @@ Knopf bleibt gesperrt, statt den Snap über die Hülle zu installieren.
 | Schlüsselablage | `/etc/apt/keyrings/mozillateam-ppa.asc`, eingebunden über `Signed-By` |
 | Pin | `Package: thunderbird*`, `Pin: release o=LP-PPA-mozillateam`, `Pin-Priority: 1001` |
 | AppStream-Daten | keine (das Verzeichnis `dep11/` der PPA fehlt) |
+| Paketversion | z. B. `1:140.17.0+build3-0ubuntu0.24.04.1~mt1`: Die Thunderbird-Pakete der Suite `resolute` tragen im Versionsstring die Kennung **24.04**, nicht 26.04 (Firefox in derselben PPA: `…0ubuntu0.26.04.1~mt1`). Prüfungen und Pins dürfen sich deshalb nicht auf `26.04` in der Version verlassen; der Pin geht über den Ursprung `o=LP-PPA-mozillateam` |
 
 Der Pin ist nötig: Die Snap-Hülle im Ubuntu-Archiv trägt die Epoche `2:` und
 gewinnt sonst gegen das Paket der PPA (Epoche `1:`). Die Priorität über 1000
