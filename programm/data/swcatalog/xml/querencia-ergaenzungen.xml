@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Katalog-Ergänzungen von Querencia Desktop: AppStream-Beschreibungen für
+     Pakete, die Querencia aus Ersatzquellen holt und für die die Quelle
+     keine AppStream-Daten mitliefert. Format: AppStream-Katalog-XML
+     (Collection), Ziel /usr/share/swcatalog/xml/, Symbole unter
+     /usr/share/swcatalog/icons/querencia-ergaenzungen/<N>x<N>/.
+     Neuer Eintrag: docs/katalog-ergaenzungen.md. -->
+<components version="1.0" origin="querencia-ergaenzungen">
+
+  <component type="desktop-application">
+    <id>org.mozilla.Thunderbird</id>
+    <pkgname>thunderbird</pkgname>
+    <name>Thunderbird</name>
+    <summary>Read and write email, manage calendars and contacts</summary>
+    <summary xml:lang="de">E-Mails lesen und schreiben, Kalender und Kontakte verwalten</summary>
+    <description>
+      <p>Thunderbird is a free email application from the Mozilla community. It manages several email accounts in one window and also handles calendars, contacts, news feeds and newsgroups.</p>
+      <p>Querencia installs Thunderbird as a regular package from the package source of the Ubuntu Mozilla team (extended support release), not as a Snap.</p>
+    </description>
+    <description xml:lang="de">
+      <p>Thunderbird ist ein freies E-Mail-Programm aus der Mozilla-Gemeinschaft. Es verwaltet mehrere E-Mail-Konten in einem Fenster und dazu Kalender, Kontakte, Nachrichtenfeeds und Newsgruppen.</p>
+      <p>Querencia installiert Thunderbird als normales Paket aus der Paketquelle des Ubuntu-Mozilla-Teams (Fassung mit verlängerter Unterstützung), nicht als Snap.</p>
+    </description>
+    <developer id="net.thunderbird">
+      <name>Thunderbird Project</name>
+    </developer>
+    <project_license>MPL-2.0</project_license>
+    <url type="homepage">https://www.thunderbird.net/</url>
+    <launchable type="desktop-id">thunderbird.desktop</launchable>
+    <categories>
+      <category>Network</category>
+      <category>Email</category>
+    </categories>
+    <keywords>
+      <keyword>email</keyword>
+      <keyword>mail</keyword>
+      <keyword>calendar</keyword>
+      <keyword>newsgroup</keyword>
+      <keyword>feed</keyword>
+    </keywords>
+    <keywords xml:lang="de">
+      <keyword>E-Mail</keyword>
+      <keyword>Mail</keyword>
+      <keyword>Post</keyword>
+      <keyword>Kalender</keyword>
+      <keyword>Newsgruppe</keyword>
+    </keywords>
+    <icon type="stock">thunderbird</icon>
+    <icon type="cached" width="64" height="64">thunderbird.png</icon>
+    <icon type="cached" width="128" height="128">thunderbird.png</icon>
+  </component>
+
+  <component type="desktop-application">
+    <id>org.mozilla.firefox</id>
+    <pkgname>firefox</pkgname>
+    <name>Firefox</name>
+    <summary>Fast, private and free web browser</summary>
+    <summary xml:lang="de">Schneller, privater und freier Webbrowser</summary>
+    <description>
+      <p>Firefox is the web browser of the Mozilla community. It blocks many trackers by default, syncs bookmarks and passwords between devices on request and can be extended with add-ons.</p>
+      <p>Querencia installs Firefox as a regular package from Mozilla's own package source, not as a Snap.</p>
+    </description>
+    <description xml:lang="de">
+      <p>Firefox ist der Webbrowser der Mozilla-Gemeinschaft. Er sperrt von sich aus viele Tracker, gleicht auf Wunsch Lesezeichen und Passwörter zwischen Geräten ab und lässt sich mit Erweiterungen ergänzen.</p>
+      <p>Querencia installiert Firefox als normales Paket aus der Paketquelle von Mozilla, nicht als Snap.</p>
+    </description>
+    <developer id="org.mozilla">
+      <name>Mozilla</name>
+    </developer>
+    <project_license>MPL-2.0</project_license>
+    <url type="homepage">https://www.mozilla.org/firefox/</url>
+    <launchable type="desktop-id">firefox.desktop</launchable>
+    <categories>
+      <category>Network</category>
+      <category>WebBrowser</category>
+    </categories>
+    <keywords>
+      <keyword>browser</keyword>
+      <keyword>web</keyword>
+      <keyword>internet</keyword>
+    </keywords>
+    <keywords xml:lang="de">
+      <keyword>Browser</keyword>
+      <keyword>Internet</keyword>
+      <keyword>Web</keyword>
+    </keywords>
+    <icon type="stock">firefox</icon>
+    <icon type="cached" width="64" height="64">firefox.png</icon>
+    <icon type="cached" width="128" height="128">firefox.png</icon>
+  </component>
+
+</components>

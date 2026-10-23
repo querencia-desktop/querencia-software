@@ -20,4 +20,4 @@ immer die Attrappen. Diese Stellen ändert die Integration:
 | 10 | `werkzeug/szenario.sh` | prüft gegen `QS_ATTRAPPE=1` | bleibt so; für echte Backends ein eigenes Szenario gegen das PackageKit-Prüfgerüst von SW-1 (`test_succeed`/`test_fail`) |
 
 Fehlertexte für die Dialoge stehen in `src/logik.rs` (`fehlertext`) und
-bleiben, wenn `monitor.rs` gelöscht wird. Der KeinAgent-Text verweist auf G2-K.
+bleiben, wenn `monitor.rs` gelöscht wird. Der KeinAgent-Text verweist auf den polkit-Agenten der Sitzung (`querencia-polkit-agent`).

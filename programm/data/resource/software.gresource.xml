@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Eingebettete Ressourcen. Neu erzeugen: werkzeug/ressourcen.sh
      org.querencia.Software-fenster.svg: Programmsymbol von SW-5
-     (~/projects/querencia-software-paket, Tag software-paket/0.1.1),
+     (Repo querencia-software-paket, Tag software-paket/0.1.1),
      Prüfsumme in data/resource/HERKUNFT.
      org.querencia.Software-paket.svg: Ersatzsymbol für Anwendungen ohne
      Symbol (SW-3). Nur SVG, keine PNG-Stufen (Symbolregel). -->

@@ -6,14 +6,14 @@ und Vorschlag).
 
 ## Aufteilung
 
-| Session | Ordner | Crate | Liefert |
+| Teilprojekt | Repo | Crate | Liefert |
 |---|---|---|---|
-| SW-1 | `~/projects/querencia-software-paketkit` | `qs_paketkit` (lib) | D-Bus-Schicht zu PackageKit |
-| SW-2 | `~/projects/querencia-software-katalog` | `qs_katalog` (lib) | AppStream-Katalog, Kategorien, Suche, Symbole |
-| SW-3 | `~/projects/querencia-software-ui` | `querencia-software` (bin) | Fenster, Ansichten, Dialoge; arbeitet gegen die Traits unten mit Attrappen |
-| SW-4 | `~/projects/querencia-software-transaktion` | `qs_transaktion` (lib) + `qs-cli` (bin) | Transaktions-Zustandsmaschine, Fehlerabbildung, Wiederanbindung, Kommandozeilenwerkzeug |
-| SW-5 | `~/projects/querencia-software-paket` | – | Prüfwerkzeuge (isolierte GUI-Prüfung), Desktop-Datei, Symbole, MetaInfo-Dateien für alle Querencia-Apps, Paketgerüst, Integrationsskript |
-| Integration | `~/projects/querencia-software` (dieser Ordner) | Workspace | später: alle Crates zusammenführen, echte Backends einhängen, Abnahme |
+| SW-1 | `querencia-software-paketkit` | `qs_paketkit` (lib) | D-Bus-Schicht zu PackageKit |
+| SW-2 | `querencia-software-katalog` | `qs_katalog` (lib) | AppStream-Katalog, Kategorien, Suche, Symbole |
+| SW-3 | `querencia-software-ui` (heute `programm/` in `querencia-software`) | `querencia-software` (bin) | Fenster, Ansichten, Dialoge; arbeitet gegen die Traits unten mit Attrappen |
+| SW-4 | `querencia-software-transaktion` | `qs_transaktion` (lib) + `qs-cli` (bin) | Transaktions-Zustandsmaschine, Fehlerabbildung, Wiederanbindung, Kommandozeilenwerkzeug |
+| SW-5 | `querencia-software-paket` (nicht veröffentlicht) | – | Prüfwerkzeuge (isolierte GUI-Prüfung), Desktop-Datei, Symbole, MetaInfo-Dateien für alle Querencia-Apps, Paketgerüst, Integrationsskript |
+| Integration | `querencia-software` (dieses Repo) | Workspace | später: alle Crates zusammenführen, echte Backends einhängen, Abnahme |
 
 Alle Crates: Rust 2021, `gtk4 0.11.5` / `glib 0.22.10` / `gio 0.22.10` (gleiche Versionen wie der
 Editor-Prototyp), `zbus 5.19.0`, `tokio 1.52.1` (nur dort, wo zbus es braucht; GTK-Seite nutzt
@@ -72,7 +72,7 @@ pub enum Fortschritt {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Fehler {
     NichtBerechtigt,                 // polkit abgelehnt oder kein Agent
-    KeinAgent,                       // polkit-Agent fehlt (G2-I 1.4): eigene Meldung mit Hinweis
+    KeinAgent,                       // polkit-Agent fehlt (eigene Meldung mit Hinweis
     SperreBelegt(String),
     NetzFehlt,
     PaketNichtGefunden(String),
@@ -167,7 +167,7 @@ pub struct TransaktionsGriff { pub id: u64 } impl TransaktionsGriff { pub fn abb
 Der Monitor kapselt: Simulation vor jedem Entfernen (Oberfläche zeigt, was mitgeht, Benutzer
 bestätigt), Wiederholung bei `SperreBelegt` (Oberfläche fragt), `DaemonWeg` → Wiederanbindung über
 `laufende_transaktionen`, `KeinAgent` → Erklärtext „Es fehlt der Berechtigungsdialog der Sitzung
-(polkit-Agent); G2-K liefert ihn“, Zeitbegrenzungen, Logging nach `~/.local/state/querencia/software.log`.
+(polkit-Agent)“, Zeitbegrenzungen, Logging nach `~/.local/state/querencia/software.log`.
 
 ## Oberfläche (SW-3), Pflichtumfang v1
 

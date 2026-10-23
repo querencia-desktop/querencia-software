@@ -36,17 +36,17 @@ Anwendungskennung (App-ID): `org.querencia.Software` · Binary:
 
 | Pfad | Inhalt |
 |---|---|
-| `programm/` | Oberfläche: `src/`, `po/`, `data/` (Starter-Vorlage, eingebettete Symbole), `werkzeug/` (isolierte GUI-Prüfung, i18n), README, CHANGELOG |
-| `docs/` | `SCHNITTSTELLEN.md` (Vertrag Oberfläche–Bausteine), `BUILDING.md`, `TESTING.md`, `INTEGRATION.md`, `PHASE0-BEFUND.md` |
-| `werkzeug/` | isolierte GUI-Prüfung gegen echte Backends (`gui-echt.sh <Modus>`), Szenarien |
+| `programm/` | Oberfläche: `src/`, `po/`, `data/` (Starter-Vorlage, eingebettete Symbole, Katalog-Ergänzungen unter `data/swcatalog/`), `werkzeug/` (isolierte GUI-Prüfung, i18n), README, CHANGELOG |
+| `docs/` | `schnittstellen.md` (Vertrag Oberfläche–Bausteine), `building.md`, `testing.md`, `integration.md`, `katalog-ergaenzungen.md`, `quellen.md`, `phase0-befund.md` |
+| `werkzeug/` | isolierte GUI-Prüfung gegen echte Backends (`gui-echt.sh <Modus>`), Szenarien; Katalog-Ergänzungen prüfen und Symbole rendern (`ergaenzungen-pruefen.sh`, `ergaenzungen-symbole.py`) |
 | `Cargo.toml` | Workspace; einziges Mitglied `programm/`, Bausteine als Pfad-Abhängigkeiten `../querencia-software-{paketkit,katalog,transaktion}` |
 
 ## Stand
 
 | | |
 |---|---|
-| Version | 0.1.4 (Tags `software/0.1.4`, `software/0.1.4-f2`; dunkle Darstellung) |
-| Letzte Prüfung | 21.10.2026: Unit-Tests, `i18n.py pruefen`; isolierte GUI-Prüfung hell und dunkel (Stand 0.1.3: online 11/0, offline 18/0, Regression Attrappe 68/0) |
+| Version | 0.1.6 (Tag `software/0.1.6`; Katalog-Ergänzungen für Thunderbird und Firefox, Snap-Hüllen ausgeblendet); 0.1.5 (Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Hilfe-Menü mit Online-Hilfe und „Fehler melden“); seit 0.1.4 dunkle Darstellung (Tags `software/0.1.4`, `software/0.1.4-f2`) |
+| Letzte Prüfung | 23.10.2026 (0.1.6): Unit-Tests mit Katalog-Ergänzungen (Suche, Kategorie, Symbol, Paketstand, Snap-Hüllen), `ergaenzungen-pruefen.sh`; 22.10.2026 (0.1.5): Unit-Tests, darunter ein Test gegen interne Kennungen in den Nutzertexten unter `po/`; 21.10.2026 (0.1.4): Unit-Tests, `i18n.py pruefen`; isolierte GUI-Prüfung hell und dunkel (Stand 0.1.3: online 11/0, offline 18/0, Regression Attrappe 68/0) |
 | Bekannte Lücken | Bausteine noch in eigenen Repos (siehe oben); GUI-Prüfung gegen echte Backends nur in der Entwicklungsumgebung |
 | Getestet auf | Ubuntu 26.04, labwc 0.9.8, GTK 4.22, PackageKit, Rust 1.93.1 |
 | Nicht getestet | andere Distributionen, HiDPI, Mehrmonitor |
@@ -71,7 +71,7 @@ cargo build --release --locked
 ```
 
 Das Ergebnis liegt unter `target/release/querencia-software`. Einzelheiten:
-[docs/BUILDING.md](docs/BUILDING.md).
+[docs/building.md](docs/building.md).
 
 ## Prüfen
 
@@ -86,7 +86,7 @@ Eine CI gibt es noch nicht: sie folgt, sobald die Bausteine in diesem Repo
 liegen. Die **GUI-Prüfung** läuft in einer abgeschotteten Sitzung (eigener
 labwc ohne Bildschirm, eigenes `HOME` und `XDG_RUNTIME_DIR`, eigener
 Systembus mit Attrappen oder echten Backends), niemals in der laufenden
-Desktopsitzung: [docs/TESTING.md](docs/TESTING.md). Arbeitsweise:
+Desktopsitzung: [docs/testing.md](docs/testing.md). Arbeitsweise:
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Vorbild und Abgrenzung

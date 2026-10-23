@@ -34,7 +34,7 @@ Expertenliste mit Suche und Details, Info-Dialog mit Programmsymbol und Q dreima
 geschlossen (Eingabetaste, Escape, Alt+S), zweite Instanz, Strg+Q.
 
 Menüs werden per Maus bedient (Tastaturnavigation in Popover-Menüs ist im
-headless labwc unzuverlässig, Befund G2-H).
+headless labwc unzuverlässig).
 
 ## Prüfprotokoll (`QS_DEBUG=1`)
 
@@ -56,16 +56,18 @@ Tab-getrennte Zeilen auf stdout, Koordinaten relativ zum Fensterinhalt
 | `netz pruefe` / `netz online/offline stufe pk monitor archiv host` / `netz vor-vorgang` / `netz frage-offline` / `netz trotzdem` / `netz meldung-entfernt` | Erreichbarkeitsprüfung (0.1.3): Start, Ergebnis (`stufe` = `packagekit`, `netzmonitor`, `archiv` oder `-`; `monitor` `an`/`aus`/`-`; `archiv` `erreichbar`/`nicht-erreichbar`/`-`), frische Prüfung vor einem Vorgang, Frage gezeigt, „Trotzdem versuchen“ gewählt, veraltete `no-network`-Meldung nach dem Wechsel auf online entfernt |
 | `netzstatus text` | Netzwerktext rechts in der Statuszeile |
 | `info-symbole programmsymbol querencia-q` | Inhalt des Info-Dialogs |
+| `snap-huellen namen` | ab 0.1.6: nach jedem Paketstand die ausgeblendeten Snap-Hüllen (Paketnamen, durch Komma getrennt; leer, wenn keine) |
+| `uri adresse` | ab 0.1.5: Adresse, die das Programm im Standardprogramm öffnen lässt (Hilfe → Online-Hilfe, Hilfe → Fehler melden, Website im Info-Dialog) |
 | `fokus suche` | Suchfeld hat den Fokus |
 | `zeiger x y` | Zeigerbewegung (Kalibrierung) |
 | `layout anfang` … `layout ende` | Block mit `menue i …`, `seite kennung …`, `suche …`, `liste …`, `zeile i titel …`, `knopf i text …`, `zurueck …`, `aktion text …`, `homepage …`, `abbrechen …`, `statuszeile …`, `netzfeld …`, `netzknopf …`, `fenster w h`, `toplevel typ titel sichtbar w h` |
 
-SW-5 hat in `~/projects/querencia-software-paket/werkzeug/faelle/FAELLE.md`
+SW-5 hat in `werkzeug/faelle/FAELLE.md` (Repo `querencia-software-paket`)
 ein eigenes Format für seinen Platzhalter vorgeschlagen. Laut FAELLE.md gilt
 das Format von SW-3; die Angleichung der SW-5-Fälle an diese Tabelle ist
 Sache der Integration.
 
-## Erreichbarkeitsprüfung (0.1.3, QD-067)
+## Erreichbarkeitsprüfung (0.1.3)
 
 Unit-Tests in `src/netz.rs`: Stufenlogik mit Attrappen (welche Stufe gefragt
 wird, Entscheidung, Texte), Quellenwahl aus `sources.list`/`*.list`/deb822
@@ -86,7 +88,7 @@ Ergebnis in `nachweis/gui/netz-<Fall>-<Auflösung>/`, Bilder zusätzlich unter
 `querencia-software --netz-pruefen` (fragt alle drei Stufen, nur lesend;
 `QS_APT_QUELLE=http://192.0.2.1/ubuntu` prüft das Zeitlimit).
 
-## Dunkle Darstellung (0.1.4, QD-081)
+## Dunkle Darstellung (0.1.4)
 
 `src/style.css` setzt nur noch Farben, die das Thema nicht hat; Ansichtsgrund
 und Ränder kommen über `@theme_base_color` und `@borders` aus dem Thema, die

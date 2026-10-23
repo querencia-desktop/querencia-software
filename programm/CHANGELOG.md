@@ -1,5 +1,50 @@
 # Änderungen
 
+## 0.1.6 – 2026-10-23
+
+### Hinzugefügt
+- Katalog-Ergänzungen: eigene AppStream-Beschreibungen für Pakete, die
+  Querencia aus Ersatzquellen holt und die deshalb keinen Katalogeintrag haben.
+  Erste Einträge: Thunderbird (Paket `thunderbird` aus der Paketquelle des
+  Ubuntu-Mozilla-Teams) und Firefox (Paket `firefox` von Mozilla), beide unter
+  „Internet“, mit eigenem Katalogsymbol bis zur Installation. Die Suche
+  „thunderbird“ findet Thunderbird jetzt an erster Stelle. Format und Ort sind
+  die von AppStream (`/usr/share/swcatalog/xml/querencia-ergaenzungen.xml`);
+  das Programm liest denselben Aufbau zusätzlich neben der Binary
+  (`share/swcatalog/`). Beschreibung und Anleitung für weitere Einträge:
+  `docs/katalog-ergaenzungen.md`, Prüfwerkzeug
+  `werkzeug/ergaenzungen-pruefen.sh`.
+- `docs/quellen.md`: die Paketquellen für Thunderbird und Firefox (Zweck,
+  Suite, Schlüssel, Pin).
+
+### Geändert
+- Snap-Hüllen (Ubuntus Übergangspakete wie `thunderbird 2:1snap1-…`, die nur
+  den Snap nachinstallieren) gelten nicht als verfügbare Fassung: Ohne
+  Ersatzquelle steht „Nicht verfügbar“ und der Knopf bleibt gesperrt;
+  Aktualisierungen auf eine Hülle werden nicht angeboten, die Expertenliste
+  zeigt sie nicht. Eine installierte Hülle bleibt sichtbar.
+
+## 0.1.5 – 2026-10-22
+
+### Hinzugefügt
+- Hilfe-Menü: „Online-Hilfe“ öffnet die Anleitung „Software installieren“ auf
+  querencialinux.org in der Sprache der Oberfläche (`/de/docs/…` bzw.
+  `/en/docs/…`, die Adresse steht im Katalog). „Fehler melden“ öffnet
+  `BUG_REPORT_URL` aus `/usr/share/querencia/release` (Versionsdatei des
+  Metapakets ab Alpha 2.1); fehlt die Datei, die Auswahlseite für neue
+  Meldungen im Repo `querencia-desktop/querencia`. Beides über
+  `gtk::UriLauncher` im Standardprogramm der Sitzung.
+
+### Geändert
+- Info-Dialog einheitlich mit Dokumente, Archiv und Rechner: Hinweis „Alpha –
+  nicht für den Alltag freigegeben.“, Website querencialinux.org als Link,
+  „© 2026 Querencia Desktop contributors“, Lizenz.
+- Fehlerdialog „Berechtigungsdialog fehlt“: Die Erklärung nennt keine interne
+  Kennung mehr („In Querencia Desktop startet die Sitzung ihn als
+  „querencia-polkit-agent“.“). Ein Test stellt sicher, dass kein Nutzertext in
+  `po/` eine interne Kennung enthält.
+- README: Die Bausteine liegen in eigenen, seit 22.10.2026 öffentlichen Repos.
+
 ## 0.1.4 – 2026-10-21
 
 ### Geändert
@@ -96,10 +141,10 @@
 
 ## 0.1.0 – 2026-10-18
 
-Erste Fassung (SW-3): Oberfläche nach SCHNITTSTELLEN.md, Pflichtumfang v1,
+Erste Fassung (SW-3): Oberfläche nach schnittstellen.md, Pflichtumfang v1,
 gegen Attrappen. Programmsymbol von SW-5 als Fenstersymbol und im
 Info-Dialog, graues Ersatzsymbol für Anwendungen ohne Symbol. 23 Unit-Tests,
 isolierte GUI-Prüfung 67/67 bei 1024×768 und 1920×1080 (je zwei Läufe).
 
 Ein erster Stand mit Platzhalter-Fenstersymbol (Commit `7ac279f`) trägt den
-Tag `software-ui/0.1.0-vorab`; der Besitzer hat den Platzhalter abgelehnt.
+Tag `software-ui/0.1.0-vorab`; der Platzhalter wurde bei der Abnahme abgelehnt.

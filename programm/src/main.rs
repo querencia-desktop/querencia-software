@@ -22,6 +22,7 @@ mod dialoge;
 mod echt;
 mod fenster;
 mod fremdtexte;
+mod hilfe;
 mod i18n;
 mod logik;
 mod netz;
@@ -68,7 +69,7 @@ pub struct Backends {
     /// Hintergrund-Thread der AppStream-Katalog.
     pub katalog: RefCell<Rc<dyn Katalog>>,
     pub monitor: Rc<qs_transaktion::Monitor>,
-    /// Installiert-Zustand der Katalog-Pakete (INTEGRATION.md Nr. 6).
+    /// Installiert-Zustand der Katalog-Pakete (integration.md Nr. 6).
     pub aufloeser: Rc<dyn echt::Aufloeser>,
     /// `Some`: Katalog muss noch geladen werden (echter Betrieb).
     pub katalog_laden: RefCell<Option<qs_katalog::Konfiguration>>,

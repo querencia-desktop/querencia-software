@@ -1,6 +1,6 @@
 [package]
 name = "querencia-software"
-version = "0.1.4"
+version = "0.1.6"
 edition = "2021"
 rust-version = "1.92"
 description = "Querencia Software: grafischer Software-Installer für Querencia Desktop (Oberfläche, SW-3)"

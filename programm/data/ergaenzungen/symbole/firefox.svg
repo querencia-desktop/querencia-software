@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Webbrowser – Globus in Querencia-Orange</title>
+  <!-- Katalogsymbol für Firefox in Querencia Software, solange das Paket
+       nicht installiert ist (danach gilt das Symbol aus dem Paket). Eigenes
+       Motiv im Stil der Querencia-Symbole: flächig, kein Verlauf, nur
+       Querencia-Orange #F07746 und Grau; kein Logo eines Dritten. -->
+  <circle cx="32" cy="32" r="26" fill="#F07746" stroke="#4D4D4D" stroke-width="3"/>
+  <path d="M10 20 H54 M10 44 H54" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+  <path d="M6.5 32 H57.5" fill="none" stroke="#4D4D4D" stroke-width="2.5"/>
+  <ellipse cx="32" cy="32" rx="11" ry="25" fill="none" stroke="#4D4D4D" stroke-width="2.5"/>
+</svg>
