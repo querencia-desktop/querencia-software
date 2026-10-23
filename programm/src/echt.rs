@@ -15,8 +15,13 @@
 //!   nennt, den kein installiertes Thema hat (DEP-11 `stock` + `cached`);
 //!   MetaInfo-Dateien werden aus `$XDG_DATA_HOME/metainfo` gelesen, wenn die
 //!   Variable gesetzt ist (isolierte Prüfung mit eigenem Profil).
+//! * Katalog-Ergänzungen (ab 0.1.6, docs/katalog-ergaenzungen.md): Querencias
+//!   eigene AppStream-Beschreibungen für Pakete aus Ersatzquellen ohne
+//!   AppStream-Daten (Thunderbird, Firefox) im swcatalog-Aufbau. Systemweit
+//!   liegen sie unter `/usr/share/swcatalog` und kommen über die Systempfade;
+//!   [`ergaenzungen_dir`] findet sie zusätzlich neben der Binary in der Ablage.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -223,7 +228,7 @@ impl Paketquelle for NurLesen {
 
 /// Katalogkonfiguration: Systempfade nach schnittstellen.md; mit gesetztem
 /// `XDG_DATA_HOME` ersetzt `$XDG_DATA_HOME/metainfo` den Ordner
-/// `~/.local/share/metainfo`.
+/// `~/.local/share/metainfo`. Dazu die Katalog-Ergänzungen ([`ergaenzungen_dir`]).
 pub fn katalog_konfiguration() -> Konfiguration {
     let mut k = Konfiguration::system();
     if let Some(daten) = std::env::var_os("XDG_DATA_HOME").filter(|v| !v.is_empty()) {
@@ -234,7 +239,53 @@ pub fn katalog_konfiguration() -> Konfiguration {
             .retain(|p| Some(p) != standard.as_ref());
         k.metainfo_verzeichnisse.push(eigen);
     }
+    if let Some(d) = ergaenzungen_dir() {
+        ergaenzungen_einhaengen(&mut k, &d);
+    }
     k
+}
+
+/// Ordner der Katalog-Ergänzungen im swcatalog-Aufbau (`xml/`,
+/// `icons/<origin>/<B>x<H>/`), gesucht wie die Übersetzungen (`i18n`):
+/// `QUERENCIA_SOFTWARE_SWCATALOG`, sonst neben der Binary
+/// (`<ablage>/share/swcatalog`), sonst im Präfix der Binary
+/// (`/usr/bin/../share/swcatalog`, dann ohnehin ein Systempfad).
+pub fn ergaenzungen_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("QUERENCIA_SOFTWARE_SWCATALOG").filter(|d| !d.is_empty()) {
+        return Some(PathBuf::from(dir));
+    }
+    // current_exe() löst den Link ~/opt/querencia/bin/querencia-software auf.
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.canonicalize().ok())
+        .and_then(|exe| exe.parent().map(Path::to_path_buf));
+    ergaenzungen_dir_for(exe_dir.as_deref())
+}
+
+fn ergaenzungen_dir_for(exe_dir: Option<&Path>) -> Option<PathBuf> {
+    let exe_dir = exe_dir?;
+    let beside = exe_dir.join("share/swcatalog");
+    if beside.join("xml").is_dir() {
+        return Some(beside);
+    }
+    let prefixed = exe_dir.parent()?.join("share/swcatalog");
+    prefixed.join("xml").is_dir().then_some(prefixed)
+}
+
+/// Hängt `<swcatalog>/xml` als letzte Katalogquelle an (spätere Quellen
+/// gewinnen bei gleicher ID, fehlende Felder kommen aus früheren) und
+/// `<swcatalog>/icons` an die Symbolcaches; schon vorhandene Pfade (auch über
+/// Links) werden nicht doppelt gelesen.
+pub fn ergaenzungen_einhaengen(k: &mut Konfiguration, swcatalog: &Path) {
+    fn anhaengen(liste: &mut Vec<PathBuf>, pfad: PathBuf) {
+        let echt = |p: &Path| p.canonicalize().unwrap_or_else(|_| p.to_path_buf());
+        let neu = echt(&pfad);
+        if !liste.iter().any(|p| echt(p) == neu) {
+            liste.push(pfad);
+        }
+    }
+    anhaengen(&mut k.katalog_verzeichnisse, swcatalog.join("xml"));
+    anhaengen(&mut k.symbol_cache_verzeichnisse, swcatalog.join("icons"));
 }
 
 /// `AppStreamKatalog` mit Rückfall auf den Symbolcache (siehe Moduldoku).
@@ -331,6 +382,247 @@ mod tests {
             k.metainfo_verzeichnisse.first(),
             Some(&PathBuf::from("/usr/share/metainfo"))
         );
+    }
+
+    use crate::logik::{self, Ansicht, Paketstand};
+    use qs_typen::Paket;
+
+    /// Die Ergänzungen aus dem Repo (`programm/data/swcatalog`).
+    fn repo_ergaenzungen() -> PathBuf {
+        PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/data/swcatalog"))
+    }
+
+    /// Katalog nur aus den Ergänzungen, ohne Themen und Systemquellen.
+    fn nur_ergaenzungen() -> AppKatalog {
+        let mut k = Konfiguration {
+            katalog_verzeichnisse: Vec::new(),
+            metainfo_verzeichnisse: Vec::new(),
+            symbol_cache_verzeichnisse: Vec::new(),
+            themen_verzeichnisse: Vec::new(),
+            mit_konsolenanwendungen: true,
+        };
+        ergaenzungen_einhaengen(&mut k, &repo_ergaenzungen());
+        AppKatalog::laden(k).expect("Ergänzungen laden").0
+    }
+
+    fn pk(name: &str, version: &str, installiert: bool) -> Paket {
+        Paket {
+            id: format!(
+                "{name};{version};amd64;{}",
+                if installiert {
+                    "installed"
+                } else {
+                    "mozillateam"
+                }
+            ),
+            name: name.into(),
+            version: version.into(),
+            arch: "amd64".into(),
+            zusammenfassung: String::new(),
+            installiert,
+        }
+    }
+
+    const TB: &str = "1:140.17.0+build3-0ubuntu0.24.04.1~mt1";
+
+    #[test]
+    fn ergaenzungen_neben_binary_oder_im_praefix() {
+        let basis = std::env::temp_dir().join(format!("qs-ergaenzungen-{}", std::process::id()));
+        let ablage = basis.join("ablage");
+        let praefix = basis.join("usr");
+        std::fs::create_dir_all(ablage.join("share/swcatalog/xml")).unwrap();
+        std::fs::create_dir_all(praefix.join("bin")).unwrap();
+        std::fs::create_dir_all(praefix.join("share/swcatalog/xml")).unwrap();
+        std::fs::create_dir_all(basis.join("leer/bin")).unwrap();
+        assert_eq!(
+            ergaenzungen_dir_for(Some(&ablage)),
+            Some(ablage.join("share/swcatalog"))
+        );
+        assert_eq!(
+            ergaenzungen_dir_for(Some(&praefix.join("bin"))),
+            Some(praefix.join("share/swcatalog"))
+        );
+        assert_eq!(ergaenzungen_dir_for(Some(&basis.join("leer/bin"))), None);
+        assert_eq!(ergaenzungen_dir_for(None), None);
+        std::fs::remove_dir_all(&basis).unwrap();
+    }
+
+    #[test]
+    fn ergaenzungen_einhaengen_ohne_doppel() {
+        let mut k = Konfiguration::system();
+        let n = k.katalog_verzeichnisse.len();
+        let m = k.symbol_cache_verzeichnisse.len();
+        // Systempfad: schon da, wird nicht doppelt gelesen.
+        ergaenzungen_einhaengen(&mut k, Path::new("/usr/share/swcatalog"));
+        assert_eq!(k.katalog_verzeichnisse.len(), n);
+        assert_eq!(k.symbol_cache_verzeichnisse.len(), m);
+        // Ablage: als letzte Quelle (gewinnt bei gleicher ID).
+        ergaenzungen_einhaengen(&mut k, &repo_ergaenzungen());
+        ergaenzungen_einhaengen(&mut k, &repo_ergaenzungen());
+        assert_eq!(k.katalog_verzeichnisse.len(), n + 1);
+        assert_eq!(
+            k.katalog_verzeichnisse.last(),
+            Some(&repo_ergaenzungen().join("xml"))
+        );
+        assert_eq!(
+            k.symbol_cache_verzeichnisse.last(),
+            Some(&repo_ergaenzungen().join("icons"))
+        );
+    }
+
+    #[test]
+    fn ergaenzung_in_suche_und_kategorie() {
+        let k = nur_ergaenzungen();
+        assert_eq!(k.alle().len(), 2);
+        let treffer = k.suchen("thunderbird");
+        let tb = treffer.first().expect("Treffer für thunderbird");
+        assert_eq!(tb.id, "org.mozilla.Thunderbird");
+        assert_eq!(tb.name, "Thunderbird");
+        assert_eq!(tb.paketname.as_deref(), Some("thunderbird"));
+        assert_eq!(
+            tb.zusammenfassung,
+            "E-Mails lesen und schreiben, Kalender und Kontakte verwalten"
+        );
+        assert!(tb.beschreibung.contains("nicht als Snap"));
+        assert_eq!(tb.lizenz.as_deref(), Some("MPL-2.0"));
+        assert_eq!(tb.homepage.as_deref(), Some("https://www.thunderbird.net/"));
+        assert!(k
+            .kategorie(Kategorie::Internet)
+            .iter()
+            .any(|a| a.id == "org.mozilla.Thunderbird"));
+        assert_eq!(
+            k.nach_paket("thunderbird").map(|a| a.id.as_str()),
+            Some(tb.id.as_str())
+        );
+        // Deutsche Schlüsselwörter und Umlaut-Toleranz der Suche.
+        assert_eq!(
+            k.suchen("E-Mail").first().map(|a| a.id.as_str()),
+            Some(tb.id.as_str())
+        );
+        assert_eq!(
+            k.suchen("Webbrowser").first().map(|a| a.id.as_str()),
+            Some("org.mozilla.firefox")
+        );
+        // Symbol: ohne Thema aus dem Cache der Ergänzungen.
+        let pfad = k.symbol_pfad(tb, 64).expect("Symbol");
+        assert!(
+            pfad.ends_with("querencia-ergaenzungen/64x64/thunderbird.png"),
+            "{}",
+            pfad.display()
+        );
+        let gross = k.symbol_pfad(tb, 128).expect("Symbol 128");
+        assert!(gross.ends_with("querencia-ergaenzungen/128x128/thunderbird.png"));
+        assert_eq!(
+            k.innen.zusatz(tb).map(|z| z.origin.as_str()),
+            Some("querencia-ergaenzungen")
+        );
+    }
+
+    #[test]
+    fn ergaenzung_mit_paketstand_aus_packagekit() {
+        let k = nur_ergaenzungen();
+        // Antwort von Resolve(thunderbird, firefox), wie PackageKit sie liefert:
+        // Thunderbird verfügbar aus der Ersatzquelle, Firefox nur als Snap-Hülle.
+        let stand = Paketstand::aus(
+            vec![
+                pk("thunderbird", TB, false),
+                pk("firefox", "1:1snap1-0ubuntu9.1", false),
+            ],
+            Vec::new(),
+        );
+        let zeilen = logik::zeilen_gesucht(Ansicht::Alle, "thunderbird", &k, &stand);
+        let z = zeilen.first().expect("Zeile");
+        assert_eq!(z.titel, "Thunderbird");
+        assert_eq!(z.zustand(), "Available");
+        assert_eq!(z.knopf(), "Install");
+        assert_eq!(z.paket.as_ref().map(|p| p.version.as_str()), Some(TB));
+        let internet = logik::zeilen_fuer(Ansicht::Kategorie(Kategorie::Internet), &k, &stand);
+        let titel: Vec<(&str, String)> = internet
+            .iter()
+            .map(|z| (z.titel.as_str(), z.zustand()))
+            .collect();
+        assert_eq!(
+            titel,
+            [
+                ("Firefox", "Not available".to_string()),
+                ("Thunderbird", "Available".to_string())
+            ]
+        );
+        // Installiert und Aktualisierung.
+        let stand = Paketstand::aus(
+            vec![pk("thunderbird", TB, true)],
+            vec![qs_typen::Aktualisierung {
+                paket: pk(
+                    "thunderbird",
+                    "1:140.18.0+build1-0ubuntu0.24.04.1~mt1",
+                    false,
+                ),
+                dringlichkeit: qs_typen::Dringlichkeit::Sicherheit,
+                neustart_noetig: false,
+            }],
+        );
+        let inst = logik::zeilen_fuer(Ansicht::Installiert, &k, &stand);
+        assert_eq!(inst.len(), 1);
+        assert_eq!(inst[0].zustand(), "Update available");
+        let akt = logik::zeilen_fuer(Ansicht::Aktualisierungen, &k, &stand);
+        assert_eq!(
+            akt[0].anwendung.as_ref().map(|a| a.id.as_str()),
+            Some("org.mozilla.Thunderbird")
+        );
+    }
+
+    /// Mit dem Katalog des Systems (sofern vorhanden): Die Suche „thunderbird“
+    /// bringt den Eintrag der Ergänzung vor Birdtray und Co.
+    #[test]
+    fn ergaenzung_mit_systemkatalog() {
+        let mut k = Konfiguration::system();
+        if !k.katalog_verzeichnisse.iter().any(|d| d.is_dir()) {
+            eprintln!("kein Systemkatalog – übersprungen");
+            return;
+        }
+        k.metainfo_verzeichnisse.truncate(1);
+        ergaenzungen_einhaengen(&mut k, &repo_ergaenzungen());
+        let (k, _) = AppKatalog::laden(k).expect("Systemkatalog");
+        let treffer = k.suchen("thunderbird");
+        assert_eq!(
+            treffer.first().map(|a| a.id.as_str()),
+            Some("org.mozilla.Thunderbird")
+        );
+        assert_eq!(
+            treffer
+                .iter()
+                .filter(|a| a.paketname.as_deref() == Some("thunderbird"))
+                .count(),
+            1
+        );
+        assert_eq!(
+            k.suchen("firefox").first().map(|a| a.id.as_str()),
+            Some("org.mozilla.firefox")
+        );
+    }
+
+    /// Nur ausdrücklich (`--ignored`): Resolve am System-PackageKit (lesend,
+    /// keine Transaktion, die etwas ändert). Prüft, dass die Pakete der
+    /// Ergänzungen dort auflösbar sind und keine Snap-Hülle übrig bleibt.
+    #[test]
+    #[ignore]
+    fn ergaenzung_paketstatus_systemweit_lesend() {
+        let k = nur_ergaenzungen();
+        let namen: Vec<String> = k
+            .alle()
+            .iter()
+            .filter_map(|a| a.paketname.clone())
+            .collect();
+        let pk = qs_paketkit::PaketKit::neu_blockierend().expect("PackageKit");
+        let pakete = gtk::glib::MainContext::new()
+            .block_on(PaketKitAufloeser(pk).aufloesen(namen))
+            .expect("Resolve");
+        let stand = Paketstand::aus(pakete, Vec::new());
+        for z in logik::zeilen_fuer(Ansicht::Kategorie(Kategorie::Internet), &k, &stand) {
+            let p = z.paket.as_ref().expect("Paket aufgelöst");
+            eprintln!("{}\t{}\t{}", z.titel, p.version, z.zustand());
+            assert!(!logik::ist_snap_huelle(&p.version) || p.installiert);
+        }
     }
 
     #[test]

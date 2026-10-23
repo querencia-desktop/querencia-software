@@ -37,6 +37,7 @@ simulierte Transaktionen 2 s). Austauschstellen: `../docs/integration.md`.
 | `src/hilfe.rs` | Adressen für Info und Hilfe-Menü (Website, Online-Hilfe, „Fehler melden“ aus `/usr/share/querencia/release`), Öffnen über `gtk::UriLauncher` (0.1.5) |
 | `src/style.css` | klassische Optik, Orange nur für Auswahl und Fortschritt; Dunkelblock für Thema 0.2 (0.1.4) |
 | `data/resource/` | eingebettete Symbole (SW-5-Programmsymbol, Ersatzsymbol), `HERKUNFT` |
+| `data/swcatalog/` | Katalog-Ergänzungen im Aufbau von `/usr/share/swcatalog` (XML, Symbole); Quellen der Symbole in `data/ergaenzungen/symbole/` (0.1.6, `../docs/katalog-ergaenzungen.md`) |
 | `werkzeug/` | isolierte GUI-Prüfung (`../docs/testing.md`) |
 | `nachweis/` | Release-Binary mit SHA256, Prüf- und GUI-Protokolle |
 

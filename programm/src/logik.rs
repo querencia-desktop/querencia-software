@@ -107,18 +107,43 @@ impl Zeile {
     }
 }
 
+/// Snap-Hülle: Ubuntus Übergangspaket, das nur den gleichnamigen Snap
+/// nachinstalliert (Version `2:1snap1-0ubuntu5` bei Thunderbird,
+/// `1:1snap1-0ubuntu9.1` bei Firefox). Querencia verwendet keine Snaps und
+/// holt diese Programme aus Ersatzquellen; die Hülle gilt nicht als
+/// verfügbare Fassung.
+pub fn ist_snap_huelle(version: &str) -> bool {
+    let ohne_epoche = version.split_once(':').map_or(version, |(_, r)| r);
+    let upstream = ohne_epoche.rsplit_once('-').map_or(ohne_epoche, |(u, _)| u);
+    let ziffern = |t: &str| !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit());
+    upstream
+        .split_once("snap")
+        .is_some_and(|(a, b)| ziffern(a) && ziffern(b))
+}
+
 /// Zustand der Paketseite, den die Oberfläche zwischenspeichert.
 #[derive(Default)]
 pub struct Paketstand {
     /// Paketname → Paket (installierte Version bevorzugt).
     pub pakete: HashMap<String, Paket>,
     pub aktualisierungen: Vec<Aktualisierung>,
+    /// Ausgeblendete Snap-Hüllen (Paketname), siehe [`ist_snap_huelle`].
+    pub snap_huellen: Vec<String>,
 }
 
 impl Paketstand {
-    pub fn aus(pakete: Vec<Paket>, aktualisierungen: Vec<Aktualisierung>) -> Self {
+    /// Paketstand aus der Antwort von PackageKit. Nicht installierte
+    /// Snap-Hüllen und Aktualisierungen auf eine Snap-Hülle fallen weg: Das
+    /// Paket gilt dann als nicht verfügbar, sein Knopf bleibt gesperrt. Eine
+    /// schon installierte Hülle bleibt sichtbar (Entfernen bleibt möglich).
+    pub fn aus(pakete: Vec<Paket>, mut aktualisierungen: Vec<Aktualisierung>) -> Self {
         let mut map: HashMap<String, Paket> = HashMap::new();
+        let mut snap_huellen = Vec::new();
         for p in pakete {
+            if !p.installiert && ist_snap_huelle(&p.version) {
+                snap_huellen.push(p.name);
+                continue;
+            }
             match map.get(&p.name) {
                 Some(alt) if alt.installiert && !p.installiert => {}
                 _ => {
@@ -126,9 +151,19 @@ impl Paketstand {
                 }
             }
         }
+        aktualisierungen.retain(|a| {
+            let huelle = ist_snap_huelle(&a.paket.version);
+            if huelle {
+                snap_huellen.push(a.paket.name.clone());
+            }
+            !huelle
+        });
+        snap_huellen.sort();
+        snap_huellen.dedup();
         Paketstand {
             pakete: map,
             aktualisierungen,
+            snap_huellen,
         }
     }
 
@@ -686,6 +721,73 @@ mod tests {
             text: "kaputt".into(),
         });
         assert_eq!(t, "kaputt (internal-error)");
+    }
+
+    fn pk(name: &str, version: &str, installiert: bool) -> Paket {
+        Paket {
+            id: format!(
+                "{name};{version};amd64;{}",
+                if installiert { "installed" } else { "quelle" }
+            ),
+            name: name.into(),
+            version: version.into(),
+            arch: "amd64".into(),
+            zusammenfassung: String::new(),
+            installiert,
+        }
+    }
+
+    #[test]
+    fn snap_huelle_erkannt() {
+        for v in [
+            "2:1snap1-0ubuntu5",
+            "1:1snap1-0ubuntu9.1",
+            "1snap1",
+            "2:1snap1-0ubuntu2",
+        ] {
+            assert!(ist_snap_huelle(v), "{v}");
+        }
+        for v in [
+            "1:140.17.0+build3-0ubuntu0.24.04.1~mt1",
+            "158.0.1~build1",
+            "1.0-1",
+            "2:snap1-1",
+            "1snap-1",
+            "1:1.2snap3-1",
+            "",
+        ] {
+            assert!(!ist_snap_huelle(v), "{v}");
+        }
+    }
+
+    #[test]
+    fn paketstand_blendet_snap_huellen_aus() {
+        let pakete = vec![
+            pk(
+                "thunderbird",
+                "1:140.17.0+build3-0ubuntu0.24.04.1~mt1",
+                false,
+            ),
+            pk("firefox", "1:1snap1-0ubuntu9.1", false),
+            pk("chromium-browser", "2:1snap1-0ubuntu2", true),
+        ];
+        let akt = vec![Aktualisierung {
+            paket: pk("thunderbird", "2:1snap1-0ubuntu5", false),
+            dringlichkeit: qs_typen::Dringlichkeit::Normal,
+            neustart_noetig: false,
+        }];
+        let stand = Paketstand::aus(pakete, akt);
+        assert!(stand.paket("thunderbird").is_some());
+        assert!(stand.paket("firefox").is_none(), "Snap-Hülle verfügbar");
+        assert!(
+            stand.paket("chromium-browser").is_some(),
+            "installierte Hülle bleibt"
+        );
+        assert!(
+            !stand.aktualisierbar("thunderbird"),
+            "Aktualisierung auf Hülle"
+        );
+        assert_eq!(stand.snap_huellen, ["firefox", "thunderbird"]);
     }
 
     use qs_typen::Vorgang;

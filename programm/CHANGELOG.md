@@ -1,5 +1,29 @@
 # Änderungen
 
+## 0.1.6 – 2026-10-23
+
+### Hinzugefügt
+- Katalog-Ergänzungen: eigene AppStream-Beschreibungen für Pakete, die
+  Querencia aus Ersatzquellen holt und die deshalb keinen Katalogeintrag haben.
+  Erste Einträge: Thunderbird (Paket `thunderbird` aus der Paketquelle des
+  Ubuntu-Mozilla-Teams) und Firefox (Paket `firefox` von Mozilla), beide unter
+  „Internet“, mit eigenem Katalogsymbol bis zur Installation. Die Suche
+  „thunderbird“ findet Thunderbird jetzt an erster Stelle. Format und Ort sind
+  die von AppStream (`/usr/share/swcatalog/xml/querencia-ergaenzungen.xml`);
+  das Programm liest denselben Aufbau zusätzlich neben der Binary
+  (`share/swcatalog/`). Beschreibung und Anleitung für weitere Einträge:
+  `docs/katalog-ergaenzungen.md`, Prüfwerkzeug
+  `werkzeug/ergaenzungen-pruefen.sh`.
+- `docs/quellen.md`: die Paketquellen für Thunderbird und Firefox (Zweck,
+  Suite, Schlüssel, Pin).
+
+### Geändert
+- Snap-Hüllen (Ubuntus Übergangspakete wie `thunderbird 2:1snap1-…`, die nur
+  den Snap nachinstallieren) gelten nicht als verfügbare Fassung: Ohne
+  Ersatzquelle steht „Nicht verfügbar“ und der Knopf bleibt gesperrt;
+  Aktualisierungen auf eine Hülle werden nicht angeboten, die Expertenliste
+  zeigt sie nicht. Eine installierte Hülle bleibt sichtbar.
+
 ## 0.1.5 – 2026-10-22
 
 ### Hinzugefügt

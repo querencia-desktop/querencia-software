@@ -56,6 +56,7 @@ Tab-getrennte Zeilen auf stdout, Koordinaten relativ zum Fensterinhalt
 | `netz pruefe` / `netz online/offline stufe pk monitor archiv host` / `netz vor-vorgang` / `netz frage-offline` / `netz trotzdem` / `netz meldung-entfernt` | Erreichbarkeitsprüfung (0.1.3): Start, Ergebnis (`stufe` = `packagekit`, `netzmonitor`, `archiv` oder `-`; `monitor` `an`/`aus`/`-`; `archiv` `erreichbar`/`nicht-erreichbar`/`-`), frische Prüfung vor einem Vorgang, Frage gezeigt, „Trotzdem versuchen“ gewählt, veraltete `no-network`-Meldung nach dem Wechsel auf online entfernt |
 | `netzstatus text` | Netzwerktext rechts in der Statuszeile |
 | `info-symbole programmsymbol querencia-q` | Inhalt des Info-Dialogs |
+| `snap-huellen namen` | ab 0.1.6: nach jedem Paketstand die ausgeblendeten Snap-Hüllen (Paketnamen, durch Komma getrennt; leer, wenn keine) |
 | `uri adresse` | ab 0.1.5: Adresse, die das Programm im Standardprogramm öffnen lässt (Hilfe → Online-Hilfe, Hilfe → Fehler melden, Website im Info-Dialog) |
 | `fokus suche` | Suchfeld hat den Fokus |
 | `zeiger x y` | Zeigerbewegung (Kalibrierung) |

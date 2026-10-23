@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">E-Mail-Programm – Briefumschlag in Querencia-Orange</title>
+  <!-- Katalogsymbol für Thunderbird in Querencia Software, solange das Paket
+       nicht installiert ist (danach gilt das Symbol aus dem Paket). Eigenes
+       Motiv im Stil der Querencia-Symbole: flächig, kein Verlauf, nur
+       Querencia-Orange #F07746 und Grau; kein Logo eines Dritten. -->
+  <rect x="5" y="14" width="54" height="38" rx="3" fill="#F07746" stroke="#4D4D4D" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M8 50 L25 33 M56 50 L39 33" fill="none" stroke="#A6A6A6" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M7.5 16.5 L32 36 L56.5 16.5" fill="none" stroke="#4D4D4D" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

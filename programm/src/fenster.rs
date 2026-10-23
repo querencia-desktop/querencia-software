@@ -976,7 +976,9 @@ impl Fenster {
             };
             match (pakete, akt) {
                 (Ok(p), Ok(a)) => {
-                    *s.stand.borrow_mut() = Paketstand::aus(p, a);
+                    let stand = Paketstand::aus(p, a);
+                    debug(&format!("snap-huellen\t{}", stand.snap_huellen.join(",")));
+                    *s.stand.borrow_mut() = stand;
                     if pruefung {
                         *s.letzte_pruefung.borrow_mut() = Some(uhrzeit());
                     }
