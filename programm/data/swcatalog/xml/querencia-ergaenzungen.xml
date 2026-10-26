@@ -13,6 +13,9 @@
     <name>Thunderbird</name>
     <summary>Read and write email, manage calendars and contacts</summary>
     <summary xml:lang="de">E-Mails lesen und schreiben, Kalender und Kontakte verwalten</summary>
+    <summary xml:lang="es">Leer y escribir correo electrónico, gestionar calendarios y contactos</summary>
+    <summary xml:lang="fr">Lire et écrire des courriels, gérer agendas et contacts</summary>
+    <summary xml:lang="it">Leggi e scrivi email, gestisci calendari e contatti</summary>
     <description>
       <p>Thunderbird is a free email application from the Mozilla community. It manages several email accounts in one window and also handles calendars, contacts, news feeds and newsgroups.</p>
       <p>Querencia installs Thunderbird as a regular package from the package source of the Ubuntu Mozilla team (extended support release), not as a Snap.</p>
@@ -20,6 +23,18 @@
     <description xml:lang="de">
       <p>Thunderbird ist ein freies E-Mail-Programm aus der Mozilla-Gemeinschaft. Es verwaltet mehrere E-Mail-Konten in einem Fenster und dazu Kalender, Kontakte, Nachrichtenfeeds und Newsgruppen.</p>
       <p>Querencia installiert Thunderbird als normales Paket aus der Paketquelle des Ubuntu-Mozilla-Teams (Fassung mit verlängerter Unterstützung), nicht als Snap.</p>
+    </description>
+    <description xml:lang="es">
+      <p>Thunderbird es un programa de correo electrónico libre de la comunidad Mozilla. Gestiona varias cuentas de correo en una sola ventana, además de calendarios, contactos, fuentes de noticias y grupos de noticias.</p>
+      <p>Querencia instala Thunderbird como paquete normal desde el origen de paquetes del equipo Mozilla de Ubuntu (versión de soporte extendido), no como Snap.</p>
+    </description>
+    <description xml:lang="fr">
+      <p>Thunderbird est un logiciel de messagerie libre issu de la communauté Mozilla. Il gère plusieurs comptes de messagerie dans une seule fenêtre, ainsi que des agendas, des contacts, des flux d’actualités et des groupes de discussion.</p>
+      <p>Querencia installe Thunderbird comme paquet ordinaire depuis la source de paquets de l’équipe Mozilla d’Ubuntu (version à support étendu), et non comme Snap.</p>
+    </description>
+    <description xml:lang="it">
+      <p>Thunderbird è un programma di posta elettronica libero della comunità Mozilla. Gestisce più account email in un’unica finestra, oltre a calendari, contatti, feed di notizie e newsgroup.</p>
+      <p>Querencia installa Thunderbird come pacchetto normale dalla sorgente dei pacchetti del team Mozilla di Ubuntu (versione con supporto esteso), non come Snap.</p>
     </description>
     <developer id="net.thunderbird">
       <name>Thunderbird Project</name>
@@ -45,6 +60,24 @@
       <keyword>Kalender</keyword>
       <keyword>Newsgruppe</keyword>
     </keywords>
+    <keywords xml:lang="es">
+      <keyword>correo</keyword>
+      <keyword>correo electrónico</keyword>
+      <keyword>calendario</keyword>
+      <keyword>grupo de noticias</keyword>
+    </keywords>
+    <keywords xml:lang="fr">
+      <keyword>courriel</keyword>
+      <keyword>messagerie</keyword>
+      <keyword>agenda</keyword>
+      <keyword>groupe de discussion</keyword>
+    </keywords>
+    <keywords xml:lang="it">
+      <keyword>email</keyword>
+      <keyword>posta</keyword>
+      <keyword>calendario</keyword>
+      <keyword>newsgroup</keyword>
+    </keywords>
     <icon type="stock">thunderbird</icon>
     <icon type="cached" width="64" height="64">thunderbird.png</icon>
     <icon type="cached" width="128" height="128">thunderbird.png</icon>
@@ -56,6 +89,9 @@
     <name>Firefox</name>
     <summary>Fast, private and free web browser</summary>
     <summary xml:lang="de">Schneller, privater und freier Webbrowser</summary>
+    <summary xml:lang="es">Navegador web rápido, privado y libre</summary>
+    <summary xml:lang="fr">Navigateur web rapide, privé et libre</summary>
+    <summary xml:lang="it">Browser web veloce, riservato e libero</summary>
     <description>
       <p>Firefox is the web browser of the Mozilla community. It blocks many trackers by default, syncs bookmarks and passwords between devices on request and can be extended with add-ons.</p>
       <p>Querencia installs Firefox as a regular package from Mozilla's own package source, not as a Snap.</p>
@@ -63,6 +99,18 @@
     <description xml:lang="de">
       <p>Firefox ist der Webbrowser der Mozilla-Gemeinschaft. Er sperrt von sich aus viele Tracker, gleicht auf Wunsch Lesezeichen und Passwörter zwischen Geräten ab und lässt sich mit Erweiterungen ergänzen.</p>
       <p>Querencia installiert Firefox als normales Paket aus der Paketquelle von Mozilla, nicht als Snap.</p>
+    </description>
+    <description xml:lang="es">
+      <p>Firefox es el navegador web de la comunidad Mozilla. Bloquea muchos rastreadores de forma predeterminada, sincroniza a petición marcadores y contraseñas entre dispositivos y se puede ampliar con complementos.</p>
+      <p>Querencia instala Firefox como paquete normal desde el origen de paquetes de Mozilla, no como Snap.</p>
+    </description>
+    <description xml:lang="fr">
+      <p>Firefox est le navigateur web de la communauté Mozilla. Il bloque par défaut de nombreux traqueurs, synchronise sur demande marque-pages et mots de passe entre appareils et peut être enrichi de modules complémentaires.</p>
+      <p>Querencia installe Firefox comme paquet ordinaire depuis la source de paquets de Mozilla, et non comme Snap.</p>
+    </description>
+    <description xml:lang="it">
+      <p>Firefox è il browser web della comunità Mozilla. Blocca per impostazione predefinita molti tracker, sincronizza su richiesta segnalibri e password tra dispositivi e si può estendere con componenti aggiuntivi.</p>
+      <p>Querencia installa Firefox come pacchetto normale dalla sorgente dei pacchetti di Mozilla, non come Snap.</p>
     </description>
     <developer id="org.mozilla">
       <name>Mozilla</name>
@@ -83,6 +131,21 @@
       <keyword>Browser</keyword>
       <keyword>Internet</keyword>
       <keyword>Web</keyword>
+    </keywords>
+    <keywords xml:lang="es">
+      <keyword>navegador</keyword>
+      <keyword>internet</keyword>
+      <keyword>web</keyword>
+    </keywords>
+    <keywords xml:lang="fr">
+      <keyword>navigateur</keyword>
+      <keyword>internet</keyword>
+      <keyword>web</keyword>
+    </keywords>
+    <keywords xml:lang="it">
+      <keyword>browser</keyword>
+      <keyword>internet</keyword>
+      <keyword>web</keyword>
     </keywords>
     <icon type="stock">firefox</icon>
     <icon type="cached" width="64" height="64">firefox.png</icon>
