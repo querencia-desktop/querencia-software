@@ -9,8 +9,9 @@ Anleitung auf <https://querencialinux.org>.
 
 *English summary:* A graphical software installer (PackageKit, AppStream) in
 the spirit of the Ubuntu Software Center. Part of Querencia Desktop, a classic
-GNOME-2-style desktop for Wayland. Alpha software; documentation is in German,
-the user interface is available in English and German.
+GNOME-2-style desktop for Wayland. Alpha software; the user interface is
+available in German, English, Italian, Spanish and French; documentation is in
+German.
 
 > **Alpha.** Die Bausteine (`qs_typen`, `qs_paketkit`, `qs_katalog`,
 > `qs_transaktion`) sind noch Pfad-Abhängigkeiten auf Nachbar-Repos; dieses
