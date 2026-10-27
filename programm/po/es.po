@@ -1,0 +1,1192 @@
+# Querencia Software: spanische Übersetzung.
+# Copyright (C) 2026 Querencia Desktop contributors
+# Diese Datei steht unter derselben Lizenz wie Querencia Software (GPL-3.0-or-later).
+# Begriffe nach der gemeinsamen Querencia-Begriffstabelle (GNOME-Wortwahl).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: querencia-software\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-10-26 23:21+0100\n"
+"Last-Translator: Querencia Desktop contributors\n"
+"Language-Team: Español (Querencia)\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel Name
+#: data/org.querencia.Software.desktop.in:11
+msgid "Software"
+msgstr "Software"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel GenericName
+#: data/org.querencia.Software.desktop.in:12
+msgid "Software Manager"
+msgstr "Gestor de software"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel Comment
+#: data/org.querencia.Software.desktop.in:13
+msgid "Install, remove and update programs"
+msgstr "Instalar, quitar y actualizar programas"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel Keywords (Liste, Einträge mit ; trennen und abschließen)
+#: data/org.querencia.Software.desktop.in:19
+msgid "software;packages;install;remove;update;apps;store;"
+msgstr "software;paquetes;instalar;quitar;actualizar;aplicaciones;tienda;"
+
+#: src/dialoge.rs:142
+#, no-c-format
+msgid "About {name}"
+msgstr "Acerca de {name}"
+
+#: src/dialoge.rs:171
+msgid ""
+"Install, update and remove\n"
+"applications for Querencia Desktop.\n"
+"\n"
+"Based on PackageKit and AppStream."
+msgstr ""
+"Instale, actualice y quite\n"
+"aplicaciones para Querencia Desktop.\n"
+"\n"
+"Basado en PackageKit y AppStream."
+
+#: src/dialoge.rs:177
+msgid "Alpha – not released for everyday use."
+msgstr "Alfa: no apto todavía para el uso diario."
+
+#: src/dialoge.rs:200
+msgid "License: GNU GPL, version 3 or later"
+msgstr "Licencia: GNU GPL, versión 3 o posterior"
+
+#: src/dialoge.rs:209 src/dialoge.rs:260
+msgid "_Close"
+msgstr "_Cerrar"
+
+#: src/dialoge.rs:238 src/dialoge.rs:354 src/dialoge.rs:424 src/dialoge.rs:468 src/dialoge.rs:508
+msgid "_Cancel"
+msgstr "_Cancelar"
+
+#. TRANSLATORS: button; its access key must differ from “_Cancel”
+#: src/dialoge.rs:240
+msgid "_Try Anyway"
+msgstr "_Intentar de todos modos"
+
+#: src/dialoge.rs:329
+msgid "Confirm Removal"
+msgstr "Confirmar la eliminación"
+
+#: src/dialoge.rs:334
+#, no-c-format
+msgid "Do you really want to remove “{name}”?"
+msgstr "¿Seguro que desea quitar «{name}»?"
+
+#: src/dialoge.rs:342
+#, no-c-format
+msgid "The following package will be removed as well ({n}):"
+msgid_plural "The following packages will be removed as well ({n}):"
+msgstr[0] "También se quitará el siguiente paquete ({n}):"
+msgstr[1] "También se quitarán los siguientes paquetes ({n}):"
+
+#: src/dialoge.rs:355
+msgid "_Remove"
+msgstr "_Quitar"
+
+#: src/dialoge.rs:376
+msgid "Confirm Installation"
+msgstr "Confirmar la instalación"
+
+#: src/dialoge.rs:381
+#, no-c-format
+msgid "Do you want to install “{name}”?"
+msgstr "¿Desea instalar «{name}»?"
+
+#: src/dialoge.rs:390
+#, no-c-format
+msgid "The following additional package will be installed ({n}):"
+msgid_plural "The following additional packages will be installed ({n}):"
+msgstr[0] "También se instalará el siguiente paquete ({n}):"
+msgstr[1] "También se instalarán los siguientes paquetes ({n}):"
+
+#: src/dialoge.rs:398
+#, no-c-format
+msgid "Download size: {size}"
+msgstr "Tamaño de descarga: {size}"
+
+#: src/dialoge.rs:411
+#, no-c-format
+msgid "To do this, the following package will be removed ({n}):"
+msgid_plural "To do this, the following packages will be removed ({n}):"
+msgstr[0] "Para ello se quitará el siguiente paquete ({n}):"
+msgstr[1] "Para ello se quitarán los siguientes paquetes ({n}):"
+
+#: src/dialoge.rs:425
+msgid "_Install"
+msgstr "_Instalar"
+
+#: src/dialoge.rs:446
+msgid "Operation Is Taking a Long Time"
+msgstr "La operación está tardando mucho"
+
+#: src/dialoge.rs:453
+msgid "The operation reports no progress"
+msgstr "La operación no indica ningún avance"
+
+#: src/dialoge.rs:456
+#, no-c-format
+msgid ""
+"{status}\n"
+"\n"
+"You can keep waiting or cancel the operation."
+msgstr ""
+"{status}\n"
+"\n"
+"Puede seguir esperando o cancelar la operación."
+
+#. TRANSLATORS: button; its access key must differ from “_Cancel”
+#: src/dialoge.rs:470
+msgid "_Keep Waiting"
+msgstr "_Seguir esperando"
+
+#: src/dialoge.rs:487
+msgid "Package Manager Busy"
+msgstr "Gestor de paquetes ocupado"
+
+#: src/dialoge.rs:492
+msgid "The package manager is busy right now"
+msgstr "El gestor de paquetes está ocupado en este momento"
+
+#: src/dialoge.rs:495
+#, no-c-format
+msgid ""
+"{reason}\n"
+"\n"
+"Another program (for example an update in the background) holds the package lock. You can wait and try again, or cancel the operation."
+msgstr ""
+"{reason}\n"
+"\n"
+"Otro programa (por ejemplo, una actualización en segundo plano) tiene el bloqueo de paquetes. Puede esperar y volver a intentarlo, o cancelar la operación."
+
+#. TRANSLATORS: button; its access key must differ from “_Cancel”
+#: src/dialoge.rs:510
+msgid "_Wait"
+msgstr "_Esperar"
+
+#: src/echt.rs:72
+#, no-c-format
+msgid "PackageKit did not answer within {seconds} s"
+msgstr "PackageKit no respondió en {seconds} s"
+
+#: src/echt.rs:184
+msgid ""
+"Read-only mode (QS_NUR_LESEN): operations that change the system are disabled"
+msgstr ""
+"Modo de solo lectura (QS_NUR_LESEN): las operaciones que modifican el sistema están desactivadas"
+
+#: src/fenster.rs:96
+msgid "_Check for Updates"
+msgstr "_Buscar actualizaciones"
+
+#: src/fenster.rs:99
+msgid "_Quit"
+msgstr "_Salir"
+
+#: src/fenster.rs:103
+msgid "_Find"
+msgstr "_Buscar"
+
+#: src/fenster.rs:107
+msgid "_All Software"
+msgstr "_Todos los programas"
+
+#: src/fenster.rs:109
+msgid "_Installed"
+msgstr "_Instalados"
+
+#: src/fenster.rs:113
+msgid "_Updates"
+msgstr "_Actualizaciones"
+
+#: src/fenster.rs:117
+msgid "_Expert List"
+msgstr "_Lista para expertos"
+
+#. TRANSLATORS: Help menu; both entries open the web browser. Access keys must be unique within the menu
+#: src/fenster.rs:125
+msgid "Online _Help"
+msgstr "Ayuda en _línea"
+
+#: src/fenster.rs:126
+msgid "_Report a Bug"
+msgstr "_Informar de un error"
+
+#: src/fenster.rs:129
+msgid "_About"
+msgstr "Acerca _de"
+
+#: src/fenster.rs:133
+msgid "_File"
+msgstr "_Archivo"
+
+#: src/fenster.rs:134
+msgid "_Edit"
+msgstr "_Editar"
+
+#: src/fenster.rs:135
+msgid "_View"
+msgstr "_Ver"
+
+#: src/fenster.rs:136
+msgid "_Help"
+msgstr "Ay_uda"
+
+#: src/fenster.rs:348
+msgid "Search software…"
+msgstr "Buscar software…"
+
+#: src/fenster.rs:365 src/fenster.rs:1104
+msgid "No applications found."
+msgstr "No se encontró ninguna aplicación."
+
+#: src/fenster.rs:398
+msgid "Check Again"
+msgstr "Volver a comprobar"
+
+#: src/fenster.rs:400
+msgid "Check the network connection again"
+msgstr "Volver a comprobar la conexión de red"
+
+#: src/fenster.rs:499 src/fenster.rs:1102
+msgid "Loading catalog…"
+msgstr "Cargando el catálogo…"
+
+#: src/fenster.rs:524
+#, no-c-format
+msgid "The catalog could not be loaded: {error}"
+msgstr "No se pudo cargar el catálogo: {error}"
+
+#: src/fenster.rs:528
+msgid "The catalog could not be loaded: read error"
+msgstr "No se pudo cargar el catálogo: error de lectura"
+
+#: src/fenster.rs:538
+msgid "← _Back"
+msgstr "← _Atrás"
+
+#: src/fenster.rs:561 src/fenster.rs:703 src/fenster.rs:2037 src/logik.rs:105
+msgid "Install"
+msgstr "Instalar"
+
+#: src/fenster.rs:602
+msgid "Version"
+msgstr "Versión"
+
+#: src/fenster.rs:603
+msgid "Size"
+msgstr "Tamaño"
+
+#: src/fenster.rs:604
+msgid "License"
+msgstr "Licencia"
+
+#: src/fenster.rs:605
+msgid "Website"
+msgstr "Sitio web"
+
+#. TRANSLATORS: progress bar button; German keeps its old access key
+#: src/fenster.rs:659
+msgctxt "progress bar"
+msgid "_Cancel"
+msgstr "_Cancelar"
+
+#: src/fenster.rs:985
+#, no-c-format
+msgid "Checked for updates: {n} available"
+msgid_plural "Checked for updates: {n} available"
+msgstr[0] "Actualizaciones comprobadas: {n} disponible"
+msgstr[1] "Actualizaciones comprobadas: {n} disponibles"
+
+#: src/fenster.rs:994
+#, no-c-format
+msgid "Package source not reachable: {error}"
+msgstr "No se puede acceder al origen de software: {error}"
+
+#: src/fenster.rs:1009
+msgid "Checking for updates…"
+msgstr "Buscando actualizaciones…"
+
+#: src/fenster.rs:1046
+msgid "Type at least two characters to search all packages."
+msgstr "Escriba al menos dos caracteres para buscar en todos los paquetes."
+
+#: src/fenster.rs:1064 src/fenster.rs:1076
+msgid "Searching…"
+msgstr "Buscando…"
+
+#: src/fenster.rs:1068
+#, no-c-format
+msgid "Search failed: {error}"
+msgstr "Falló la búsqueda: {error}"
+
+#: src/fenster.rs:1136
+#, no-c-format
+msgid "{view} – Search “{text}”: {n} result"
+msgid_plural "{view} – Search “{text}”: {n} results"
+msgstr[0] "{view} – Búsqueda «{text}»: {n} resultado"
+msgstr[1] "{view} – Búsqueda «{text}»: {n} resultados"
+
+#: src/fenster.rs:1143 src/i18n.rs:136 src/i18n.rs:145
+#, no-c-format
+msgid "{view} – {n} package"
+msgid_plural "{view} – {n} packages"
+msgstr[0] "{view} – {n} paquete"
+msgstr[1] "{view} – {n} paquetes"
+
+#: src/fenster.rs:1150
+#, no-c-format
+msgid "{view} – {n} application"
+msgid_plural "{view} – {n} applications"
+msgstr[0] "{view} – {n} aplicación"
+msgstr[1] "{view} – {n} aplicaciones"
+
+#. TRANSLATORS: sidebar entry with the number of available updates
+#: src/fenster.rs:1172
+#, no-c-format
+msgid "Updates ({n})"
+msgstr "Actualizaciones ({n})"
+
+#: src/fenster.rs:1194
+#, no-c-format
+msgid ""
+"Catalog: {n} application, {installed} installed · last check for updates {time}"
+msgid_plural ""
+"Catalog: {n} applications, {installed} installed · last check for updates {time}"
+msgstr[0] ""
+"Catálogo: {n} aplicación, {installed} instaladas · última comprobación de actualizaciones {time}"
+msgstr[1] ""
+"Catálogo: {n} aplicaciones, {installed} instaladas · última comprobación de actualizaciones {time}"
+
+#: src/fenster.rs:1200
+#, no-c-format
+msgid ""
+"Catalog: {n} application, {installed} installed · no check for updates yet"
+msgid_plural ""
+"Catalog: {n} applications, {installed} installed · no check for updates yet"
+msgstr[0] ""
+"Catálogo: {n} aplicación, {installed} instaladas · todavía sin comprobar actualizaciones"
+msgstr[1] ""
+"Catálogo: {n} aplicaciones, {installed} instaladas · todavía sin comprobar actualizaciones"
+
+#: src/fenster.rs:1240
+msgid "checking…"
+msgstr "comprobando…"
+
+#: src/fenster.rs:1300 src/main.rs:210
+#, no-c-format
+msgid "Network: {state}"
+msgstr "Red: {state}"
+
+#: src/fenster.rs:1493
+msgid "Operation in Progress"
+msgstr "Operación en curso"
+
+#: src/fenster.rs:1494
+msgid ""
+"Another operation is already running. Please wait until it has finished, or cancel it."
+msgstr "Ya hay otra operación en curso. Espere a que termine o cancélela."
+
+#: src/fenster.rs:1562 src/fremdtexte.rs:54
+msgid "Preparing…"
+msgstr "Preparando…"
+
+#: src/fenster.rs:1651
+msgid "Reattached: package manager operation in progress"
+msgstr "Reconectado: operación del gestor de paquetes en curso"
+
+#: src/fenster.rs:1677
+msgid "An earlier package manager operation has finished."
+msgstr "Ha terminado una operación anterior del gestor de paquetes."
+
+#: src/fenster.rs:1688 src/fenster.rs:1692 src/fremdtexte.rs:55
+msgid "Cancelling…"
+msgstr "Cancelando…"
+
+#: src/fenster.rs:1730
+msgid "Simulation finished, waiting for confirmation…"
+msgstr "Simulación terminada, esperando confirmación…"
+
+#: src/fenster.rs:1747
+msgid "Confirmed, removing…"
+msgstr "Confirmado, quitando…"
+
+#: src/fenster.rs:1749
+msgid "Confirmed, installing…"
+msgstr "Confirmado, instalando…"
+
+#: src/fenster.rs:1826
+msgid "Waiting for the package lock…"
+msgstr "Esperando el bloqueo de paquetes…"
+
+#: src/fenster.rs:1838
+msgid "Another program is using the package manager right now."
+msgstr "Otro programa está usando el gestor de paquetes en este momento."
+
+#: src/fenster.rs:1843
+msgid "Trying again…"
+msgstr "Reintentando…"
+
+#: src/fenster.rs:1881
+#, no-c-format
+msgid "{name}: operation failed"
+msgstr "{name}: falló la operación"
+
+#: src/fenster.rs:1900
+#, no-c-format
+msgid "{name}: operation cancelled."
+msgstr "{name}: operación cancelada."
+
+#: src/fenster.rs:2038 src/logik.rs:103
+msgid "Remove"
+msgstr "Quitar"
+
+#: src/fenster.rs:2039 src/logik.rs:101
+msgid "Update"
+msgstr "Actualizar"
+
+#: src/fenster.rs:2040
+msgid "Refresh software sources"
+msgstr "Actualizar orígenes de software"
+
+#: src/fenster.rs:2048
+#, no-c-format
+msgid "Install: {name} ({package})"
+msgstr "Instalar: {name} ({package})"
+
+#: src/fenster.rs:2049
+#, no-c-format
+msgid "Remove: {name} ({package})"
+msgstr "Quitar: {name} ({package})"
+
+#: src/fenster.rs:2050
+#, no-c-format
+msgid "Update: {name} ({package})"
+msgstr "Actualizar: {name} ({package})"
+
+#: src/fenster.rs:2052
+#, no-c-format
+msgid "Refresh software sources: {name} ({package})"
+msgstr "Actualizar orígenes de software: {name} ({package})"
+
+#: src/fenster.rs:2061
+#, no-c-format
+msgid "{name} was installed."
+msgstr "{name} se ha instalado."
+
+#: src/fenster.rs:2062
+#, no-c-format
+msgid "{name} was removed."
+msgstr "{name} se ha quitado."
+
+#: src/fenster.rs:2063
+#, no-c-format
+msgid "{name} was updated."
+msgstr "{name} se ha actualizado."
+
+#: src/fenster.rs:2064
+#, no-c-format
+msgid "{name} was completed."
+msgstr "{name} se ha completado."
+
+#: src/fenster.rs:2066
+#, no-c-format
+msgid "{name} was installed. A restart is required."
+msgstr "{name} se ha instalado. Es necesario reiniciar."
+
+#: src/fenster.rs:2069
+#, no-c-format
+msgid "{name} was removed. A restart is required."
+msgstr "{name} se ha quitado. Es necesario reiniciar."
+
+#: src/fenster.rs:2072
+#, no-c-format
+msgid "{name} was updated. A restart is required."
+msgstr "{name} se ha actualizado. Es necesario reiniciar."
+
+#: src/fenster.rs:2074
+#, no-c-format
+msgid "{name} was completed. A restart is required."
+msgstr "{name} se ha completado. Es necesario reiniciar."
+
+#: src/fremdtexte.rs:23
+msgid "Accessories"
+msgstr "Accesorios"
+
+#: src/fremdtexte.rs:24
+msgid "Office"
+msgstr "Oficina"
+
+#: src/fremdtexte.rs:25
+msgid "Graphics"
+msgstr "Gráficos"
+
+#: src/fremdtexte.rs:26
+msgid "Internet"
+msgstr "Internet"
+
+#: src/fremdtexte.rs:27
+msgid "Sound & Video"
+msgstr "Sonido y vídeo"
+
+#: src/fremdtexte.rs:28
+msgid "Games"
+msgstr "Juegos"
+
+#: src/fremdtexte.rs:29
+msgid "Programming"
+msgstr "Programación"
+
+#: src/fremdtexte.rs:30
+msgid "Education"
+msgstr "Educación"
+
+#: src/fremdtexte.rs:31
+msgid "System Tools"
+msgstr "Herramientas del sistema"
+
+#: src/fremdtexte.rs:32
+msgid "Other"
+msgstr "Otros"
+
+#: src/fremdtexte.rs:53
+msgid "Started"
+msgstr "Iniciado"
+
+#: src/fremdtexte.rs:56
+msgid "A restart will be required"
+msgstr "Será necesario reiniciar"
+
+#: src/fremdtexte.rs:58
+msgid "Lost the connection to the package manager, trying to reconnect…"
+msgstr ""
+"Se perdió la conexión con el gestor de paquetes; intentando reconectar…"
+
+#: src/fremdtexte.rs:61
+msgid "Waiting for a running package manager transaction…"
+msgstr "Esperando una transacción del gestor de paquetes en curso…"
+
+#: src/fremdtexte.rs:75
+#, no-c-format
+msgid "An earlier package manager transaction is still running…"
+msgid_plural "{n} earlier package manager transactions are still running…"
+msgstr[0] "Todavía hay una transacción anterior del gestor de paquetes en curso…"
+msgstr[1] ""
+"Todavía hay {n} transacciones anteriores del gestor de paquetes en curso…"
+
+#: src/fremdtexte.rs:91
+#, no-c-format
+msgid "No progress for {n} minute. Keep waiting or cancel?"
+msgid_plural "No progress for {n} minutes. Keep waiting or cancel?"
+msgstr[0] "Sin avances desde hace {n} minuto. ¿Seguir esperando o cancelar?"
+msgstr[1] "Sin avances desde hace {n} minutos. ¿Seguir esperando o cancelar?"
+
+#: src/fremdtexte.rs:97
+#, no-c-format
+msgid "No progress for {n} second. Keep waiting or cancel?"
+msgid_plural "No progress for {n} seconds. Keep waiting or cancel?"
+msgstr[0] "Sin avances desde hace {n} segundo. ¿Seguir esperando o cancelar?"
+msgstr[1] "Sin avances desde hace {n} segundos. ¿Seguir esperando o cancelar?"
+
+#: src/fremdtexte.rs:111
+msgctxt "PackageKit status"
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: src/fremdtexte.rs:112
+msgctxt "PackageKit status"
+msgid "Waiting…"
+msgstr "Esperando…"
+
+#: src/fremdtexte.rs:113
+msgctxt "PackageKit status"
+msgid "Preparing…"
+msgstr "Preparando…"
+
+#: src/fremdtexte.rs:114
+msgctxt "PackageKit status"
+msgid "Running…"
+msgstr "En ejecución…"
+
+#: src/fremdtexte.rs:115
+msgctxt "PackageKit status"
+msgid "Querying…"
+msgstr "Consultando…"
+
+#: src/fremdtexte.rs:116
+msgctxt "PackageKit status"
+msgid "Getting information…"
+msgstr "Obteniendo información…"
+
+#: src/fremdtexte.rs:117
+msgctxt "PackageKit status"
+msgid "Removing…"
+msgstr "Quitando…"
+
+#: src/fremdtexte.rs:119
+msgctxt "PackageKit status"
+msgid "Refreshing software sources…"
+msgstr "Actualizando los orígenes de software…"
+
+#: src/fremdtexte.rs:121
+msgctxt "PackageKit status"
+msgid "Downloading…"
+msgstr "Descargando…"
+
+#: src/fremdtexte.rs:122
+msgctxt "PackageKit status"
+msgid "Installing…"
+msgstr "Instalando…"
+
+#: src/fremdtexte.rs:123
+msgctxt "PackageKit status"
+msgid "Updating…"
+msgstr "Actualizando…"
+
+#: src/fremdtexte.rs:124
+msgctxt "PackageKit status"
+msgid "Cleaning up…"
+msgstr "Limpiando…"
+
+#: src/fremdtexte.rs:126
+msgctxt "PackageKit status"
+msgid "Replacing obsolete packages…"
+msgstr "Sustituyendo paquetes obsoletos…"
+
+#: src/fremdtexte.rs:128
+msgctxt "PackageKit status"
+msgid "Resolving dependencies…"
+msgstr "Resolviendo dependencias…"
+
+#: src/fremdtexte.rs:129
+msgctxt "PackageKit status"
+msgid "Checking signatures…"
+msgstr "Comprobando firmas…"
+
+#: src/fremdtexte.rs:130
+msgctxt "PackageKit status"
+msgid "Testing changes…"
+msgstr "Probando los cambios…"
+
+#: src/fremdtexte.rs:131
+msgctxt "PackageKit status"
+msgid "Committing changes…"
+msgstr "Aplicando los cambios…"
+
+#: src/fremdtexte.rs:132
+msgctxt "PackageKit status"
+msgid "Requesting data…"
+msgstr "Solicitando datos…"
+
+#: src/fremdtexte.rs:133
+msgctxt "PackageKit status"
+msgid "Finished"
+msgstr "Terminado"
+
+#: src/fremdtexte.rs:134
+msgctxt "PackageKit status"
+msgid "Cancelling…"
+msgstr "Cancelando…"
+
+#: src/fremdtexte.rs:136
+msgctxt "PackageKit status"
+msgid "Downloading repository information…"
+msgstr "Descargando información del repositorio…"
+
+#: src/fremdtexte.rs:139
+msgctxt "PackageKit status"
+msgid "Downloading the list of packages…"
+msgstr "Descargando la lista de paquetes…"
+
+#: src/fremdtexte.rs:141
+msgctxt "PackageKit status"
+msgid "Downloading file lists…"
+msgstr "Descargando listas de archivos…"
+
+#: src/fremdtexte.rs:143
+msgctxt "PackageKit status"
+msgid "Downloading lists of changes…"
+msgstr "Descargando listas de cambios…"
+
+#: src/fremdtexte.rs:145
+msgctxt "PackageKit status"
+msgid "Downloading groups…"
+msgstr "Descargando grupos…"
+
+#: src/fremdtexte.rs:147
+msgctxt "PackageKit status"
+msgid "Downloading update information…"
+msgstr "Descargando información de actualizaciones…"
+
+#: src/fremdtexte.rs:149
+msgctxt "PackageKit status"
+msgid "Repackaging files…"
+msgstr "Reempaquetando archivos…"
+
+#: src/fremdtexte.rs:150
+msgctxt "PackageKit status"
+msgid "Loading cache…"
+msgstr "Cargando la caché…"
+
+#: src/fremdtexte.rs:151
+msgctxt "PackageKit status"
+msgid "Scanning applications…"
+msgstr "Analizando aplicaciones…"
+
+#: src/fremdtexte.rs:152
+msgctxt "PackageKit status"
+msgid "Generating package lists…"
+msgstr "Generando listas de paquetes…"
+
+#: src/fremdtexte.rs:154
+msgctxt "PackageKit status"
+msgid "Waiting for the package manager lock…"
+msgstr "Esperando el bloqueo del gestor de paquetes…"
+
+#: src/fremdtexte.rs:157
+msgctxt "PackageKit status"
+msgid "Waiting for authentication…"
+msgstr "Esperando autenticación…"
+
+#: src/fremdtexte.rs:160
+msgctxt "PackageKit status"
+msgid "Checking running applications…"
+msgstr "Comprobando aplicaciones en ejecución…"
+
+#: src/fremdtexte.rs:163
+msgctxt "PackageKit status"
+msgid "Checking applications in use…"
+msgstr "Comprobando aplicaciones en uso…"
+
+#: src/fremdtexte.rs:165
+msgctxt "PackageKit status"
+msgid "Checking libraries in use…"
+msgstr "Comprobando bibliotecas en uso…"
+
+#: src/fremdtexte.rs:166
+msgctxt "PackageKit status"
+msgid "Copying files…"
+msgstr "Copiando archivos…"
+
+#: src/fremdtexte.rs:167
+msgctxt "PackageKit status"
+msgid "Running hooks…"
+msgstr "Ejecutando scripts…"
+
+#: src/fremdtexte.rs:168
+msgctxt "PackageKit status"
+msgid "Working…"
+msgstr "Trabajando…"
+
+#: src/fremdtexte.rs:169
+msgctxt "PackageKit status"
+msgid "Setting up…"
+msgstr "Configurando…"
+
+#: src/fremdtexte.rs:181
+msgid "Not Authorized"
+msgstr "No autorizado"
+
+#: src/fremdtexte.rs:182
+msgid ""
+"Permission to manage software was not granted. Either the authorization dialog was cancelled, the password was wrong, or the policy (polkit) does not allow this action for your account."
+msgstr ""
+"No se concedió el permiso para gestionar software. Se canceló el diálogo de autorización, la contraseña era incorrecta o la política (polkit) no permite esta acción para su cuenta."
+
+#: src/fremdtexte.rs:187
+msgid ""
+"Try again and confirm the authorization dialog, or contact your system administrator."
+msgstr ""
+"Inténtelo de nuevo y confirme el diálogo de autorización, o póngase en contacto con el administrador del sistema."
+
+#: src/fremdtexte.rs:193
+msgid "Authorization Dialog Missing"
+msgstr "Falta el diálogo de autorización"
+
+#: src/fremdtexte.rs:194
+msgid ""
+"The session’s authorization dialog (polkit agent) is missing. Without it, no program can install or remove packages. In Querencia Desktop, the session starts it as “querencia-polkit-agent”."
+msgstr ""
+"Falta el diálogo de autorización de la sesión (agente de polkit). Sin él, ningún programa puede instalar o quitar paquetes. En Querencia Desktop, la sesión lo inicia como «querencia-polkit-agent»."
+
+#: src/fremdtexte.rs:199
+msgid ""
+"Start the authorization dialog from a terminal in the session (“querencia-polkit-agent”) or log in again once it is set up, then repeat the operation."
+msgstr ""
+"Inicie el diálogo de autorización desde un terminal de la sesión («querencia-polkit-agent») o vuelva a iniciar sesión una vez configurado, y repita la operación."
+
+#: src/fremdtexte.rs:206
+msgid "Package Manager Is Busy"
+msgstr "El gestor de paquetes está ocupado"
+
+#: src/fremdtexte.rs:208
+msgid ""
+"Another program is using the package manager right now, for example automatic updates (unattended-upgrades) or “apt” in a terminal."
+msgstr ""
+"Otro programa está usando el gestor de paquetes en este momento, por ejemplo las actualizaciones automáticas (unattended-upgrades) o «apt» en un terminal."
+
+#: src/fremdtexte.rs:213
+#, no-c-format
+msgid ""
+"Another program is using the package manager right now: {program}. As long as it is running, Querencia Software cannot change any packages."
+msgstr ""
+"Otro programa está usando el gestor de paquetes en este momento: {program}. Mientras se esté ejecutando, Querencia Software no puede cambiar ningún paquete."
+
+#: src/fremdtexte.rs:219
+msgid ""
+"Wait until the other program has finished; Querencia Software tries again every 10 seconds (for up to 5 minutes). Or cancel."
+msgstr ""
+"Espere a que el otro programa termine; Querencia Software lo reintenta cada 10 segundos (durante hasta 5 minutos). O cancele."
+
+#: src/fremdtexte.rs:225 src/netz.rs:469
+msgid "No Network Connection"
+msgstr "Sin conexión de red"
+
+#: src/fremdtexte.rs:226
+msgid ""
+"The software sources cannot be reached. Either there is no connection to the internet, or the mirror server does not respond."
+msgstr ""
+"No se puede acceder a los orígenes de software. O no hay conexión a Internet, o el servidor réplica no responde."
+
+#: src/fremdtexte.rs:230
+msgid "Check the network connection and then try again."
+msgstr "Compruebe la conexión de red y vuelva a intentarlo."
+
+#: src/fremdtexte.rs:233
+msgid "Package Not Found"
+msgstr "Paquete no encontrado"
+
+#: src/fremdtexte.rs:234
+#, no-c-format
+msgid ""
+"The package “{package}” is not available in the configured software sources, or the list of sources is out of date."
+msgstr ""
+"El paquete «{package}» no está disponible en los orígenes de software configurados, o la lista de orígenes está desactualizada."
+
+#: src/fremdtexte.rs:239
+msgid ""
+"Refresh the software sources (File → Check for Updates) and search again."
+msgstr ""
+"Actualice los orígenes de software (Archivo → Buscar actualizaciones) y vuelva a buscar."
+
+#: src/fremdtexte.rs:242
+msgid "Dependencies Cannot Be Resolved"
+msgstr "No se pueden resolver las dependencias"
+
+#: src/fremdtexte.rs:243
+#, no-c-format
+msgid ""
+"The change conflicts with other installed packages or needs packages that are not available. Message from the package manager: {details}"
+msgstr ""
+"El cambio entra en conflicto con otros paquetes instalados o necesita paquetes que no están disponibles. Mensaje del gestor de paquetes: {details}"
+
+#: src/fremdtexte.rs:248
+msgid ""
+"Leave the system unchanged; check the updates or resolve the conflict with an expert tool (apt)."
+msgstr ""
+"Deje el sistema sin cambios; compruebe las actualizaciones o resuelva el conflicto con una herramienta para expertos (apt)."
+
+#: src/fremdtexte.rs:254
+msgid "Lost Connection to the Package Manager"
+msgstr "Se perdió la conexión con el gestor de paquetes"
+
+#: src/fremdtexte.rs:255
+msgid ""
+"The PackageKit service was stopped or restarted during the operation. Querencia Software tried once to resume the operation; that did not succeed. The package database stays consistent, but the operation may not have finished."
+msgstr ""
+"El servicio PackageKit se detuvo o reinició durante la operación. Querencia Software intentó reanudarla una vez, sin éxito. La base de datos de paquetes sigue siendo coherente, pero es posible que la operación no haya terminado."
+
+#: src/fremdtexte.rs:261
+msgid ""
+"Check whether the package is installed (view “Installed”) and repeat the operation if necessary."
+msgstr ""
+"Compruebe si el paquete está instalado (vista «Instalados») y repita la operación si es necesario."
+
+#: src/fremdtexte.rs:267
+msgid "Operation Cancelled"
+msgstr "Operación cancelada"
+
+#: src/fremdtexte.rs:268
+msgid ""
+"The operation was cancelled at your request. Files already downloaded stay in the cache. If the cancellation only took effect during setup, some packages may already be installed or removed."
+msgstr ""
+"La operación se canceló a petición suya. Los archivos ya descargados permanecen en la caché. Si la cancelación solo surtió efecto durante la configuración, puede que algunos paquetes ya estén instalados o quitados."
+
+#: src/fremdtexte.rs:273
+msgid ""
+"If necessary, check the state in the view “Installed”, and start the operation again if you want to carry it out after all."
+msgstr ""
+"Si es necesario, compruebe el estado en la vista «Instalados» y vuelva a iniciar la operación si desea realizarla después de todo."
+
+#: src/fremdtexte.rs:279
+msgid "Package Manager Does Not Respond"
+msgstr "El gestor de paquetes no responde"
+
+#: src/fremdtexte.rs:280
+msgid ""
+"PackageKit did not answer in time. The service may be overloaded or hanging."
+msgstr ""
+"PackageKit no respondió a tiempo. Es posible que el servicio esté sobrecargado o bloqueado."
+
+#: src/fremdtexte.rs:281
+msgid ""
+"Try again in a few minutes. If that does not help, log in again or restart the computer."
+msgstr ""
+"Inténtelo de nuevo dentro de unos minutos. Si no sirve, vuelva a iniciar sesión o reinicie el equipo."
+
+#: src/fremdtexte.rs:287
+msgid "Package Manager Error"
+msgstr "Error del gestor de paquetes"
+
+#: src/fremdtexte.rs:289
+#, no-c-format
+msgid "PackageKit reports the error “{code}”. Details: none"
+msgstr "PackageKit informa del error «{code}». Detalles: ninguno"
+
+#: src/fremdtexte.rs:294
+#, no-c-format
+msgid "PackageKit reports the error “{code}”. Details: {details}"
+msgstr "PackageKit informa del error «{code}». Detalles: {details}"
+
+#: src/fremdtexte.rs:299
+msgid ""
+"Try again later. If the error persists, note the error code and look in the log ~/.local/state/querencia/software.log."
+msgstr ""
+"Inténtelo más tarde. Si el error persiste, anote el código de error y consulte el registro ~/.local/state/querencia/software.log."
+
+#. TRANSLATORS: address of the online help; only change the language code (German …/de/docs/…)
+#: src/hilfe.rs:29
+msgid "https://querencialinux.org/en/docs/installing-software"
+msgstr "https://querencialinux.org/es/docs/installing-software"
+
+#: src/logik.rs:24
+msgid "All Software"
+msgstr "Todos los programas"
+
+#: src/logik.rs:26 src/logik.rs:90
+msgid "Installed"
+msgstr "Instalados"
+
+#: src/logik.rs:27
+msgid "Updates"
+msgstr "Actualizaciones"
+
+#: src/logik.rs:28
+msgid "Expert List"
+msgstr "Lista para expertos"
+
+#: src/logik.rs:88
+msgid "Update available"
+msgstr "Actualización disponible"
+
+#: src/logik.rs:92
+msgid "Available"
+msgstr "Disponible"
+
+#: src/logik.rs:94
+msgid "Not available"
+msgstr "No disponible"
+
+#. TRANSLATORS: size of a package below 1 KiB
+#: src/logik.rs:332
+#, no-c-format
+msgid "{n} byte"
+msgid_plural "{n} bytes"
+msgstr[0] "{n} byte"
+msgstr[1] "{n} bytes"
+
+#. TRANSLATORS: decimal separator in sizes such as “1.5 MiB”
+#: src/logik.rs:335
+msgctxt "decimal separator"
+msgid "."
+msgstr ","
+
+#: src/logik.rs:344
+msgid ""
+"You are not allowed to install or remove software. The request was denied."
+msgstr ""
+"No tiene permiso para instalar o quitar software. Se denegó la solicitud."
+
+#: src/logik.rs:347
+msgid "The session’s authorization dialog (polkit agent) is missing."
+msgstr "Falta el diálogo de autorización de la sesión (agente de polkit)."
+
+#: src/logik.rs:349
+#, no-c-format
+msgid "The package manager is busy right now ({program})."
+msgstr "El gestor de paquetes está ocupado en este momento ({program})."
+
+#: src/logik.rs:353
+msgid "No network connection."
+msgstr "Sin conexión de red."
+
+#: src/logik.rs:355
+#, no-c-format
+msgid "The package “{package}” was not found."
+msgstr "No se encontró el paquete «{package}»."
+
+#: src/logik.rs:358
+#, no-c-format
+msgid "Conflicting dependencies: {details}"
+msgstr "Dependencias en conflicto: {details}"
+
+#: src/logik.rs:361
+msgid "The package manager (PackageKit) was stopped during the operation."
+msgstr "El gestor de paquetes (PackageKit) se detuvo durante la operación."
+
+#: src/logik.rs:363
+msgid "The operation was cancelled."
+msgstr "La operación se canceló."
+
+#: src/netz.rs:336
+msgid "online (PackageKit)"
+msgstr "en línea (PackageKit)"
+
+#: src/netz.rs:337
+msgid "online (network available)"
+msgstr "en línea (red disponible)"
+
+#: src/netz.rs:339
+msgid "online (archive reachable), PackageKit: offline"
+msgstr "en línea (archivo accesible), PackageKit: sin conexión"
+
+#: src/netz.rs:341
+msgid "online (archive reachable)"
+msgstr "en línea (archivo accesible)"
+
+#: src/netz.rs:343
+#, no-c-format
+msgid "offline: {host} not reachable ({reason})"
+msgstr "sin conexión: no se puede acceder a {host} ({reason})"
+
+#: src/netz.rs:347
+msgid "offline: no network and no APT source to check"
+msgstr "sin conexión: no hay red ni origen APT que comprobar"
+
+#: src/netz.rs:374
+msgid ""
+"PackageKit considers the system offline because NetworkManager is installed but does not manage the network."
+msgstr ""
+"PackageKit considera que el sistema no tiene conexión porque NetworkManager está instalado pero no gestiona la red."
+
+#: src/netz.rs:378
+msgid ""
+"Remedy: set the netplan renderer to NetworkManager, or remove NetworkManager."
+msgstr ""
+"Solución: configure el renderizador de netplan como NetworkManager o quite NetworkManager."
+
+#: src/netz.rs:384 src/netz.rs:497
+msgid ""
+"PackageKit considers the system offline and may refuse to download packages."
+msgstr ""
+"PackageKit considera que el sistema no tiene conexión y puede negarse a descargar paquetes."
+
+#: src/netz.rs:390
+#, no-c-format
+msgid "PackageKit: {state}"
+msgstr "PackageKit: {state}"
+
+#: src/netz.rs:395
+msgid "online"
+msgstr "en línea"
+
+#: src/netz.rs:396
+msgid "offline"
+msgstr "sin conexión"
+
+#: src/netz.rs:397
+msgid "no answer"
+msgstr "sin respuesta"
+
+#: src/netz.rs:402
+#, no-c-format
+msgid "Network monitor (GLib): {state}"
+msgstr "Monitor de red (GLib): {state}"
+
+#: src/netz.rs:407
+msgid "network available"
+msgstr "red disponible"
+
+#: src/netz.rs:409
+msgid "no network"
+msgstr "sin red"
+
+#: src/netz.rs:415
+#, no-c-format
+msgid "Software source {uri}: reachable ({answer})"
+msgstr "Origen de software {uri}: accesible ({answer})"
+
+#: src/netz.rs:419
+#, no-c-format
+msgid "Software source {uri}: not reachable ({reason})"
+msgstr "Origen de software {uri}: no accesible ({reason})"
+
+#: src/netz.rs:423
+msgid "Software source: none found in /etc/apt"
+msgstr "Origen de software: no se encontró ninguno en /etc/apt"
+
+#: src/netz.rs:462
+#, no-c-format
+msgid "Querencia Software could not reach the software source {uri}."
+msgstr "Querencia Software no pudo acceder al origen de software {uri}."
+
+#: src/netz.rs:466
+msgid "Querencia Software found no software source in /etc/apt to check."
+msgstr ""
+"Querencia Software no encontró ningún origen de software en /etc/apt que comprobar."
+
+#: src/netz.rs:474
+msgid ""
+"Packages that are already in the apt cache can be installed without a network; “Try Anyway” starts the operation. While offline, Querencia Software checks again every 30 seconds."
+msgstr ""
+"Los paquetes que ya están en la caché de apt se pueden instalar sin red; «Intentar de todos modos» inicia la operación. Mientras no haya conexión, Querencia Software vuelve a comprobar cada 30 segundos."
+
+#: src/netz.rs:480
+msgid ""
+"Check the network connection. While offline, Querencia Software checks again every 30 seconds; “Check Again” in the status bar checks at once."
+msgstr ""
+"Compruebe la conexión de red. Mientras no haya conexión, Querencia Software vuelve a comprobar cada 30 segundos; «Volver a comprobar» en la barra de estado comprueba al momento."
+
+#: src/netz.rs:500
+msgid "PackageKit Reports No Network"
+msgstr "PackageKit indica que no hay red"
+
+#: src/netz.rs:503
+#, no-c-format
+msgid ""
+"The software source {uri} is reachable, but PackageKit refuses to download packages."
+msgstr ""
+"El origen de software {uri} es accesible, pero PackageKit se niega a descargar paquetes."
+
+#: src/netz.rs:510
+msgid "PackageKit notices the change by itself; then try again."
+msgstr ""
+"PackageKit detecta el cambio por sí mismo; después, vuelva a intentarlo."
+
+#: src/netz.rs:550
+msgid "no APT source found"
+msgstr "no se encontró ningún origen APT"
+
+#: src/netz.rs:602 src/netz.rs:759
+#, no-c-format
+msgid "no answer within {seconds} s"
+msgstr "sin respuesta en {seconds} s"
+
+#: src/netz.rs:623
+msgid "TCP connection, TLS not checked"
+msgstr "conexión TCP, TLS sin comprobar"
+
+#: src/netz.rs:643
+msgid "no HTTP answer"
+msgstr "sin respuesta HTTP"

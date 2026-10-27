@@ -26,8 +26,9 @@ the user interface is available in English and German.
   Aktualisieren über PackageKit, Fortschritt nicht modal mit Abbrechen;
   Meldungen bei belegter Paketsperre, fehlender Berechtigung und fehlendem
   polkit-Agenten.
-- Oberfläche auf Englisch und Deutsch über GNU gettext (englische msgid,
-  `programm/po/de.po`), auch für die deutschen Texte der Bausteine.
+- Oberfläche auf Englisch, Deutsch, Italienisch, Spanisch und Französisch über
+  GNU gettext (englische msgid, `programm/po/*.po`), auch für die deutschen
+  Texte der Bausteine.
 - Bewusst **nicht** Teil dieses Programms: Paketquellen verwalten,
   Bewertungen, Konten, Snap/Flatpak.
 
@@ -45,7 +46,7 @@ Anwendungskennung (App-ID): `org.querencia.Software` · Binary:
 
 | | |
 |---|---|
-| Version | 0.1.6 (Tag `software/0.1.6`; Katalog-Ergänzungen für Thunderbird und Firefox, Snap-Hüllen ausgeblendet); 0.1.5 (Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Hilfe-Menü mit Online-Hilfe und „Fehler melden“); seit 0.1.4 dunkle Darstellung (Tags `software/0.1.4`, `software/0.1.4-f2`) |
+| Version | 0.1.7 (Tag `software/0.1.7`; Italienisch, Spanisch, Französisch); 0.1.6 (Katalog-Ergänzungen für Thunderbird und Firefox, Snap-Hüllen ausgeblendet); 0.1.5 (Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Hilfe-Menü mit Online-Hilfe und „Fehler melden“); seit 0.1.4 dunkle Darstellung (Tags `software/0.1.4`, `software/0.1.4-f2`) |
 | Letzte Prüfung | 23.10.2026 (0.1.6): Unit-Tests mit Katalog-Ergänzungen (Suche, Kategorie, Symbol, Paketstand, Snap-Hüllen), `ergaenzungen-pruefen.sh`; 22.10.2026 (0.1.5): Unit-Tests, darunter ein Test gegen interne Kennungen in den Nutzertexten unter `po/`; 21.10.2026 (0.1.4): Unit-Tests, `i18n.py pruefen`; isolierte GUI-Prüfung hell und dunkel (Stand 0.1.3: online 11/0, offline 18/0, Regression Attrappe 68/0) |
 | Bekannte Lücken | Bausteine noch in eigenen Repos (siehe oben); GUI-Prüfung gegen echte Backends nur in der Entwicklungsumgebung |
 | Getestet auf | Ubuntu 26.04, labwc 0.9.8, GTK 4.22, PackageKit, Rust 1.93.1 |

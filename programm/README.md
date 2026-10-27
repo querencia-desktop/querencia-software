@@ -30,7 +30,7 @@ simulierte Transaktionen 2 s). Austauschstellen: `../docs/integration.md`.
 | `src/logik.rs` | Ansichten, Filter, Sortierung, Suche, Fehlertexte; Unit-Tests |
 | `src/i18n.rs` | gettext: Textdomäne `querencia-software`, Suche der Kataloge, Platzhalter |
 | `src/fremdtexte.rs` | Übersetzung der deutschen Texte der Bausteine (Kategorien, Statustexte, Fehlerdialoge von SW-4) |
-| `po/` | `querencia-software.pot` (erzeugt), `de.po`, `LINGUAS`; Pflege mit `werkzeug/i18n.py` |
+| `po/` | `querencia-software.pot` (erzeugt), `de.po`, `it.po`, `es.po`, `fr.po`, `LINGUAS`; Pflege mit `werkzeug/i18n.py` |
 | `data/org.querencia.Software.desktop.in` | englische Vorlage des Starters; `…desktop` daraus mit `[de]`-Zeilen |
 | `src/fenster.rs` | Hauptfenster |
 | `src/dialoge.rs` | Info, Bestätigung, Meldungen, Fenstersymbol |
@@ -42,12 +42,13 @@ simulierte Transaktionen 2 s). Austauschstellen: `../docs/integration.md`.
 | `nachweis/` | Release-Binary mit SHA256, Prüf- und GUI-Protokolle |
 
 Desktop-Datei, Themen-Symbol für Starter und Panel und MetaInfo liefert SW-5;
-die Übersetzung der Desktop-Datei kommt seit 0.1.1 aus `po/de.po`
+die Übersetzung der Desktop-Datei kommt seit 0.1.1 aus `po/*.po`
 (`vorschlag-erzeugen.sh` gleicht sie ab).
 
 ## Sprache
 
-Englische msgids im Code, Deutsch aus `po/de.po` (Muster: Querencia Editor,
+Englische msgids im Code, Deutsch, Italienisch, Spanisch und Französisch aus
+`po/de.po`, `po/it.po`, `po/es.po`, `po/fr.po` (Muster: Querencia Editor,
 `docs/i18n-muster.md`). Die Sprache folgt `LANGUAGE`, `LC_ALL`,
 `LC_MESSAGES`, `LANG`; die Querencia-Sitzung setzt `LANGUAGE=de`. Die Kataloge
 liegen neben der Binary (`share/locale/<lang>/LC_MESSAGES/querencia-software.mo`
@@ -56,7 +57,7 @@ in der Ablage), sonst im Präfix (`/usr/share/locale`);
 
 ```bash
 python3 werkzeug/i18n.py pot && python3 werkzeug/i18n.py update   # nach neuen Texten
-python3 werkzeug/i18n.py pruefen && msgfmt -c -o /dev/null po/de.po
+python3 werkzeug/i18n.py pruefen && for l in de it es fr; do msgfmt -c -o /dev/null po/$l.po; done
 ```
 
 ## Lizenz

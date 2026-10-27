@@ -8,10 +8,17 @@
 # absoluten Pfad des Programm-Links ~/opt/querencia/bin/querencia-software.
 Type=Application
 Version=1.5
+Name[fr]=Logiciels
 Name=Software
 GenericName[de]=Softwareverwaltung
+GenericName[es]=Gestor de software
+GenericName[fr]=Gestionnaire de logiciels
+GenericName[it]=Gestione software
 GenericName=Software Manager
 Comment[de]=Programme installieren, entfernen und aktualisieren
+Comment[es]=Instalar, quitar y actualizar programas
+Comment[fr]=Installer, supprimer et mettre à jour des programmes
+Comment[it]=Installa, rimuovi e aggiorna programmi
 Comment=Install, remove and update programs
 Exec=querencia-software
 TryExec=querencia-software
@@ -19,6 +26,9 @@ Icon=org.querencia.Software
 Terminal=false
 Categories=GTK;System;PackageManager;Settings;
 Keywords[de]=Software;Pakete;Programme;installieren;entfernen;aktualisieren;Softwareverwaltung;
+Keywords[es]=software;paquetes;instalar;quitar;actualizar;aplicaciones;tienda;
+Keywords[fr]=logiciels;paquets;installer;supprimer;mettre à jour;applications;logithèque;
+Keywords[it]=software;pacchetti;installare;rimuovere;aggiornare;applicazioni;negozio;
 Keywords=software;packages;install;remove;update;apps;store;
 StartupNotify=true
 StartupWMClass=org.querencia.Software

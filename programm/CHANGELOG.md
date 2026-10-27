@@ -1,5 +1,16 @@
 # Änderungen
 
+## 0.1.7 – 2026-10-26
+
+### Hinzugefügt
+- Oberfläche auf Italienisch, Spanisch und Französisch (`po/it.po`,
+  `po/es.po`, `po/fr.po`, je 238 Texte) samt Desktop-Datei; Wortwahl nach
+  GNOME Software der jeweiligen Sprache und der gemeinsamen
+  Querencia-Begriffstabelle, Zugriffstasten je Menü eindeutig, Online-Hilfe
+  auf querencialinux.org/it|es|fr/docs/installing-software.
+- Katalog-Ergänzungen (Thunderbird, Firefox): Zusammenfassung, Beschreibung
+  und Stichwörter auf Italienisch, Spanisch und Französisch.
+
 ## 0.1.6 – 2026-10-23
 
 ### Hinzugefügt
