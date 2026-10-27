@@ -20,7 +20,7 @@ publish = false
 # SW-1, Tag paketkit/0.1.0
 qs_typen = { path = "../querencia-software-paketkit/qs_typen" }
 qs_paketkit = { path = "../querencia-software-paketkit" }
-# SW-2, Tag katalog/0.1.0
+# SW-2, Tag katalog/0.1.1
 qs_katalog = { path = "../querencia-software-katalog" }
 # SW-4, Tag transaktion/0.1.1
 qs_transaktion = { path = "../querencia-software-transaktion/qs_transaktion", features = ["glib"] }

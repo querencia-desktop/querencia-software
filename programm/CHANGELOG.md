@@ -1,5 +1,15 @@
 # Änderungen
 
+## 0.1.8 – 2026-10-27
+
+### Behoben
+- Manche Programme standen doppelt in Suche und Kategorien (z. B. Remmina):
+  Ubuntu führt sie in einer Paketquelle als `name.desktop` und in einer
+  anderen als `name`. Mit dem Katalog-Baustein 0.1.1 (Tag `katalog/0.1.1`)
+  gelten beide Schreibweisen als dasselbe Programm; die neuere Quelle gewinnt.
+- GIMP fehlte im Katalog, sobald es installiert war (alte Typangabe in seiner
+  installierten Programmbeschreibung).
+
 ## 0.1.7 – 2026-10-26
 
 ### Hinzugefügt

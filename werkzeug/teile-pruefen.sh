@@ -17,7 +17,7 @@ while read -r ordner tag; do
     fi
 done <<'L'
 querencia-software-paketkit paketkit/0.1.0
-querencia-software-katalog katalog/0.1.0
+querencia-software-katalog katalog/0.1.1
 querencia-software-transaktion transaktion/0.1.1
 querencia-software-paket software-paket/0.1.1
 querencia-software-ui software-ui/0.1.0
